@@ -5,6 +5,11 @@ namespace plexclient
 
 plexgdm::plexgdm()
 {	
+	_discoverMessage = "M-SEARCH * HTTP/1.0";
+	_clientHeader = "* HTTP/1.0";
+	_multicastAddress = "239.0.0.250";
+	_clientUpdatePort = 32412;
+	
 	m_discoverAdress = Poco::Net::SocketAddress(_multicastAddress, 32414);
 	m_clientRegisterGroup = Poco::Net::SocketAddress(_multicastAddress, 32413);
 	

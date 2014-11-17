@@ -25,7 +25,7 @@ int XmlObject::GetNodeValueAsInt(Poco::XML::Node* pNode)
 	int value = 0;
 	if(pNode != 0) {
 		try {
-			value = std::stoi(pNode->getNodeValue());
+			value = atoi(pNode->getNodeValue().c_str());
 		} catch(Poco::Exception) {}
 	}
 	return value;
@@ -36,7 +36,7 @@ long XmlObject::GetNodeValueAsLong(Poco::XML::Node* pNode)
 	long value = 0;
 	if(pNode != 0) {
 		try {
-			value = std::stol(pNode->getNodeValue());
+			value = atol(pNode->getNodeValue().c_str());
 		} catch(Poco::Exception) {}
 	}
 	return value;
@@ -56,7 +56,7 @@ Poco::Timestamp XmlObject::GetNodeValueAsTimeStamp(Poco::XML::Node* pNode)
 	Poco::Timestamp value;
 	if(pNode != 0) {
 		try {
-			long lValue = std::stol(pNode->nodeValue());
+			long lValue = atol(pNode->nodeValue().c_str());
 			value = Poco::Timestamp(lValue);
 		} catch (Poco::Exception) {}
 	}
@@ -65,20 +65,20 @@ Poco::Timestamp XmlObject::GetNodeValueAsTimeStamp(Poco::XML::Node* pNode)
 
 MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 {
-	MediaType type = MediaType::UNDEF;
+	MediaType type = UNDEF;
 
 	if(pNode != 0) {
 		std::string sType = pNode->nodeValue();
 		if (Poco::icompare(sType, "photo") == 0) {
-			type = MediaType::PHOTO;
+			type = PHOTO;
 		} else if (Poco::icompare(sType, "movie") == 0) {
-			type = MediaType::MOVIE;
+			type = MOVIE;
 		} else if (Poco::icompare(sType, "music") == 0) {
-			type = MediaType::MUSIC;
+			type = MUSIC;
 		} else if (Poco::icompare(sType, "show") == 0) {
-			type = MediaType::SHOW;
+			type = SHOW;
 		} else if (Poco::icompare(sType, "season") == 0) {
-			type = MediaType::SHOW;
+			type = SHOW;
 		}
 	}
 	return type;

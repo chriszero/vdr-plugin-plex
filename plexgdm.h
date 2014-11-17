@@ -62,12 +62,12 @@ protected:
 	volatile bool m_discoveryIsRunning;
 	volatile bool m_registrationIsRunning;
 
-	std::string _discoverMessage = "M-SEARCH * HTTP/1.0";
-	std::string _clientHeader = "* HTTP/1.0";
+	std::string _discoverMessage;
+	std::string _clientHeader;
 	std::string _clientData;
 	std::string _clientId;
-	std::string _multicastAddress = "239.0.0.250";
-	int _clientUpdatePort = 32412;
+	std::string _multicastAddress;
+	int _clientUpdatePort;
 	PlexServer *m_pServer;
 };
 

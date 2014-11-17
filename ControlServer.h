@@ -25,10 +25,10 @@ public:
 	void Stop();
 
 private:
-	ControlServer() {};
+	ControlServer();
 	
-	Poco::Net::ServerSocket *m_pSvs = new Poco::Net::ServerSocket(3200);;
-	Poco::Net::HTTPServer *m_pSrv = new Poco::Net::HTTPServer(new PlexReqHandlerFactory, *m_pSvs, new Poco::Net::HTTPServerParams);
+	Poco::Net::ServerSocket *m_pSvs;
+	Poco::Net::HTTPServer *m_pSrv;
 
 };
 

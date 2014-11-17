@@ -18,36 +18,37 @@ SubscriptionManager::SubscriptionManager()
 }
 
 void SubscriptionManager::Notify() {
-	mutex.lock();
+	//mutex.lock();
 	
 	//TODO: Implement
-	for(auto subs : m_mSubcribers) {
-		subs.second.SendUpdate(GetMsg(std::to_string(subs.second.m_iCommandId)), false);
+	for(std::map<std::string, Subscriber>::iterator it = m_mSubcribers.begin() ; it != m_mSubcribers.end(); ++it) {
+		Subscriber subs = it->second;
+		subs.SendUpdate(GetMsg(std::string(itoa(subs.m_iCommandId))), false);
 	}
 	
-	mutex.unlock();
+	//mutex.unlock();
 }
 
 void SubscriptionManager::AddSubscriber(Subscriber subs) {
-	mutex.lock();
+	//mutex.lock();
 	m_mSubcribers[subs.GetUuid()] = subs;
 	std::cout << "AddSubscriber: " << subs.to_string() << std::endl;
-	mutex.unlock();
+	//mutex.unlock();
 }
 
 void SubscriptionManager::RemoveSubscriber(std::string uuid) {
-	mutex.lock();
+	//mutex.lock();
 	if(m_mSubcribers.find(uuid) != m_mSubcribers.end()) {
 		m_mSubcribers.erase(uuid);
 	}
-	mutex.unlock();
+	//mutex.unlock();
 }
 
 std::string SubscriptionManager::GetMsg(std::string commandId) {
 	PlayerGetCurrentPosition();
 	int time = PlayerCurrent;
 	
-	bool paused = PlayerPaused;
+	//bool paused = PlayerPaused;
 	
 	std::stringstream msg;
 	msg << "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -93,7 +94,7 @@ void Subscriber::SendUpdate(std::string msg, bool isNav) {
 	pRequest->add("X-Plex-Provides", "player");
 	pRequest->add("X-Plex-Version", "0.0.1a");
 	
-	auto session = new Poco::Net::HTTPClientSession(m_sHost, m_iPort);
+	Poco::Net::HTTPClientSession* session = new Poco::Net::HTTPClientSession(m_sHost, m_iPort);
 	std::ostream& oustr = session->sendRequest(*pRequest);
 	oustr << msg;
 }

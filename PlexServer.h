@@ -64,8 +64,8 @@ public:
 private:
 	std::string m_sDiscovery;
 
-	int m_nOwned = 0;
-	int m_nMaster = 0;
+	int m_nOwned;
+	int m_nMaster;
 	std::string m_sRole;
 	std::string m_sContentType;
 	std::string m_sUuid;

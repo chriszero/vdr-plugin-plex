@@ -49,10 +49,10 @@ public:
 	static MediaContainer* GetMediaContainer(std::string fullUrl);
 
 private:
-	const std::string USERAGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17";
+	std::string USERAGENT;
 
-	Poco::Net::HTTPClientSession *m_pPlexSession = 0;
-	PlexServer *pServer = 0;
+	Poco::Net::HTTPClientSession *m_pPlexSession;
+	PlexServer *pServer;
 	std::string m_sToken;
 
 	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);

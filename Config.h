@@ -35,8 +35,8 @@ public:
 		return instance;
 	}
 
-	std::string s_username = "username";
-	std::string s_password = "password";
+	std::string s_username;
+	std::string s_password;
 	
 	bool HideMainMenuEntry;
 	bool DisableRemote;
@@ -50,7 +50,7 @@ public:
 	
 
 private:
-	Config() {}
+	Config();
 	std::string s_uuid;
 	std::string s_hostname;
 };

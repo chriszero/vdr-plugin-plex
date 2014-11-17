@@ -1,5 +1,6 @@
 #include "PlexHTTPRequestHandler.h"
 #include <vdr/remote.h>
+#include <vdr/keys.h>
 #include <unistd.h>
 
 namespace plexclient
@@ -38,8 +39,8 @@ void PlexHTTPRequestHandler::AddHeaders(Poco::Net::HTTPServerResponse& response,
 std::map<std::string, std::string> PlexHTTPRequestHandler::ParseQuery(std::string query) {
 	std::map<std::string, std::string> querymap;
 	Poco::StringTokenizer queryTokens(query, "&");
-	for(auto& token : queryTokens) {
-		Poco::StringTokenizer subTokens(token, "=");
+	for(Poco::StringTokenizer::Iterator token = queryTokens.begin() ; token != queryTokens.end(); ++token) {
+		Poco::StringTokenizer subTokens(*token, "=");
 		querymap[subTokens[0]] = subTokens[1];
 	}
 	return querymap;
@@ -58,12 +59,12 @@ void PlexHTTPRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 void SubscribeRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response){
 	// parse query
 	Poco::URI uri(request.getURI());
-	auto query = ParseQuery(uri.getQuery()); // port=32400&commandID=0&protocol=http
+	std::map<std::string, std::string> query = ParseQuery(uri.getQuery()); // port=32400&commandID=0&protocol=http
 	std::string path = uri.getPath(); // /player/timeline/subscribe
 	
 	std::string uuid = request.get("X-Plex-Client-Identifier");
-	int port = std::stoi(query["port"]);
-	int command = std::stoi(query["commandID"]);
+	int port = atoi(query["port"].c_str());
+	int command = atoi(query["commandID"].c_str());
 	SubscriptionManager::GetInstance().AddSubscriber(Subscriber(query["protocol"], request.getHost(), port, uuid, command));
 	
 	AddHeaders(response, request);
@@ -99,9 +100,9 @@ void ResourceRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response){
 	Poco::URI uri(request.getURI());
 	//Poco::StringTokenizer pathTokens(uri, "/");
-	auto query = ParseQuery(uri.getQuery());
+	std::map<std::string, std::string> query = ParseQuery(uri.getQuery());
 	
-	if(query.find("wait") != query.end() && std::stoi(query["wait"]) == 1) {
+	if(query.find("wait") != query.end() && atoi(query["wait"].c_str()) == 1) {
 		usleep(900 * 1000);
 	}
 	
@@ -155,25 +156,25 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 	}
 	else if(request.getURI().find("/navigation")!= std::string::npos) {
 		if(request.getURI().find("/moveUp")!= std::string::npos) {
-			cRemote::Put(eKeys::kUp);
+			cRemote::Put(kUp);
 		}
 		else if(request.getURI().find("/moveDown")!= std::string::npos) {
-			cRemote::Put(eKeys::kDown);
+			cRemote::Put(kDown);
 		}
 		else if(request.getURI().find("/moveLeft")!= std::string::npos) {
-			cRemote::Put(eKeys::kLeft);
+			cRemote::Put(kLeft);
 		}
 		else if(request.getURI().find("/moveRight")!= std::string::npos) {
-			cRemote::Put(eKeys::kRight);
+			cRemote::Put(kRight);
 		}
 		else if(request.getURI().find("/select")!= std::string::npos) {
-			cRemote::Put(eKeys::kOk);
+			cRemote::Put(kOk);
 		}
 		else if(request.getURI().find("/home")!= std::string::npos) {
-			cRemote::Put(eKeys::kMenu);
+			cRemote::Put(kMenu);
 		}
 		else if(request.getURI().find("/back")!= std::string::npos) {
-			cRemote::Put(eKeys::kBack);
+			cRemote::Put(kBack);
 		}
 	}
 	

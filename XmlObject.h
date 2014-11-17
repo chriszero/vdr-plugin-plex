@@ -1,6 +1,8 @@
 #ifndef XMLOBJECT_H
 #define XMLOBJECT_H
 
+#include <cstdlib>
+
 #include <Poco/DOM/Document.h>
 #include <Poco/Timestamp.h>
 #include <Poco/String.h>

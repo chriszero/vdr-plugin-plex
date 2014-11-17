@@ -1,10 +1,11 @@
 #ifndef SUBSCRIPTIONMANAGER_H
 #define SUBSCRIPTIONMANAGER_H
 
+#include <vdr/tools.h>
 #include <string>
 #include <iostream>
 #include <map>
-#include <mutex>
+//#include <mutex>
 #include <sstream>
 
 #include "player.h"
@@ -26,7 +27,8 @@ class Subscriber
 	void SendUpdate(std::string msg, bool isNav);
 	
 	virtual std::string to_string() {
-		return "Subscriber-> Host: " + m_sHost + "; Port:" + std::to_string(m_iPort) + "; Uuid:" + m_sUuid + "; CmdID:" + std::to_string(m_iCommandId);
+		return "Subscriber-> Host: " + m_sHost + "; Port: " + std::string(itoa(m_iPort)) + "; Uuid:" + m_sUuid + "; CmdID:" + std::string(itoa(m_iCommandId));
+		return "";
 	}
 
 private:
@@ -53,7 +55,7 @@ public:
 	
 	private:
 	SubscriptionManager();
-	std::mutex mutex;
+	//std::mutex mutex;
 	std::map<std::string, Subscriber> m_mSubcribers;
 };
 
@@ -70,8 +72,8 @@ class ActionManager
 	
 	private:
 	ActionManager();
-	std::string m_sAction = "";
-	bool m_isAction = false;
+	std::string m_sAction;
+	bool m_isAction;
 };
 
 }

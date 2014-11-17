@@ -1,3 +1,4 @@
+#include <vdr/tools.h>
 #include "PlexServer.h"
 
 namespace plexclient
@@ -31,7 +32,7 @@ PlexServer::PlexServer(std::string data, std::string ip)
 }
 
 std::string PlexServer::GetUri() {
-	return std::string("http://") + m_sIpAddress + ":" + std::to_string(m_nPort);
+	return std::string("http://") + m_sIpAddress + ":" + std::string(itoa(m_nPort));
 }
 
 PlexServer::~PlexServer()

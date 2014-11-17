@@ -1,6 +1,11 @@
 #include "Config.h"
 
 
+Config::Config() {
+	s_username = "username";
+	s_password = "password";
+}
+
 std::string Config::GetUUID() {
 	if(s_uuid.empty()) {
 		using Poco::UUIDGenerator;

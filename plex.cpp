@@ -1,3 +1,24 @@
+///
+///	@file play.cpp		@brief A play plugin for VDR.
+///
+///	Copyright (c) 2012, 2013 by Johns.  All Rights Reserved.
+///
+///	Contributor(s): Dennis Bendlin
+///
+///	License: AGPLv3
+///
+///	This program is free software: you can redistribute it and/or modify
+///	it under the terms of the GNU Affero General Public License as
+///	published by the Free Software Foundation, either version 3 of the
+///	License.
+///
+///	This program is distributed in the hope that it will be useful,
+///	but WITHOUT ANY WARRANTY; without even the implied warranty of
+///	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+///	GNU Affero General Public License for more details.
+///
+///	$Id: 269426d9bc0f37cc7c07b21716c345e57148aecb $
+//////////////////////////////////////////////////////////////////////////////
 #include "ControlServer.h"
 #include "SubscriptionManager.h"
 #include "plex.h"
@@ -596,20 +617,18 @@ void cPlexBrowser::CreateMenu() {
 	Clear();
 	// Directory or Video?
 	if(pCont->m_vDirectories.size() > 0) {
-		v_Dir = &pCont->m_vDirectories;
 		
-		for(auto& pDir : pCont->m_vDirectories) {
-			if(pDir.m_eType != plexclient::MediaType::MUSIC && pDir.m_eType != plexclient::MediaType::PHOTO) {
-				Add(new cPlexOsdItem( pDir.m_sTitle.c_str(), &pDir) );
-			}
+		for(std::vector<plexclient::Directory>::iterator it = pCont->m_vDirectories.begin(); it != pCont->m_vDirectories.end(); ++it) {
+			plexclient::Directory *pDir = &(*it);
+			Add(new cPlexOsdItem( pDir->m_sTitle.c_str(), pDir) );
 		}
 	} 
 	
-
-	if (pCont->m_vVideos.size() > 0) {
-		for(auto& v_Vid : pCont->m_vVideos) {
-			Add(new cPlexOsdItem( v_Vid.m_sTitle.c_str(), &v_Vid) );
-		}
+	if(pCont->m_vVideos.size() > 0) {
+		for(std::vector<plexclient::Video>::iterator it = pCont->m_vVideos.begin(); it != pCont->m_vVideos.end(); ++it) {
+			plexclient::Video *vid = &(*it); // cast raw pointer
+			Add(new cPlexOsdItem( vid->m_sTitle.c_str(), vid) );
+		}	
 	}
 	
 	if(Count() < 1) {
