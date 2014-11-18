@@ -31,16 +31,18 @@ Poco::Net::HTTPClientSession* Plexservice::GetHttpSession(bool createNew)
 
 std::string Plexservice::GetMyPlexToken()
 {
+	// Syncronize
+	Poco::Mutex::ScopedLock lock(m_mutex);
+	
 	//todo: cache token in file or db
-	if(m_sToken.empty()) {
-		std::ostringstream ss;
+	if(&m_sToken != 0 || m_sToken.empty()) {
+		std::stringstream ss;
 		Poco::Base64Encoder b64(ss);
 
 		b64 << Config::GetInstance().GetUsername() << ":" << Config::GetInstance().GetPassword();
 
 		b64.close();
 		m_sToken = ss.str();
-		b64.~Base64Encoder();
 
 		Poco::Net::Context::Ptr context = new Poco::Net::Context(
 		    Poco::Net::Context::CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE, // VERIFY_NONE...?!
@@ -53,10 +55,10 @@ std::string Plexservice::GetMyPlexToken()
 			request.add("X-Plex-Platform", "VDR");
 			request.add("X-Plex-Platform-Version", "2.0.4");
 			request.add("X-Plex-Provides", "player");
-			request.add("X-Plex-Product", "plex-vdr");
+			request.add("X-Plex-Product", "plex for vdr");
 			request.add("X-Plex-Version", "0.0.1a");
 			request.add("X-Plex-Device", "Linux");
-			request.add("X-Plex-Client-Identifier", "plex-vdr");
+			request.add("X-Plex-Client-Identifier", "plex for vdr");
 			request.add("Authorization", Poco::format("Basic %s", m_sToken));
 
 			plexSession.sendRequest(request);
@@ -77,13 +79,10 @@ std::string Plexservice::GetMyPlexToken()
 
 void Plexservice::Authenticate()
 {
-	if(m_sToken.empty()) {
-		GetMyPlexToken();
-		//m_sToken = "";
-	}
 	try {
 		GetHttpSession(true);
-		Poco::Net::HTTPRequest *pRequest = CreateRequest("/?X-Plex-Token=" + m_sToken);
+		std::string token = GetMyPlexToken();
+		Poco::Net::HTTPRequest *pRequest = CreateRequest("/?X-Plex-Token=" + token);
 
 		m_pPlexSession->sendRequest(*pRequest);
 		Poco::Net::HTTPResponse response;
@@ -121,19 +120,16 @@ MediaContainer* Plexservice::GetAllSections()
 
 MediaContainer* Plexservice::GetSection(std::string section)
 {
-	if(m_sToken.empty()) {
-		GetMyPlexToken();
-	}
-
+	std::string token = GetMyPlexToken();
 	GetHttpSession(true);
 
 	Poco::Net::HTTPRequest *pRequest;
 	if(section[0]=='/') { // Full URI?
-		pRequest = CreateRequest(Poco::format("%s?X-Plex-Token=%s", section, m_sToken));
+		pRequest = CreateRequest(Poco::format("%s?X-Plex-Token=%s", section, token));
 	} else if(false == section.empty()) {
-		pRequest = CreateRequest(Poco::format("/library/sections/%s?X-Plex-Token=%s", section, m_sToken));
+		pRequest = CreateRequest(Poco::format("/library/sections/%s?X-Plex-Token=%s", section, token));
 	} else {
-		pRequest = CreateRequest("/library/sections/?X-Plex-Token=" + m_sToken);
+		pRequest = CreateRequest("/library/sections/?X-Plex-Token=" + token);
 	}
 
 	m_pPlexSession->sendRequest(*pRequest);
@@ -163,7 +159,7 @@ Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 	pRequest->add("X-Plex-Language", Config::GetInstance().GetLanguage());
 	pRequest->add("X-Plex-Model", "Linux");
 	pRequest->add("X-Plex-Platform", "VDR");
-	pRequest->add("X-Plex-Product", "plex-vdr");
+	pRequest->add("X-Plex-Product", "plex for vdr");
 	pRequest->add("X-Plex-Provides", "player");
 	pRequest->add("X-Plex-Version", "0.0.1a");
 
@@ -186,7 +182,7 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl) {
 	pRequest->add("X-Plex-Language", Config::GetInstance().GetLanguage());
 	pRequest->add("X-Plex-Model", "Linux");
 	pRequest->add("X-Plex-Platform", "VDR");
-	pRequest->add("X-Plex-Product", "plex-vdr");
+	pRequest->add("X-Plex-Product", "plex for vdr");
 	pRequest->add("X-Plex-Provides", "player");
 	pRequest->add("X-Plex-Version", "0.0.1a");
 	

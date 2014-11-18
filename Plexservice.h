@@ -28,6 +28,9 @@
 #include "user.h"
 #include "MediaContainer.h"
 
+#include <Poco/ScopedLock.h>
+#include <Poco/Mutex.h>
+
 namespace plexclient
 {
 
@@ -48,12 +51,15 @@ public:
 	
 	static MediaContainer* GetMediaContainer(std::string fullUrl);
 
-private:
+	private:
+	Poco::Mutex m_mutex;
+	// Never Access m_sToken directly! => possible race condition
+	std::string m_sToken;
+	
 	std::string USERAGENT;
 
 	Poco::Net::HTTPClientSession *m_pPlexSession;
 	PlexServer *pServer;
-	std::string m_sToken;
 
 	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);
 	Poco::Net::HTTPRequest* CreateRequest(std::string path);

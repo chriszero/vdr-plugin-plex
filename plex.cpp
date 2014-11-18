@@ -1,24 +1,3 @@
-///
-///	@file play.cpp		@brief A play plugin for VDR.
-///
-///	Copyright (c) 2012, 2013 by Johns.  All Rights Reserved.
-///
-///	Contributor(s): Dennis Bendlin
-///
-///	License: AGPLv3
-///
-///	This program is free software: you can redistribute it and/or modify
-///	it under the terms of the GNU Affero General Public License as
-///	published by the Free Software Foundation, either version 3 of the
-///	License.
-///
-///	This program is distributed in the hope that it will be useful,
-///	but WITHOUT ANY WARRANTY; without even the implied warranty of
-///	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-///	GNU Affero General Public License for more details.
-///
-///	$Id: 269426d9bc0f37cc7c07b21716c345e57148aecb $
-//////////////////////////////////////////////////////////////////////////////
 #include "ControlServer.h"
 #include "SubscriptionManager.h"
 #include "plex.h"
@@ -34,10 +13,10 @@ static const char *const PLUGINNAME = "plex";
 
 
     /// vdr-plugin description.
-static const char *const DESCRIPTION = trNOOP("VDR Plex Plugin");
+static const char *const DESCRIPTION = trNOOP("Plex for VDR Plugin");
 
     /// vdr-plugin text of main menu entry
-static const char *MAINMENUENTRY = trNOOP("Plex");
+static const char *MAINMENUENTRY = trNOOP("Plex for VDR");
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1169,7 +1148,6 @@ bool cMyPlugin::Initialize(void)
 		pPlexgdm->Start();
 		
 		pService = new plexclient::Plexservice(pServer);
-		pService->GetMyPlexToken();
 		pService->Authenticate();
 		
 		plexclient::ControlServer::GetInstance().Start();
