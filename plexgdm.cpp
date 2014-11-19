@@ -1,3 +1,4 @@
+#include <vdr/tools.h>
 #include "plexgdm.h"
 
 namespace plexclient
@@ -47,6 +48,7 @@ std::string plexgdm::getClientDetails()
 
 void plexgdm::Action()
 {
+	
 	char buffer[1024];
 	m_registrationIsRunning = true;
 	cMutexLock lock(&m_mutex);
@@ -98,26 +100,31 @@ void plexgdm::Action()
 
 void plexgdm::discover()
 {
-	// TODO: Discover multiple servers
-	char buffer[1024];
-	Poco::Net::MulticastSocket socket(
-	    Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() )
-	);
-	socket.setReceiveTimeout(0.6);
-	//socket.setTimeToLive(0.6);
-	socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
+	try {
+		// TODO: Discover multiple servers
+		char buffer[1024];
+		Poco::Net::MulticastSocket socket(
+			Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() )
+		);
+		socket.setReceiveTimeout(0.6);
+		//socket.setTimeToLive(0.6);
+		socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
 
-	socket.joinGroup(m_discoverAdress.host());
-	Poco::Net::SocketAddress sender;
-	int n = socket.receiveFrom(buffer, sizeof(buffer), sender);
-	std::string buf(buffer, n);
-	//std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf;
+		socket.joinGroup(m_discoverAdress.host());
+		Poco::Net::SocketAddress sender;
+		int n = socket.receiveFrom(buffer, sizeof(buffer), sender);
+		std::string buf(buffer, n);
+		//std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf;
 
-	socket.close();
-	m_discoveryComplete = true;
-	// check for a valid response
-	if(buf.find("200 OK") != std::string::npos) {
-		m_pServer = new PlexServer(buf, sender.host().toString());
+		socket.close();
+		m_discoveryComplete = true;
+		// check for a valid response
+		if(buf.find("200 OK") != std::string::npos) {
+			m_pServer = new PlexServer(buf, sender.host().toString());
+		}
+	}
+	catch(Poco::Exception &exc){
+		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
 	}
 }
 
