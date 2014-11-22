@@ -57,6 +57,7 @@ void plexgdm::Action()
 	    Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() )
 	);
 
+	update_sock.setLoopback(true);
 	update_sock.setReuseAddress(true);
 	update_sock.setTimeToLive(255);
 	update_sock.setBlocking(false);
