@@ -106,6 +106,7 @@ void plexgdm::discover()
 		Poco::Net::MulticastSocket socket(
 			Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() )
 		);
+		socket.setLoopback(true);
 		socket.setReceiveTimeout(0.6);
 		//socket.setTimeToLive(0.6);
 		socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
