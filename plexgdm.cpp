@@ -53,8 +53,10 @@ void plexgdm::Action()
 	m_registrationIsRunning = true;
 	cMutexLock lock(&m_mutex);
 
+try {
 	Poco::Net::MulticastSocket update_sock(
-	    Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() )
+	    Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() ),
+		true
 	);
 
 	update_sock.setLoopback(true);
@@ -96,6 +98,11 @@ void plexgdm::Action()
 	update_sock.sendTo(s.c_str(), s.length(), m_clientRegisterGroup,0);
 
 	m_clientRegistered = false;
+}
+	catch(Poco::Exception &exc){
+		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
+		std::cout << "[plex]Exception: in " << __func__ << " | " << exc.displayText() << std::endl;
+	}
 
 }
 
@@ -104,29 +111,37 @@ void plexgdm::discover()
 	try {
 		// TODO: Discover multiple servers
 		char buffer[1024];
+		
 		Poco::Net::MulticastSocket socket(
-			Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() )
+			Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() ),
+			true
 		);
 		socket.setLoopback(true);
+		socket.setTimeToLive(1);
 		socket.setReceiveTimeout(0.6);
-		//socket.setTimeToLive(0.6);
 		socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
 
 		socket.joinGroup(m_discoverAdress.host());
-		Poco::Net::SocketAddress sender;
-		int n = socket.receiveFrom(buffer, sizeof(buffer), sender);
-		std::string buf(buffer, n);
-		//std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf;
-
-		socket.close();
-		m_discoveryComplete = true;
-		// check for a valid response
-		if(buf.find("200 OK") != std::string::npos) {
-			m_pServer = new PlexServer(buf, sender.host().toString());
+		while(true) {
+			Poco::Net::SocketAddress sender;
+			int n = socket.receiveFrom(buffer, sizeof(buffer), sender);
+			std::string buf(buffer, n);
+			std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf << std::endl;
+			
+			// check for a valid response
+			if(buf.find("200 OK") != std::string::npos) {
+				m_pServer = new PlexServer(buf, sender.host().toString());
+				std::cout << "New Plexserver: " << m_pServer->GetServerName() << " Adress: " << m_pServer->GetIpAdress() << ":" << m_pServer->GetPort() << std::endl;
+				socket.close();
+				m_discoveryComplete = true;
+				break;
+			}
 		}
+		
 	}
 	catch(Poco::Exception &exc){
 		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
+		std::cout << "[plex]Exception: in " << __func__ << " | " << exc.displayText() << std::endl;
 	}
 }
 
