@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <vector>
 
 #include <Poco/Net/SocketAddress.h>
 #include <Poco/Net/MulticastSocket.h>
@@ -23,7 +24,10 @@ namespace plexclient
 class plexgdm : public cThread
 {
 public:
-	plexgdm();
+	static plexgdm& GetInstance() {
+		static plexgdm instance;
+		return instance;
+	}
 	~plexgdm();
 	void clientDetails(std::string c_id, std::string c_name, std::string c_port, std::string c_product, std::string c_version);
 	std::string getClientDetails();
@@ -39,16 +43,15 @@ public:
 	//void stopAll();
 	void stopRegistration();
 
-
-	PlexServer* GetPServer() {
-		return m_pServer;
+	std::vector<PlexServer> &GetPlexservers() {
+		return m_vServers;
 	}
 
 protected:
 
 
 	private:
-	
+	plexgdm();
 	cMutex m_mutex;
 	cCondVar m_waitCondition;
 
@@ -68,7 +71,7 @@ protected:
 	std::string _clientId;
 	std::string _multicastAddress;
 	int _clientUpdatePort;
-	PlexServer *m_pServer;
+	std::vector<PlexServer> m_vServers;
 };
 
 }

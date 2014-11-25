@@ -573,6 +573,7 @@ static void PlayFile(const char *filename)
 
 
 static char ShowBrowser;		///< flag show browser
+static plexclient::PlexServer* pPlexServer;
 /*
 static const char *BrowserStartDir;	///< browser start directory
 static const NameFilter *BrowserFilters;	///< browser name filters
@@ -583,12 +584,17 @@ static char **DirStack;			///< current path directory stack
 */
 
 
-cPlexBrowser::cPlexBrowser(const char *title, plexclient::Plexservice* pServ) :cOsdMenu(title) {
+cPlexBrowser::cPlexBrowser(const char *title, plexclient::PlexServer* pServ) :cOsdMenu(title) {
 		
 	dsyslog("[plex]%s:\n", __FUNCTION__);
-	pService = pServ;
+	pService = new plexclient::Plexservice(pServ);
+	pService->Authenticate();
 	pCont = pService->GetAllSections();	
 	CreateMenu();
+}
+
+cPlexBrowser::~cPlexBrowser() {
+	delete pService;
 }
 
 void cPlexBrowser::CreateMenu() {
@@ -678,14 +684,12 @@ eOSState cPlexBrowser::LevelUp() {
 }
 
 eOSState cPlexBrowser::ProcessSelected() {
-	int current;
-    cPlexOsdItem *item;
     std::string fullUri;
     //char *filename;
     //char *tmp;
 
-    current = Current();		// get current menu item index
-    item = static_cast<cPlexOsdItem*>(Get(current));
+    int current = Current();		// get current menu item index
+    cPlexOsdItem *item = static_cast<cPlexOsdItem*>(Get(current));
 	
 	
 	if(item->IsVideo()) {
@@ -731,19 +735,18 @@ eOSState cPlexBrowser::ProcessSelected() {
 /**
 **	Play menu constructor.
 */
-cPlayMenu::cPlayMenu(const char *title, plexclient::plexgdm* gdm, int c0, int c1, int c2, int c3, int c4)
+cPlayMenu::cPlayMenu(const char *title, int c0, int c1, int c2, int c3, int c4)
 :cOsdMenu(title, c0, c1, c2, c3, c4)
 {
 	SetHasHotkeys();
 	
-	plexclient::PlexServer *server = gdm->GetPServer();
-	
-	if(server) {
-		std::string serverName = server->GetServerName();
-		Add(new cOsdItem(hk(serverName.c_str()), osUser1));
+	for(std::vector<plexclient::PlexServer>::iterator it = plexclient::plexgdm::GetInstance().GetPlexservers().begin(); it != plexclient::plexgdm::GetInstance().GetPlexservers().end(); ++it) {
+		plexclient::PlexServer *pServer = &(*it);
+		Add(new cPlexOsdItem(pServer->GetServerName().c_str(), pServer));
 	}
-	else {
-		Add(new cOsdItem("No Plex Media Server found."));
+	
+	if(Count() < 1) {
+		Add(new cPlexOsdItem("No Plex Media Server found."), false);
 	}
 }
 
@@ -768,13 +771,22 @@ eOSState cPlayMenu::ProcessKey(eKeys key)
     }
     // call standard function
     state = cOsdMenu::ProcessKey(key);
-
+	
+	int current = Current();		// get current menu item index
+	cPlexOsdItem *item = static_cast<cPlexOsdItem*>(Get(current));
+	
     switch (state) {
-	case osUser1:
-	    ShowBrowser = 1;
-	    return osPlugin;		// restart with OSD browser
-	default:
-	    break;
+		case osUnknown:
+			switch (key) {
+				case kOk:
+					pPlexServer = item->GetAttachedServer();
+					ShowBrowser = 1;
+					return osPlugin;		// restart with OSD browser
+				default:
+					break;
+			}
+		default:
+			break;
     }
     return state;
 }
@@ -1082,10 +1094,8 @@ cMyPlugin::cMyPlugin(void)
 cMyPlugin::~cMyPlugin(void)
 {
     dsyslog("[plex]%s:\n", __FUNCTION__);
-	pPlexgdm->stopRegistration();
+	plexclient::plexgdm::GetInstance().stopRegistration();
 	plexclient::ControlServer::GetInstance().Stop();
-	delete(pPlexgdm);
-	delete(pService);
 }
 
 /**
@@ -1140,20 +1150,17 @@ bool cMyPlugin::Initialize(void)
 	// First Startup? Save UUID 
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
 	
-	pPlexgdm = new plexclient::plexgdm();
-	pPlexgdm->discover();	
-	plexclient::PlexServer *pServer = pPlexgdm->GetPServer();
-	if (pServer != 0) {
-		pPlexgdm->clientDetails(Config::GetInstance().GetUUID(), DESCRIPTION, "3200", "VDR", VERSION);
-		pPlexgdm->Start();
-		
-		pService = new plexclient::Plexservice(pServer);
-		pService->Authenticate();
+	plexclient::plexgdm::GetInstance().discover();
+	
+	if (plexclient::plexgdm::GetInstance().GetPlexservers().size() > 0) {
+		plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), DESCRIPTION, "3200", "VDR", VERSION);
+		plexclient::plexgdm::GetInstance().Start();
 		
 		plexclient::ControlServer::GetInstance().Start();
 		
 	} else {
 		perror("No Plexserver found");
+		std::cout << "No Plexmediaserver found" << std::endl;
 	}
 	
     MyDevice = new cMyDevice;
@@ -1177,9 +1184,9 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
     //dsyslog("[plex]%s:\n", __FUNCTION__);
 
     if (ShowBrowser) {
-		return new cPlexBrowser("Newest", this->pService);
+		return new cPlexBrowser("Newest", pPlexServer);
     }
-    return new cPlayMenu("Plex", pPlexgdm);
+    return new cPlayMenu("Plex");
 }
 
 /**

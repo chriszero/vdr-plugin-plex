@@ -108,40 +108,44 @@ try {
 
 void plexgdm::discover()
 {
-	try {
-		// TODO: Discover multiple servers
-		char buffer[1024];
-		
-		Poco::Net::MulticastSocket socket(
+	Poco::Net::MulticastSocket socket(
 			Poco::Net::SocketAddress( Poco::Net::IPAddress(), m_discoverAdress.port() ),
 			true
-		);
-		socket.setLoopback(true);
-		socket.setTimeToLive(1);
-		socket.setReceiveTimeout(0.6);
-		socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
-
-		socket.joinGroup(m_discoverAdress.host());
+	);
+	// TODO: Discover multiple servers
+	char buffer[1024];
+	std::map<std::string, std::string> vBuffer;
+	
+	socket.setLoopback(true);
+	socket.setTimeToLive(1);
+	socket.setReceiveTimeout(Poco::Timespan(0, 600*1000)); // microseconds
+	socket.joinGroup(m_discoverAdress.host());
+	socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
+	
+	try {
 		while(true) {
 			Poco::Net::SocketAddress sender;
 			int n = socket.receiveFrom(buffer, sizeof(buffer), sender);
 			std::string buf(buffer, n);
-			std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf << std::endl;
-			
-			// check for a valid response
 			if(buf.find("200 OK") != std::string::npos) {
-				m_pServer = new PlexServer(buf, sender.host().toString());
-				std::cout << "New Plexserver: " << m_pServer->GetServerName() << " Adress: " << m_pServer->GetIpAdress() << ":" << m_pServer->GetPort() << std::endl;
-				socket.close();
-				m_discoveryComplete = true;
-				break;
+				vBuffer[sender.host().toString()] = buf;
 			}
+			//std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf << std::endl;
 		}
-		
 	}
-	catch(Poco::Exception &exc){
-		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
-		std::cout << "[plex]Exception: in " << __func__ << " | " << exc.displayText() << std::endl;
+	catch(Poco::TimeoutException &exc){
+		//dsyslog("[plex]TimeoutException in %s s%", __func__, exc.displayText().c_str() );
+		std::cout << "[plex]TimeoutException: in " << __func__ << " | " << exc.displayText() << std::endl;
+	}
+	
+	socket.close();
+	m_discoveryComplete = true;
+	
+	for(std::map<std::string, std::string>::iterator it = vBuffer.begin() ; it != vBuffer.end(); ++it) {
+		std::string host = it->first;
+		std::string data = it->second;
+		
+		m_vServers.push_back(PlexServer(data, host));
 	}
 }
 

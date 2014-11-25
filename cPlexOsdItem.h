@@ -7,22 +7,26 @@
 
 #include "PVideo.h"
 #include "Directory.h"
+#include "PlexServer.h"
 
 class cPlexOsdItem : public cOsdItem
 {
 private:
 	plexclient::Video *item;
 	plexclient::Directory *dir;
+	plexclient::PlexServer *pserver;
 	bool m_bVideo;	
 	bool m_bDir;
 
 public:
 	cPlexOsdItem(const char* title);
+	cPlexOsdItem(const char* title, plexclient::PlexServer* server);
 	cPlexOsdItem(const char* title, plexclient::Video* obj);
 	cPlexOsdItem(const char* title, plexclient::Directory* obj);
 	~cPlexOsdItem();
 	plexclient::Video* GetAttachedVideo();
 	plexclient::Directory* GetAttachedDirectory();
+	plexclient::PlexServer* GetAttachedServer();
 	
 	bool IsVideo() const {
 		return m_bVideo;

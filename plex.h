@@ -130,8 +130,8 @@ private:
     eOSState ProcessSelected();
 	
 public:
-	cPlexBrowser(const char *title, plexclient::Plexservice* pServ);
-	
+	cPlexBrowser(const char *title, plexclient::PlexServer* pServ);
+	~cPlexBrowser();
 	/// File browser destructor
     //virtual ~ cPlexBrowser();
     /// Process keyboard input
@@ -146,7 +146,7 @@ class cPlayMenu:public cOsdMenu
 {
   private:
   public:
-    cPlayMenu(const char *, plexclient::plexgdm* gdm, int = 0, int = 0, int = 0, int = 0, int = 0);
+    cPlayMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
     virtual ~ cPlayMenu();
     virtual eOSState ProcessKey(eKeys);
 };
@@ -215,8 +215,6 @@ class cMyPlugin:public cPlugin
     virtual cString SVDRPCommand(const char *, const char *, int &);
 	
   private:
-	plexclient::Plexservice* pService;
-	plexclient::plexgdm* pPlexgdm;
 };
 
 #endif
