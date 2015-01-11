@@ -213,9 +213,7 @@ class cMyPlugin:public cPlugin
     virtual bool Service(const char *, void * = NULL);
     virtual const char **SVDRPHelpPages(void);
     virtual cString SVDRPCommand(const char *, const char *, int &);
-	
-private:
-  Poco::Crypto::OpenSSLInitializer _openSSLInitializer; //Bug in Poco::Crypto, see https://github.com/pocoproject/poco/issues/527
+
 };
 
 #endif
