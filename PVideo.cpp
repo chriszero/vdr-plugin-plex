@@ -15,6 +15,7 @@ Video::Video(Poco::XML::Node* pNode)
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
 			m_iRatingKey = GetNodeValueAsInt(pAttribs->getNamedItem("ratingKey"));
+			m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
 			m_sStudio = GetNodeValue(pAttribs->getNamedItem("studio"));
 			m_tType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
 			m_sTitle = GetNodeValue(pAttribs->getNamedItem("title"));

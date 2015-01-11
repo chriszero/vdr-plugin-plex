@@ -9,7 +9,7 @@
 
 PLUGIN = plex
 
-LIBS += -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoXML -lPocoFoundation
+LIBS += -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoXML -lPocoFoundation -lpcrecpp
 
 ### Configuration (edit this for your needs)
 
@@ -17,11 +17,11 @@ LIBS += -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoXML -lPocoFoundation
 # FIXME: AVFS isn't working, corrupts memory
 #AVFS ?= $(shell test -x /usr/bin/avfs-config && echo 1)
     # use ffmpeg libswscale
-SWSCALE ?= $(shell pkg-config --exists libswscale && echo 1)
+#SWSCALE ?= $(shell pkg-config --exists libswscale && echo 1)
     # support png images
-PNG ?= $(shell pkg-config --exists libpng && echo 1)
+#PNG ?= $(shell pkg-config --exists libpng && echo 1)
     # support jpg images
-JPG ?= $(shell test -r /usr/include/jpeglib.h && echo 1)
+#JPG ?= $(shell test -r /usr/include/jpeglib.h && echo 1)
 
 CONFIG := #-DDEBUG			# uncomment to build DEBUG
 
@@ -49,7 +49,7 @@ endif
 
 
 _CFLAGS += $(shell pkg-config --cflags xcb xcb-image xcb-keysyms xcb-icccm)
-LIBS += -lrt $(shell pkg-config --libs xcb xcb-image xcb-keysyms xcb-icccm)
+#LIBS += -lrt $(shell pkg-config --libs xcb xcb-image xcb-keysyms xcb-icccm)
 
 ### The version number of this plugin (taken from the main source file):
 

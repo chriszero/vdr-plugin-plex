@@ -45,8 +45,7 @@ void SubscriptionManager::RemoveSubscriber(std::string uuid) {
 }
 
 std::string SubscriptionManager::GetMsg(std::string commandId) {
-	PlayerGetCurrentPosition();
-	int time = PlayerCurrent;
+	int time = 0;//PlayerGetCurrentPosition();
 	
 	//bool paused = PlayerPaused;
 	

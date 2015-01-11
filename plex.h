@@ -16,13 +16,13 @@
 #include "plexgdm.h"
 #include "play_service.h"
 #include "cPlexOsdItem.h"
+#include "hlsPlayerControl.h"
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <iterator>
 #include <algorithm>
-
 
 /**
 **	Device plugin remote class.
@@ -214,7 +214,8 @@ class cMyPlugin:public cPlugin
     virtual const char **SVDRPHelpPages(void);
     virtual cString SVDRPCommand(const char *, const char *, int &);
 	
-  private:
+private:
+  Poco::Crypto::OpenSSLInitializer _openSSLInitializer; //Bug in Poco::Crypto, see https://github.com/pocoproject/poco/issues/527
 };
 
 #endif

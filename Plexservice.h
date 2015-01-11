@@ -10,6 +10,8 @@
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory>
+#include <time.h>
 
 #include <Poco/Base64Encoder.h>
 #include <Poco/Net/HTTPClientSession.h>
@@ -21,6 +23,9 @@
 #include <Poco/Exception.h>
 #include <Poco/Format.h>
 #include <Poco/URI.h>
+#include <Poco/ScopedLock.h>
+#include <Poco/Mutex.h>
+#include <Poco/Format.h>
 
 #include <Poco/StreamCopier.h>
 
@@ -28,8 +33,14 @@
 #include "user.h"
 #include "MediaContainer.h"
 
-#include <Poco/ScopedLock.h>
-#include <Poco/Mutex.h>
+#ifdef CRYPTOPP
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/hmac.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/base64.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
+#endif
 
 namespace plexclient
 {
@@ -48,14 +59,18 @@ public:
 	void Authenticate();
 	//void DiscoverFirstServer();
 	PlexServer* GetServer();
-	
+	std::string GetUniversalTranscodeUrl(Video* video);
+
 	static MediaContainer* GetMediaContainer(std::string fullUrl);
 
-	private:
+protected:
+	std::string encode(std::string message);
+
+private:
 	Poco::Mutex m_mutex;
 	// Never Access m_sToken directly! => possible race condition
 	std::string m_sToken;
-	
+
 	std::string USERAGENT;
 
 	Poco::Net::HTTPClientSession *m_pPlexSession;
@@ -63,6 +78,13 @@ public:
 
 	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);
 	Poco::Net::HTTPRequest* CreateRequest(std::string path);
+
+#ifdef CRYPTOPP
+protected:
+	std::string computeHMAC(std::string message);
+public:
+	std::string GetTranscodeUrl(Video* video);
+#endif
 
 };
 

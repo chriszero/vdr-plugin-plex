@@ -8,8 +8,6 @@
 //#include <mutex>
 #include <sstream>
 
-#include "player.h"
-
 namespace plexclient
 {
 

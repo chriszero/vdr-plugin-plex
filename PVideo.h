@@ -37,6 +37,7 @@ public:
 
 public:
 	int m_iRatingKey;
+	std::string m_sKey;
 	std::string m_sStudio;
 	MediaType m_tType;
 	std::string m_sTitle;

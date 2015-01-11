@@ -128,15 +128,15 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 		
 	} 
 	else if(request.getURI().find("/playback/playMedia")!= std::string::npos) {
-		std::cout << "playMedia_1" << std::endl;
+		//std::cout << "playMedia_1" << std::endl;
 		AddHeaders(response, request);
 				
-		std::cout << "playMedia_2" << std::endl;
+		//std::cout << "playMedia_2" << std::endl;
 		std::string protocol = query["protocol"];
 		std::string address = query["address"];
 		std::string port = query["port"];
 		std::string key = query["key"];
-		std::cout << "playMedia_3" << std::endl;
+		//std::cout << "playMedia_3" << std::endl;
 		
 		std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
 		std::cout << "FullUrl: " << fullUrl << std::endl;

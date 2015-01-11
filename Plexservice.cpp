@@ -1,5 +1,4 @@
 #include "Plexservice.h"
-#include <memory>
 
 namespace plexclient
 {
@@ -27,8 +26,7 @@ Poco::Net::HTTPClientSession* Plexservice::GetHttpSession(bool createNew)
 			m_pPlexSession = new Poco::Net::HTTPClientSession(pServer->GetIpAdress(), pServer->GetPort());
 			m_pPlexSession->setKeepAlive(true);
 		}
-	}
-	catch(Poco::Exception &exc) {
+	} catch(Poco::Exception &exc) {
 		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
 		m_pPlexSession = 0;
 	}
@@ -39,7 +37,7 @@ std::string Plexservice::GetMyPlexToken()
 {
 	// Syncronize
 	Poco::Mutex::ScopedLock lock(m_mutex);
-	
+
 	//todo: cache token in file or db
 	if(&m_sToken != 0 || m_sToken.empty()) {
 		std::stringstream ss;
@@ -98,8 +96,7 @@ void Plexservice::Authenticate()
 			// TODO: process response
 			//Poco::StreamCopier::copyStream(rs, std::cout);
 			delete pRequest;
-		}
-		else {
+		} else {
 			esyslog("[plex] %s HttpSession is NULL", __func__);
 		}
 	} catch (Poco::Exception &exc) {
@@ -119,7 +116,8 @@ void Plexservice::DiscoverAllServers()
 }
  */
 
-PlexServer* Plexservice::GetServer() {
+PlexServer* Plexservice::GetServer()
+{
 	return pServer;
 }
 
@@ -147,14 +145,13 @@ MediaContainer* Plexservice::GetSection(std::string section)
 		std::istream &rs = m_pPlexSession->receiveResponse(response);
 
 		dsyslog("[plex] URI: %s[s%]", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
-		
+
 		MediaContainer* pAllsections = new MediaContainer(&rs);
 		//Poco::StreamCopier::copyStream(rs, std::cout);
 		delete pRequest;
 		return pAllsections;
-	
-	}
-	else {
+
+	} else {
 		esyslog("[plex] %s HttpSession is NULL", __func__);
 		return 0;
 	}
@@ -181,10 +178,11 @@ Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 	return pRequest;
 }
 
-MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl) {
-	
+MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
+{
+
 	Poco::URI fileuri(fullUrl);
-	
+
 	Poco::Net::HTTPRequest* pRequest = new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
 	        fileuri.getPath(), Poco::Net::HTTPMessage::HTTP_1_1);
 
@@ -200,22 +198,136 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl) {
 	pRequest->add("X-Plex-Product", "plex for vdr");
 	pRequest->add("X-Plex-Provides", "player");
 	pRequest->add("X-Plex-Version", "0.0.1a");
-	
+
 	Poco::Net::HTTPClientSession* session = new Poco::Net::HTTPClientSession(fileuri.getHost(), fileuri.getPort());
-	
+
 	session->sendRequest(*pRequest);
 	Poco::Net::HTTPResponse response;
 	std::istream &rs = session->receiveResponse(response);
 
 	std::cout << "URI: " << session->getHost() << "[" << pRequest->getURI() << "]" << std::endl;
-	
+
 	delete pRequest;
 	delete session;
-	
+
 	MediaContainer* pAllsections = new MediaContainer(&rs);
 	//Poco::StreamCopier::copyStream(rs, std::cout);
 	return pAllsections;
 }
 
+#ifdef CRYPTOPP
+std::string Plexservice::computeHMAC(std::string message)
+{
+	using CryptoPP::Exception;
+	using CryptoPP::HMAC;
+	using CryptoPP::SHA256;
+	using CryptoPP::Base64Encoder;
+	using CryptoPP::Base64Decoder;
+	using CryptoPP::StringSink;
+	using CryptoPP::ArraySink;
+	using CryptoPP::StringSource;
+	using CryptoPP::HashFilter;
+
+	const std::string transcode_private = "k3U6GLkZOoNIoSgjDshPErvqMIFdE0xMTx8kgsrhnC0=";
+
+	std::string encoded;
+	byte key[32];
+
+	StringSource(transcode_private, true,
+	             new Base64Decoder(
+	                 new ArraySink(key, 32)
+	             ) // Base64Encoder
+	            ); // StringSource
+
+	try {
+		HMAC<SHA256> hmac((byte*)key, sizeof(key));
+
+		StringSource(message, true,
+		             new HashFilter(hmac,
+		                            new Base64Encoder(
+		                                new StringSink(encoded),
+		                                false
+		                            ) // Base64Encoder
+		                           ) // HashFilter
+		            ); // StringSource
+	} catch(const CryptoPP::Exception& e) {
+		std::cerr << e.what() << std::endl;
+	}
+	return encoded;
 }
 
+std::string Plexservice::GetTranscodeUrl(Video* video)
+{
+	const std::string transcodeURL = "/video/:/transcode/segmented/start.m3u8?";
+	const std::string transcode_public = "KQMIY6GATPC63AIMC4R2";
+
+	std::stringstream params;
+	params << "identifier=com.plexapp.plugins.library";
+	params << "&url=" << encode(pServer->GetUri() + video->m_pMedia->m_sPartKey);
+	params << "&quality=8";
+	params << "&ratingKey=" << video->m_iRatingKey;
+	params << "&3g=0";
+	params << "&offset=0";
+	params << "&directStream=1";
+	params << "&maxVideoBitrate=30000";
+
+	int time = std::time(0);
+	std::string message = Poco::format("%s@%d", transcodeURL + params.str(), time);
+
+	std::string b64hmacMessage = computeHMAC(message);
+
+	std::stringstream plexAccess;
+	plexAccess << "&X-Plex-Access-Key=" << encode(transcode_public);
+	plexAccess << "&X-Plex-Access-Time=" << Poco::format("%d", time);
+	plexAccess << "&X-Plex-Access-Code=" <<  encode(b64hmacMessage);
+	plexAccess << "&X-Plex-Client-Capabilities=";
+	plexAccess << encode("protocols=http-live-streaming,http-streaming-video-720p,http-streaming-video-1080p;");
+	plexAccess << encode("videoDecoders=h264{profile:high&resolution:1080&level:51};");
+	plexAccess << encode("audioDecoders=aac,ac3{channels:6}");
+
+	std::string fullQuery = params.str() + plexAccess.str();
+	return pServer->GetUri() + transcodeURL + fullQuery;
+}
+#endif
+
+std::string Plexservice::encode(std::string message)
+{
+	std::string temp;
+	Poco::URI::encode(message, " !\"#$%&'()*+,/:;=?@[]", temp);
+	return temp;
+}
+
+
+std::string Plexservice::GetUniversalTranscodeUrl(Video* video)
+{
+	std::stringstream params;
+	params << "/video/:/transcode/universal/start.m3u8?";
+	params << "path=" << encode(pServer->GetUri() + video->m_sKey);
+	params << "&mediaIndex=0";
+	params << "&partIndex=0";
+	params << "&protocol=hls";
+	params << "&offset=0";
+	params << "&fastSeek=1";
+	params << "&directPlay=0";
+	params << "&directStream=1";
+	params << "&maxVideoBitrate=20000";
+	//params << "&subtitleSize=90";
+	params << "&skipSubtitles=1";
+	//params << "&audioBoost=100";
+	params << "&videoResolution=1920x1080";
+	params << "&videoQuality=100";
+	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
+	
+	params << "&X-Plex-Client-Identifier=" << encode(Config::GetInstance().GetUUID());
+	params << "&X-Plex-Product=Plex%20Home%20Theater";
+	params << "&X-Plex-Device=PC";
+	params << "&X-Plex-Platform=Plex%20Home%20Theater";
+	params << "&X-Plex-Model=Linux";
+	//params << "&X-Plex-Platform-Version=7";
+	//params << "&X-Plex-Version=1.2.12";
+	//params << "&X-Plex-Device-Name=" << "Plex%2FWeb%20(Chrome)";
+	
+	return pServer->GetUri() + params.str();
+}
+
+}
