@@ -2,127 +2,21 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 
-static const char *const PLUGINNAME = "plex";
-//////////////////////////////////////////////////////////////////////////////
-
-
-    /// vdr-plugin description.
-static const char *const DESCRIPTION = trNOOP("Plex for VDR Plugin");
-
-    /// vdr-plugin text of main menu entry
-static const char *MAINMENUENTRY = trNOOP("Plex for VDR");
-
 //////////////////////////////////////////////////////////////////////////////
 
 static char ConfigHideMainMenuEntry;	///< hide main menu entry
 char ConfigDisableRemote;		///< disable remote during external play
-
-static volatile int DoMakePrimary;	///< switch primary device to this
-
-//////////////////////////////////////////////////////////////////////////////
-//	C Callbacks
-//////////////////////////////////////////////////////////////////////////////
-
-
-/**
-**	Feed key press as remote input (called from C part).
-**
-**	@param keymap	target keymap "XKeymap" name
-**	@param key	pressed/released key name
-**	@param repeat	repeated key flag
-**	@param release	released key flag
-*/
-extern "C" void FeedKeyPress(const char *keymap, const char *key, int repeat,
-    int release)
-{
-    cRemote *remote;
-    cMyRemote *csoft;
-
-    if (!keymap || !key) {
-	return;
-    }
-    // find remote
-    for (remote = Remotes.First(); remote; remote = Remotes.Next(remote)) {
-	if (!strcmp(remote->Name(), keymap)) {
-	    break;
-	}
-    }
-    // if remote not already exists, create it
-    if (remote) {
-	csoft = static_cast<cMyRemote*>(remote);
-    } else {
-	dsyslog("[plex]%s: remote '%s' not found\n", __FUNCTION__, keymap);
-	csoft = new cMyRemote(keymap);
-    }
-
-    //dsyslog("[plex]%s %s, %s\n", __FUNCTION__, keymap, key);
-    if (key[1]) {			// no single character
-	csoft->Put(key, repeat, release);
-    } else if (!csoft->Put(key, repeat, release)) {
-	cRemote::Put(KBDKEY(key[0]));	// feed it for edit mode
-    }
-}
-
-/**
-**	Disable remotes.
-*/
-void RemoteDisable(void)
-{
-    dsyslog("[plex]: remote disabled\n");
-    cRemote::SetEnabled(false);
-}
-
-/**
-**	Enable remotes.
-*/
-void RemoteEnable(void)
-{
-    dsyslog("[plex]: remote enabled\n");
-    cRemote::SetEnabled(false);
-    cRemote::SetEnabled(true);
-}
-
-//////////////////////////////////////////////////////////////////////////////
-//	C Callbacks for diashow
-//////////////////////////////////////////////////////////////////////////////
-
-#if 0
-
-/**
-**	Draw rectangle.
-*/
-extern "C" void DrawRectangle(int x1, int y1, int x2, int y2, uint32_t argb)
-{
-    //GlobalDiashow->Osd->DrawRectangle(x1, y1, x2, y2, argb);
-}
-
-/**
-**	Draw text.
-**
-**	@param FIXME:
-*/
-extern "C" void DrawText(int x, int y, const char *s, uint32_t fg, uint32_t bg,
-    int w, int h, int align)
-{
-    const cFont *font;
-
-    font = cFont::GetFont(fontOsd);
-    //GlobalDiashow->Osd->DrawText(x, y, s, fg, bg, font, w, h, align);
-}
-
-#endif
-
 
 /**
 **	Play a file.
 **
 **	@param filename	path and file name
 */
-static void PlayFile(const char *filename)
+static void PlayFile(std::string filename, plexclient::Video* pVid)
 {
-    dsyslog("[plex]: play file '%s'\n", filename);
+    dsyslog("[plex]: play file '%s'\n", filename.c_str());
     //cControl::Launch(new cMyControl(filename));
-	cControl::Launch(new cHlsPlayerControl(new cHlsPlayer(filename), "Test Title"));
+	cControl::Launch(new cHlsPlayerControl(new cHlsPlayer(filename), pVid->m_sTitle.c_str()));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -252,12 +146,10 @@ eOSState cPlexBrowser::ProcessSelected() {
 	
 	if(item->IsVideo()) {
 		plexclient::Video* pVid = item->GetAttachedVideo();
-		fullUri = pService->GetServer()->GetUri() + pVid->m_pMedia->m_sPartKey;		
-		//PlayFile(fullUri.c_str());
-		//std::cout << "TrancodeUri: " << pService->GetTranscodeUrl(pVid) << std::endl;
+		fullUri = pService->GetServer()->GetUri() + pVid->m_pMedia->m_sPartKey;	
 		std::cout << "TrancodeUri: " << pService->GetUniversalTranscodeUrl(pVid) << std::endl;
 		
-		PlayFile(pService->GetUniversalTranscodeUrl(pVid).c_str());
+		PlayFile(pService->GetUniversalTranscodeUrl(pVid).c_str(), pVid);
 		return osEnd;
 	}
 	
@@ -395,16 +287,7 @@ const char *cMyPlugin::Version(void)
 */
 const char *cMyPlugin::Description(void)
 {
-    return tr(DESCRIPTION);
-}
-
-/**
-**	Return a string that describes all known command line options.
-**
-**	@returns command line help as constant string.
-*/
-const char *cMyPlugin::CommandLineHelp(void)
-{
+    return DESCRIPTION;
 }
 
 /**
@@ -412,6 +295,7 @@ const char *cMyPlugin::CommandLineHelp(void)
 */
 bool cMyPlugin::ProcessArgs(int argc, char *argv[])
 {
+	return true;
 }
 
 /**
@@ -449,7 +333,7 @@ bool cMyPlugin::Initialize(void)
 */
 const char *cMyPlugin::MainMenuEntry(void)
 {
-    return ConfigHideMainMenuEntry ? NULL : tr(MAINMENUENTRY);
+    return ConfigHideMainMenuEntry ? NULL : MAINMENUENTRY;
 }
 
 /**
@@ -466,56 +350,16 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
 }
 
 /**
-**	Receive requests or messages.
-**
-**	@param id	unique identification string that identifies the
-**			service protocol
-**	@param data	custom data structure
-*/
-bool cMyPlugin::Service(const char *id, void *data)
-{
-}
-
-/**
-**	Return SVDRP commands help pages.
-**
-**	return a pointer to a list of help strings for all of the plugin's
-**	SVDRP commands.
-*/
-const char **cMyPlugin::SVDRPHelpPages(void)
-{
-	return NULL;
-}
-
-/**
-**	Handle SVDRP commands.
-**
-**	@param command		SVDRP command
-**	@param option		all command arguments
-**	@param reply_code	reply code
-*/
-cString cMyPlugin::SVDRPCommand(const char *command, const char *option, int &reply_code)
-{
-    return NULL;
-}
-
-/**
 **	Called for every plugin once during every cycle of VDR's main program
 **	loop.
 */
 void cMyPlugin::MainThreadHook(void)
 {
     // dsyslog("[plex]%s:\n", __FUNCTION__);
-
-    if (DoMakePrimary) {
-	dsyslog("[plex]: switching primary device to %d\n", DoMakePrimary);
-	cDevice::SetPrimaryDevice(DoMakePrimary);
-	DoMakePrimary = 0;
-    }
 	// Start Tasks, e.g. Play Video
 	if(plexclient::ActionManager::GetInstance().IsAction()) {
 		std::string file = plexclient::ActionManager::GetInstance().GetAction();
-		PlayFile(file.c_str());
+		PlayFile(file, NULL);
 	}
 }
 

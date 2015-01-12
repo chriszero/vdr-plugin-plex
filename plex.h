@@ -24,6 +24,9 @@
 #include <iterator>
 #include <algorithm>
 
+static const char *DESCRIPTION = "Plex for VDR Plugin";
+static const char *MAINMENUENTRY = "Plex for VDR";
+
 /**
 **	Device plugin remote class.
 */
@@ -202,7 +205,6 @@ class cMyPlugin:public cPlugin
     virtual ~ cMyPlugin(void);
     virtual const char *Version(void);
     virtual const char *Description(void);
-    virtual const char *CommandLineHelp(void);
     virtual bool ProcessArgs(int, char *[]);
     virtual bool Initialize(void);
     virtual void MainThreadHook(void);
@@ -210,9 +212,6 @@ class cMyPlugin:public cPlugin
     virtual cOsdObject *MainMenuAction(void);
     virtual cMenuSetupPage *SetupMenu(void);
     virtual bool SetupParse(const char *, const char *);
-    virtual bool Service(const char *, void * = NULL);
-    virtual const char **SVDRPHelpPages(void);
-    virtual cString SVDRPCommand(const char *, const char *, int &);
 
 };
 
