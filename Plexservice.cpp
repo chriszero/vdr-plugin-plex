@@ -164,7 +164,7 @@ Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 
 	pRequest->add("User-Agent", USERAGENT);
 
-	pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
+	//pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
 	pRequest->add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
 	pRequest->add("X-Plex-Device", "PC");
 	pRequest->add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
@@ -188,7 +188,7 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
 
 	pRequest->add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
 
-	pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
+	//pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
 	pRequest->add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
 	pRequest->add("X-Plex-Device", "PC");
 	pRequest->add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
@@ -318,11 +318,11 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video)
 	params << "&videoQuality=100";
 	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
 	
-	params << "&X-Plex-Client-Identifier=" << encode(Config::GetInstance().GetUUID());
-	params << "&X-Plex-Product=Plex%20Home%20Theater";
-	params << "&X-Plex-Device=PC";
-	params << "&X-Plex-Platform=Plex%20Home%20Theater";
-	params << "&X-Plex-Model=Linux";
+	//params << "&X-Plex-Client-Identifier=" << encode(Config::GetInstance().GetUUID());
+	//params << "&X-Plex-Product=Plex%20Home%20Theater";
+	//params << "&X-Plex-Device=PC";
+	//params << "&X-Plex-Platform=Plex%20Home%20Theater";
+	//params << "&X-Plex-Model=Linux";
 	//params << "&X-Plex-Platform-Version=7";
 	//params << "&X-Plex-Version=1.2.12";
 	//params << "&X-Plex-Device-Name=" << "Plex%2FWeb%20(Chrome)";

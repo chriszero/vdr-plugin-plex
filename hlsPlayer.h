@@ -11,9 +11,11 @@
 #include <vdr/tools.h>
 
 #include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
 #include <Poco/URI.h>
 
 #include "m3u8Parser.h"
+#include "Config.h"
 
 class cHlsSegmentLoader : public cThread
 {
@@ -46,6 +48,7 @@ private:
 protected:
 	void Action(void);
 	bool DoLoad(void);
+	void AddHeader(Poco::Net::HTTPRequest& req);
 	bool StopLoader(void);
 
 public:

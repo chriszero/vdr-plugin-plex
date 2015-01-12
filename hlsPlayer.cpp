@@ -66,6 +66,7 @@ void cHlsSegmentLoader::LoadIndexList(void)
 		Poco::URI indexUri(startUri+m_startParser.vPlaylistItems[0].file);
 
 		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, indexUri.getPath());
+		AddHeader(request);
 		// same server
 		m_pClientSession->sendRequest(request);
 
@@ -90,6 +91,7 @@ void cHlsSegmentLoader::LoadStartList(void)
 	ConnectToServer();
 
 	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, m_startUri.getPathAndQuery());
+	AddHeader(request);
 	m_pClientSession->sendRequest(request);
 
 	Poco::Net::HTTPResponse responseStart;
@@ -122,6 +124,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 {
 	std::cout << "Loading Segment: " << segmentUri << "... ";
 	Poco::Net::HTTPRequest segmentRequest(Poco::Net::HTTPRequest::HTTP_GET, segmentUri);
+	AddHeader(segmentRequest);
 	m_pClientSession->sendRequest(segmentRequest);
 
 	Poco::Net::HTTPResponse segmentResponse;
@@ -158,6 +161,7 @@ int cHlsSegmentLoader::GetSegmentSize(int segmentIndex)
 		return m_indexParser.vPlaylistItems[segmentIndex].size;
 	}
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_HEAD, GetSegmentUri(segmentIndex));
+	AddHeader(req);
 	m_pClientSession->sendRequest(req);
 	Poco::Net::HTTPResponse reqResponse;
 	m_pClientSession->receiveResponse(reqResponse);
@@ -222,6 +226,14 @@ bool cHlsSegmentLoader::StopLoader(void)
 	Cancel();
 	
 	return reqResponse.getStatus() == 200;
+}
+void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
+{
+	req.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
+	req.add("X-Plex-Product", "Plex Home Theater");
+	req.add("X-Plex-Device", "PC");
+	req.add("X-Plex-Platform", "Plex Home Theater");
+	req.add("X-Plex-Model", "Linux");
 }
 
 //--- cHlsPlayer
