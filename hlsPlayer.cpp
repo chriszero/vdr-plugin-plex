@@ -43,8 +43,8 @@ void cHlsSegmentLoader::Action(void)
 
 	int estSize = EstimateSegmentSize();
 	m_ringBufferSize = MEGABYTE(estSize*3);
-
-	std::cout << "Create Ringbuffer " << estSize*3 << "MB" << std::endl;
+	
+	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*3);
 
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
@@ -102,7 +102,7 @@ void cHlsSegmentLoader::LoadStartList(void)
 		return;
 	}
 
-	m_startParser.Parse(startFile);
+	bool res = m_startParser.Parse(startFile);
 
 	pcrecpp::RE re("([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})", pcrecpp::RE_Options(PCRE_CASELESS));
 	string value;
@@ -112,6 +112,9 @@ void cHlsSegmentLoader::LoadStartList(void)
 
 int cHlsSegmentLoader::EstimateSegmentSize()
 {
+	if(&m_startParser.vPlaylistItems[0] == NULL) {
+		esyslog("[plex]%s first element NULL", __FUNCTION__);
+	}
 	double bandw = m_startParser.vPlaylistItems[0].bandwidth / 8.0 / 1000.0 / 1000.0;
 
 	int len = m_indexParser.TargetDuration;
@@ -121,8 +124,7 @@ int cHlsSegmentLoader::EstimateSegmentSize()
 }
 
 bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
-{
-	std::cout << "Loading Segment: " << segmentUri << "... ";
+{	
 	Poco::Net::HTTPRequest segmentRequest(Poco::Net::HTTPRequest::HTTP_GET, segmentUri);
 	AddHeader(segmentRequest);
 	m_pClientSession->sendRequest(segmentRequest);
@@ -132,10 +134,10 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 
 	if(segmentResponse.getStatus() != 200) {
 		// error
-		std::cout << "failed." << std::endl;
+		esyslog("[plex]%s Loading Segment: %s failed.", __FUNCTION__, segmentUri.c_str());
 		return false;
 	}
-	std::cout << "successfully." << std::endl;
+	dsyslog("[plex]%s Loading Segment: %s successfully.", __FUNCTION__, segmentUri.c_str());
 
 	// copy response
 
@@ -145,7 +147,8 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 	while(n > 0) {
 		m = m_pRingbuffer->Put(m_pBuffer, n);
 		if(m < n) {
-			// oops, this should not happen. Data doesn't fitted completly into ringbuffer
+			// 
+			esyslog("[plex]%s oops, this should not happen. Segment doesn't fitted completly into ringbuffer", __FUNCTION__);
 			break;
 		} else {
 			segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
@@ -157,6 +160,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 
 int cHlsSegmentLoader::GetSegmentSize(int segmentIndex)
 {
+	dsyslog("[plex]%s Segment %d", __FUNCTION__, segmentIndex);
 	if(m_indexParser.vPlaylistItems[segmentIndex].size > 0) {
 		return m_indexParser.vPlaylistItems[segmentIndex].size;
 	}
@@ -185,6 +189,7 @@ void cHlsSegmentLoader::CloseConnection(void)
 
 bool cHlsSegmentLoader::ConnectToServer(void)
 {
+	dsyslog("[plex]%s", __FUNCTION__);
 	if(!m_pClientSession)
 		m_pClientSession = new Poco::Net::HTTPClientSession(m_startUri.getHost(), m_startUri.getPort());
 
@@ -217,6 +222,7 @@ bool cHlsSegmentLoader::BufferFilled(void)
 
 bool cHlsSegmentLoader::StopLoader(void)
 {
+	dsyslog("[plex]%s", __FUNCTION__);
 	std::string stopUri = "/video/:/transcode/segmented/stop?session=" + m_sessionCookie;
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
 	m_pClientSession->sendRequest(req);
@@ -307,6 +313,7 @@ bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame)
 
 bool cHlsPlayer::GetReplayMode(bool& Play, bool& Forward, int& Speed)
 {
+	dsyslog("[plex]%s", __FUNCTION__);
 	Play = (playMode == pmPlay);
 	Forward = true;
 	Speed = -1;
@@ -315,7 +322,7 @@ bool cHlsPlayer::GetReplayMode(bool& Play, bool& Forward, int& Speed)
 
 void cHlsPlayer::Pause(void)
 {
-	// from vdr-1.7.34
+	dsyslog("[plex]%s", __FUNCTION__);
 	if (playMode == pmPause) {
 		Play();
 	} else {
@@ -328,7 +335,7 @@ void cHlsPlayer::Pause(void)
 
 void cHlsPlayer::Play(void)
 {
-	// from vdr-1.7.34
+	dsyslog("[plex]%s", __FUNCTION__);
 	if (playMode != pmPlay) {
 		LOCK_THREAD;
 

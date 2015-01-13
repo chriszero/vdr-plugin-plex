@@ -93,8 +93,7 @@ void ResourceRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 	
 	response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
 
-	
-	std::cout << "Resources Response sent..." << std::endl;
+	dsyslog("[plex]Resources Response sent...");
 }
 
 void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response){
@@ -112,7 +111,7 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 		std::ostream& ostr = response.send(); // Stream must not be empty!
 		ostr << " ";
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
-		std::cout << "OPTION Reply send" << std::endl;
+		dsyslog("[plex]OPTION Reply send");
 		return;
 	} 
 	

@@ -14,7 +14,7 @@ char ConfigDisableRemote;		///< disable remote during external play
 */
 static void PlayFile(std::string filename, plexclient::Video* pVid)
 {
-    dsyslog("[plex]: play file '%s'\n", filename.c_str());
+    isyslog("[plex]: play file '%s'\n", filename.c_str());
     //cControl::Launch(new cMyControl(filename));
 	cControl::Launch(new cHlsPlayerControl(new cHlsPlayer(filename), pVid->m_sTitle.c_str()));
 }
@@ -26,15 +26,6 @@ static void PlayFile(std::string filename, plexclient::Video* pVid)
 
 static char ShowBrowser;		///< flag show browser
 static plexclient::PlexServer* pPlexServer;
-/*
-static const char *BrowserStartDir;	///< browser start directory
-static const NameFilter *BrowserFilters;	///< browser name filters
-static int DirStackSize;		///< size of directory stack
-static int DirStackUsed;		///< entries used of directory stack
-static char **DirStack;			///< current path directory stack
-
-*/
-
 
 cPlexBrowser::cPlexBrowser(const char *title, plexclient::PlexServer* pServ) :cOsdMenu(title) {
 		
@@ -127,7 +118,6 @@ eOSState cPlexBrowser::LevelUp() {
 				uri += "/";
 			}
 		}
-	std::cout << "m_sSection: " << uri << std::endl;
 	
 	pCont = pService->GetSection(uri);
 	
@@ -136,19 +126,12 @@ eOSState cPlexBrowser::LevelUp() {
 }
 
 eOSState cPlexBrowser::ProcessSelected() {
-    std::string fullUri;
-    //char *filename;
-    //char *tmp;
-
     int current = Current();		// get current menu item index
     cPlexOsdItem *item = static_cast<cPlexOsdItem*>(Get(current));
 	
 	
 	if(item->IsVideo()) {
-		plexclient::Video* pVid = item->GetAttachedVideo();
-		fullUri = pService->GetServer()->GetUri() + pVid->m_pMedia->m_sPartKey;	
-		std::cout << "TrancodeUri: " << pService->GetUniversalTranscodeUrl(pVid) << std::endl;
-		
+		plexclient::Video* pVid = item->GetAttachedVideo();		
 		PlayFile(pService->GetUniversalTranscodeUrl(pVid).c_str(), pVid);
 		return osEnd;
 	}
@@ -303,12 +286,6 @@ bool cMyPlugin::ProcessArgs(int argc, char *argv[])
 */
 bool cMyPlugin::Initialize(void)
 {
-    //dsyslog("[plex]%s:\n", __FUNCTION__);
-
-    // FIXME: can delay until needed?
-    //Status = new cMyStatus;		// start monitoring
-    // FIXME: destructs memory
-	
 	// First Startup? Save UUID 
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
 	
@@ -321,8 +298,7 @@ bool cMyPlugin::Initialize(void)
 		plexclient::ControlServer::GetInstance().Start();
 		
 	} else {
-		perror("No Plexserver found");
-		std::cout << "No Plexmediaserver found" << std::endl;
+		esyslog("[plex]No Plexmediaserver found");
 	}
 
     return true;
@@ -344,7 +320,7 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
     //dsyslog("[plex]%s:\n", __FUNCTION__);
 
     if (ShowBrowser) {
-		return new cPlexBrowser("Newest", pPlexServer);
+		return new cPlexBrowser("Browse Plex", pPlexServer);
     }
     return new cPlayMenu("Plex");
 }

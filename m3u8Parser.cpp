@@ -1,5 +1,6 @@
 #include "m3u8Parser.h"
 #include <pcrecpp.h>
+#include <vdr/tools.h>
 
 cM3u8Parser::cM3u8Parser()
 {
@@ -38,9 +39,15 @@ bool cM3u8Parser::Parse(std::istream& m3u8)
 
 	while (std::getline(m3u8, line)) {
 		if(lineNo == 0 && "#EXTM3U" == line ) {
+			lineNo++;
+			continue;
+		} else if(lineNo == 0) {
 			// Invalid File
 			ok = false;
-			continue;
+			esyslog("[plex]%s m3u8 is invalid. dumping File:", __FUNCTION__);
+			esyslog("[plex]%s", line.c_str());
+			eDump(m3u8);
+			break;
 		}
 
 		if( re.FullMatch(line) ) {
@@ -97,6 +104,14 @@ bool cM3u8Parser::Parse(std::istream& m3u8)
 		lineNo++;
 	}
 	return ok;
+}
+
+void cM3u8Parser::eDump(std::istream &m3u8)
+{
+	std::string line;
+	while (std::getline(m3u8, line)) {
+		esyslog("[plex]%s", line.c_str());
+	}
 }
 
 /*

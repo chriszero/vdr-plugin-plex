@@ -317,15 +317,7 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video)
 	params << "&videoResolution=1920x1080";
 	params << "&videoQuality=100";
 	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
-	
-	//params << "&X-Plex-Client-Identifier=" << encode(Config::GetInstance().GetUUID());
-	//params << "&X-Plex-Product=Plex%20Home%20Theater";
-	//params << "&X-Plex-Device=PC";
-	//params << "&X-Plex-Platform=Plex%20Home%20Theater";
-	//params << "&X-Plex-Model=Linux";
-	//params << "&X-Plex-Platform-Version=7";
-	//params << "&X-Plex-Version=1.2.12";
-	//params << "&X-Plex-Device-Name=" << "Plex%2FWeb%20(Chrome)";
+
 	
 	return pServer->GetUri() + params.str();
 }

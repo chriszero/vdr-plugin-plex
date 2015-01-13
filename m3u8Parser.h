@@ -17,6 +17,7 @@ public:
 	};
 private:
 	void Init();
+	void eDump(std::istream &m3u8);
 
 public:
 	std::vector<playListItem> vPlaylistItems;

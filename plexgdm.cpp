@@ -101,7 +101,6 @@ try {
 }
 	catch(Poco::Exception &exc){
 		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
-		std::cout << "[plex]Exception: in " << __func__ << " | " << exc.displayText() << std::endl;
 	}
 
 }
@@ -130,12 +129,10 @@ void plexgdm::discover()
 			if(buf.find("200 OK") != std::string::npos) {
 				vBuffer[sender.host().toString()] = buf;
 			}
-			//std::cout << "Discover received from: " << sender.host().toString() << "\nData:\n" << buf << std::endl;
 		}
 	}
 	catch(Poco::TimeoutException &exc){
-		//dsyslog("[plex]TimeoutException in %s s%", __func__, exc.displayText().c_str() );
-		std::cout << "[plex]TimeoutException: in " << __func__ << " | " << exc.displayText() << std::endl;
+		dsyslog("[plex]TimeoutException in %s s%", __func__, exc.displayText().c_str() );
 	}
 	
 	socket.close();
@@ -151,7 +148,6 @@ void plexgdm::discover()
 
 void plexgdm::stopRegistration()
 {
-	std::cout << "stop Reg" << std::endl;
 	if(m_registrationIsRunning) {
 		m_registrationIsRunning = false;
 		m_waitCondition.Broadcast();
