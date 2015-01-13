@@ -38,8 +38,8 @@ private:
 
 	bool ConnectToServer(void);
 	void CloseConnection(void);
-	void LoadStartList(void);
-	void LoadIndexList(void);
+	bool LoadStartList(void);
+	bool LoadIndexList(void);
 	std::string GetSegmentUri(int segmentIndex) const;
 	int GetSegmentSize(int segmentIndex);
 	bool LoadSegment(std::string uri);

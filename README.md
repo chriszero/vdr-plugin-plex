@@ -7,5 +7,5 @@ A Plex plugin for Linux VDR
 Plays files via the Plexmediaserver transcoder directly in VDR 
 
 deps:
-libpoco
+libpoco >= 1.4
 libpcrepp
