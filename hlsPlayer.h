@@ -49,14 +49,15 @@ protected:
 	void Action(void);
 	bool DoLoad(void);
 	void AddHeader(Poco::Net::HTTPRequest& req);
-	bool StopLoader(void);
 
 public:
 	cHlsSegmentLoader(std::string startm3u8);
 	~cHlsSegmentLoader();
 
 	cRingBufferLinear*  m_pRingbuffer;
-	bool BufferFilled();
+	bool BufferFilled(void);
+	bool Active(void);
+	bool StopLoader(void);
 };
 
 class cHlsPlayer : public cPlayer, cThread
@@ -87,6 +88,8 @@ public:
 	virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
 	void Pause(void);
 	void Play(void);
+	void Stop(void);
+	bool Active(void);
 
 };
 

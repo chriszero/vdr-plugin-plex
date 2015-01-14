@@ -9,8 +9,13 @@
 class cHlsPlayerControl : public cControl
 {
 private:
-	cHlsPlayer* m_pPlayer;
+	cHlsPlayer* player;
 	std::string m_title;
+	
+	bool visible;
+
+protected:
+	//void ShowMode();
 
 public:
 	cHlsPlayerControl(cHlsPlayer* Player, std::string title);
@@ -20,7 +25,14 @@ public:
 	virtual void Hide(void);
 
 	virtual cString GetHeader(void);
-	//virtual eOSState ProcessKey(eKeys Key);
+	virtual eOSState ProcessKey(eKeys Key);
+
+	bool Active(void);
+
+	void Pause(void);
+	void Play(void);
+	void Stop(void);
+
 
 };
 

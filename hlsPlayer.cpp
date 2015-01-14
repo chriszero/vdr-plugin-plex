@@ -2,7 +2,7 @@
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/StreamCopier.h>
+//#include <Poco/StreamCopier.h>
 
 #include <pcrecpp.h>
 
@@ -118,6 +118,7 @@ bool cHlsSegmentLoader::LoadStartList(void)
 
 	res = m_startParser.Parse(startFile);
 	if(res) {
+		// Get GUID
 		pcrecpp::RE re("([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})", pcrecpp::RE_Options(PCRE_CASELESS));
 		string value;
 		re.PartialMatch(m_startParser.vPlaylistItems[0].file, &value);
@@ -239,7 +240,7 @@ bool cHlsSegmentLoader::BufferFilled(void)
 bool cHlsSegmentLoader::StopLoader(void)
 {
 	dsyslog("[plex]%s", __FUNCTION__);
-	std::string stopUri = "/video/:/transcode/segmented/stop?session=" + m_sessionCookie;
+	std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
 	m_pClientSession->sendRequest(req);
 	Poco::Net::HTTPResponse reqResponse;
@@ -256,6 +257,11 @@ void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
 	req.add("X-Plex-Device", "PC");
 	req.add("X-Plex-Platform", "Plex Home Theater");
 	req.add("X-Plex-Model", "Linux");
+}
+
+bool cHlsSegmentLoader::Active(void)
+{
+	return Running();
 }
 
 //--- cHlsPlayer
@@ -358,4 +364,16 @@ void cHlsPlayer::Play(void)
 		DevicePlay();
 		playMode = pmPlay;
 	}
+}
+
+bool cHlsPlayer::Active(void)
+{
+	return Running() && m_pSegmentLoader && m_pSegmentLoader->Active();
+}
+
+void cHlsPlayer::Stop(void)
+{
+	if (m_pSegmentLoader)
+		m_pSegmentLoader->StopLoader();
+	Cancel(1);
 }
