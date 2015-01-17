@@ -12,6 +12,7 @@ cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
 {
 	m_bufferFilled = false;
 	m_lastLoadedSegment = 0;
+	m_loadedSegments = 0;
 	m_segmentsToBuffer = 3;
 	m_pBuffer = new uchar[8192];
 
@@ -55,7 +56,7 @@ void cHlsSegmentLoader::Action(void)
 	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*3);
 
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
-
+	
 	while(Running()) {
 		DoLoad();
 		cCondWait::SleepMs(3);
@@ -94,6 +95,12 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 			// Segment URI is relative to index.m3u8
 			std::string path = indexUri.getPath();
 			m_segmentUriPart = path.substr(0, path.find_last_of("/")+1);
+		}
+		if(m_indexParser.TargetDuration > 3) {
+			m_segmentsToBuffer = 1;
+		}
+		else {
+			m_segmentsToBuffer = 2;
 		}
 	}
 	return res;
@@ -136,7 +143,7 @@ int cHlsSegmentLoader::EstimateSegmentSize()
 
 	int len = m_indexParser.TargetDuration;
 	double estSize = (bandw) * len;
-	estSize = max(estSize, 16.0); // default
+	estSize = max(estSize, 1.0); // default
 	return ceil(estSize);
 }
 
@@ -177,7 +184,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 
 int cHlsSegmentLoader::GetSegmentSize(int segmentIndex)
 {
-	dsyslog("[plex]%s Segment %d", __FUNCTION__, segmentIndex);
+	//dsyslog("[plex]%s Segment %d", __FUNCTION__, segmentIndex);
 	if(m_indexParser.vPlaylistItems[segmentIndex].size > 0) {
 		return m_indexParser.vPlaylistItems[segmentIndex].size;
 	}
@@ -221,12 +228,15 @@ bool cHlsSegmentLoader::DoLoad(void)
 	while(m_pRingbuffer->Free() > nextSegmentSize) {
 
 		if(m_lastLoadedSegment + 1 <  m_indexParser.vPlaylistItems.size()) {
-			std::string segmentUri = GetSegmentUri(m_lastLoadedSegment + 1);
+			std::string segmentUri = GetSegmentUri(++m_lastLoadedSegment);
 			result = LoadSegment(segmentUri);
-			m_lastLoadedSegment++;
+			m_loadedSegments++;
 		} else {
 			// out of segments
+			StopLoader();
+			result = false;
 		}
+		m_bufferFilled = m_lastLoadedSegment >= m_segmentsToBuffer;
 		nextSegmentSize = GetSegmentSize(m_lastLoadedSegment + 1);
 	}
 	return m_bufferFilled = result;
@@ -266,9 +276,10 @@ bool cHlsSegmentLoader::Active(void)
 
 //--- cHlsPlayer
 
-cHlsPlayer::cHlsPlayer(std::string startm3u8)
+cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
 {
 	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8);
+	m_pVideo = Video;
 }
 
 cHlsPlayer::~cHlsPlayer()
@@ -327,15 +338,14 @@ void cHlsPlayer::Activate(bool On)
 
 bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame)
 {
-	Total = 9999;
-	Current = -1;
+	long stc = DeviceGetSTC();
+	Total = m_pVideo->m_pMedia->m_lDuration / 1000 * FramesPerSecond(); // milliseconds
+	Current = stc / (100 * 1000) * FramesPerSecond(); // 100ns per Tick
 	return true;
-
 }
 
 bool cHlsPlayer::GetReplayMode(bool& Play, bool& Forward, int& Speed)
 {
-	dsyslog("[plex]%s", __FUNCTION__);
 	Play = (playMode == pmPlay);
 	Forward = true;
 	Speed = -1;
@@ -376,4 +386,9 @@ void cHlsPlayer::Stop(void)
 	if (m_pSegmentLoader)
 		m_pSegmentLoader->StopLoader();
 	Cancel(1);
+}
+
+double cHlsPlayer::FramesPerSecond(void)
+{
+	return m_pVideo->m_pMedia->m_VideoFrameRate ? m_pVideo->m_pMedia->m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
 }

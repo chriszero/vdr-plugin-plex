@@ -17,6 +17,7 @@
 
 #include "XmlObject.h"
 #include "Media.h"
+#include "PlexServer.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::Document;
@@ -28,11 +29,11 @@ using Poco::Exception;
 
 namespace plexclient
 {
-
+	
 class Video: XmlObject
 {
 public:
-	Video(Poco::XML::Node* pNode);
+	Video(Poco::XML::Node* pNode, PlexServer* Server);
 	~Video();
 
 public:
@@ -60,7 +61,7 @@ public:
 	std::vector<std::string> m_vRole;
 	std::string m_sCollection;
 	Media *m_pMedia;
-
+	PlexServer* m_pServer;
 };
 
 }

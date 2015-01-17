@@ -14,7 +14,6 @@
 #include "Plexservice.h"
 
 #include "plexgdm.h"
-#include "play_service.h"
 #include "cPlexOsdItem.h"
 #include "hlsPlayerControl.h"
 

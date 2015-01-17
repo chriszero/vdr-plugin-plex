@@ -46,7 +46,7 @@ public:
 	std::string m_sAudioCodec;
 	std::string m_sVideoCodec;
 	std::string m_sContainer;
-	std::string m_sVideoFrameRate;
+	double m_VideoFrameRate;
 
 	std::string m_sPartKey;
 	int m_iPartId;

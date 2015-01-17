@@ -66,12 +66,10 @@ try {
 	// Send initial Client Registration
 
 	std::string s = Poco::format("HELLO %s\n%s", _clientHeader, _clientData);
-	//std::cout << "SendTo:\n" << s << std::endl;
 	update_sock.sendTo(s.c_str(), s.length(), m_clientRegisterGroup,0);
 
 
 	while(m_registrationIsRunning) {
-		//std::cout << "cUpd running " << m_registrationIsRunning << std::endl;
 		Poco::Net::SocketAddress sender;
 		int n = 0;
 		try {
@@ -82,7 +80,7 @@ try {
 		if(n > 0) {
 			std::string buf(buffer, n);
 			if (buf.find("M-SEARCH * HTTP/1.") != std::string::npos) {
-				std::cout << "Detected client discovery request from " << sender.host().toString() << " Replying..." << std::endl;
+				dsyslog("[plex]: Detected client discovery request from %s",sender.host().toString().c_str());
 				s = Poco::format("HTTP/1.0 200 OK\n%s", _clientData);
 				update_sock.sendTo(s.c_str(), s.length(), sender);
 				m_clientRegistered = true;
@@ -94,7 +92,6 @@ try {
 
 	// unregister from Server
 	s = Poco::format("BYE %s\n%s", _clientHeader, _clientData);
-	//std::cout << "Unregister: \n" << s << std::endl;
 	update_sock.sendTo(s.c_str(), s.length(), m_clientRegisterGroup,0);
 
 	m_clientRegistered = false;

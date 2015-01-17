@@ -2,7 +2,7 @@
 
 namespace plexclient
 {
-MediaContainer::MediaContainer(std::istream* response)
+MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 {
 	try {
 		InputSource src(*response);
@@ -32,7 +32,7 @@ MediaContainer::MediaContainer(std::istream* response)
 			} else if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
 				m_vDirectories.push_back(Directory(pNode));
 			} else if(Poco::icompare(pNode->nodeName(), "Video") == 0) {
-				m_vVideos.push_back(Video(pNode));
+				m_vVideos.push_back(Video(pNode, Server));
 			}
 
 			pNode = it.nextNode();

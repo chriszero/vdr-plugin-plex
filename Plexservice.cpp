@@ -146,7 +146,7 @@ MediaContainer* Plexservice::GetSection(std::string section)
 
 		dsyslog("[plex] URI: %s[s%]", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
 
-		MediaContainer* pAllsections = new MediaContainer(&rs);
+		MediaContainer* pAllsections = new MediaContainer(&rs, this->pServer);
 		//Poco::StreamCopier::copyStream(rs, std::cout);
 		delete pRequest;
 		return pAllsections;
@@ -205,12 +205,12 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
 	Poco::Net::HTTPResponse response;
 	std::istream &rs = session->receiveResponse(response);
 
-	std::cout << "URI: " << session->getHost() << "[" << pRequest->getURI() << "]" << std::endl;
+	//std::cout << "URI: " << session->getHost() << "[" << pRequest->getURI() << "]" << std::endl;
 
 	delete pRequest;
 	delete session;
-
-	MediaContainer* pAllsections = new MediaContainer(&rs);
+	
+	MediaContainer* pAllsections = new MediaContainer(&rs, new PlexServer(fileuri.getHost(), fileuri.getPort()));
 	//Poco::StreamCopier::copyStream(rs, std::cout);
 	return pAllsections;
 }

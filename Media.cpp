@@ -23,7 +23,7 @@ Media::Media(Poco::XML::Node* pNode)
 			m_sAudioCodec = GetNodeValue(pAttribs->getNamedItem("audioCodec"));
 			m_sVideoCodec = GetNodeValue(pAttribs->getNamedItem("videoCodec"));
 			m_sContainer = GetNodeValue(pAttribs->getNamedItem("container"));
-			m_sVideoFrameRate = GetNodeValue(pAttribs->getNamedItem("videoFrameRate"));
+			m_VideoFrameRate = GetNodeValueAsDouble(pAttribs->getNamedItem("videoFrameRate"));
 
 
 			pAttribs->release();

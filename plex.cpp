@@ -12,11 +12,10 @@ char ConfigDisableRemote;		///< disable remote during external play
 **
 **	@param filename	path and file name
 */
-static void PlayFile(std::string filename, plexclient::Video* pVid)
+static void PlayFile(plexclient::Video* pVid)
 {
-    isyslog("[plex]: play file '%s'\n", filename.c_str());
-    //cControl::Launch(new cMyControl(filename));
-	cControl::Launch(new cHlsPlayerControl(new cHlsPlayer(filename), pVid->m_sTitle.c_str()));
+    isyslog("[plex]: play file '%s'\n", pVid->m_sKey.c_str());
+	cControl::Launch(cHlsPlayerControl::Create(pVid));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -132,7 +131,7 @@ eOSState cPlexBrowser::ProcessSelected() {
 	
 	if(item->IsVideo()) {
 		plexclient::Video* pVid = item->GetAttachedVideo();		
-		PlayFile(pService->GetUniversalTranscodeUrl(pVid).c_str(), pVid);
+		PlayFile(pVid);
 		return osEnd;
 	}
 	
@@ -335,7 +334,7 @@ void cMyPlugin::MainThreadHook(void)
 	// Start Tasks, e.g. Play Video
 	if(plexclient::ActionManager::GetInstance().IsAction()) {
 		std::string file = plexclient::ActionManager::GetInstance().GetAction();
-		PlayFile(file, NULL);
+		//PlayFile(file, NULL);
 	}
 }
 

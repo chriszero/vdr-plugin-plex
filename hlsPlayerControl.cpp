@@ -1,9 +1,39 @@
 #include "hlsPlayerControl.h"
 
-cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, std::string title) :cControl(Player)
+#include <vdr/status.h>
+
+#include "PlexServer.h"
+#include "Plexservice.h"
+
+// static
+cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
+{
+	if(!Video->m_pServer)
+		return NULL;
+
+	plexclient::Plexservice service(Video->m_pServer);
+	service.Authenticate();
+	std::string transcodeUri = service.GetUniversalTranscodeUrl(Video);
+
+	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, Video), Video);
+	playerControl->m_title = Video->m_sTitle;
+	return playerControl;
+}
+
+cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video* Video) :cControl(Player)
 {
 	player = Player;
-	m_title = title;
+	m_pVideo = Video;
+	//m_title = title;
+
+	displayReplay = NULL;
+	visible = modeOnly = shown = false;
+	lastCurrent = lastTotal = -1;
+	lastPlay = lastForward = false;
+	lastSpeed = -2; // an invalid value
+	timeoutShow = 0;
+
+	cStatus::MsgReplaying(this, m_title.c_str(), NULL, true);
 }
 
 cHlsPlayerControl::~cHlsPlayerControl()
@@ -17,10 +47,22 @@ cString cHlsPlayerControl::GetHeader(void)
 
 void cHlsPlayerControl::Hide(void)
 {
+	if (visible) {
+		delete displayReplay;
+		displayReplay = NULL;
+		SetNeedsFastResponse(false);
+		visible = false;
+		modeOnly = false;
+		lastPlay = lastForward = false;
+		lastSpeed = -2; // an invalid value
+		//timeSearchActive = false;
+		timeoutShow = 0;
+	}
 }
 
 void cHlsPlayerControl::Show(void)
 {
+	ShowTimed();
 }
 
 eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
@@ -36,6 +78,17 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 		else
 			Key = Play ? kPause : kPlay;
 	}
+	if (visible) {
+		if (timeoutShow && time(NULL) > timeoutShow) {
+			Hide();
+			ShowMode();
+			timeoutShow = 0;
+		} else if (modeOnly)
+			ShowMode();
+		else
+			shown = ShowProgress(!shown) || shown;
+	}
+	bool DoShowMode = true;
 	switch (int(Key)) {
 		// Positioning:
 	case kPlay:
@@ -76,7 +129,32 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 		Hide();
 		Stop();
 		return osEnd;
+	default: {
+		DoShowMode = false;
+		switch (int(Key)) {
+		default: {
+			switch (Key) {
+			case kOk:
+				if (visible && !modeOnly) {
+					Hide();
+					DoShowMode = true;
+				} else
+					Show();
+				break;
+			case kBack:
+				Hide();
+				//menu = new cTitleMenu(this);
+				break;
+			default:
+				return osUnknown;
+			}
+		}
+		}
 	}
+	if (DoShowMode)
+		ShowMode();
+	}
+
 	return osContinue;
 }
 
@@ -101,4 +179,86 @@ void cHlsPlayerControl::Stop(void)
 {
 	if(player)
 		player->Stop();
+}
+
+void cHlsPlayerControl::ShowMode(void)
+{
+	//dsyslog("[plex]: '%s'\n", __FUNCTION__);
+	if (visible || Setup.ShowReplayMode && !cOsd::IsOpen()) {
+		bool Play, Forward;
+		int Speed;
+		if (GetReplayMode(Play, Forward, Speed) && (!visible || Play != lastPlay || Forward != lastForward || Speed != lastSpeed)) {
+			bool NormalPlay = (Play && Speed == -1);
+
+			if (!visible) {
+				if (NormalPlay)
+					return; // no need to do indicate ">" unless there was a different mode displayed before
+				visible = modeOnly = true;
+				displayReplay = Skins.Current()->DisplayReplay(modeOnly);
+			}
+
+			if (modeOnly && !timeoutShow && NormalPlay)
+				timeoutShow = time(NULL) + 3;
+			displayReplay->SetMode(Play, Forward, Speed);
+			lastPlay = Play;
+			lastForward = Forward;
+			lastSpeed = Speed;
+		}
+	}
+}
+
+bool cHlsPlayerControl::ShowProgress(bool Initial)
+{
+	int Current, Total;
+
+	if (GetIndex(Current, Total) && Total > 0) {
+		if (!visible) {
+			displayReplay = Skins.Current()->DisplayReplay(modeOnly);
+			//displayReplay->SetMarks(player->Marks());
+			SetNeedsFastResponse(true);
+			visible = true;
+		}
+		if (Initial) {
+			lastCurrent = lastTotal = -1;
+		}
+		if (Current != lastCurrent || Total != lastTotal) {
+			if (Total != lastTotal) {
+				int Index = Total;
+				displayReplay->SetTotal(IndexToHMSF(Index, false, FramesPerSecond()));
+				if (!Initial)
+					displayReplay->Flush();
+			}
+			displayReplay->SetProgress(Current, Total);
+			if (!Initial)
+				displayReplay->Flush();
+			displayReplay->SetCurrent(IndexToHMSF(Current, false, FramesPerSecond()));
+
+			cString Title;
+			//cString Pos = player ? player->PosStr() : cString(NULL);
+			//if (*Pos && strlen(Pos) > 1) {
+			//	Title = cString::sprintf("%s (%s)", m_title.c_str(), *Pos);
+			//} else {
+			Title = m_title.c_str();
+			//}
+			displayReplay->SetTitle(Title);
+
+			displayReplay->Flush();
+			lastCurrent = Current;
+		}
+		lastTotal = Total;
+		ShowMode();
+		return true;
+	}
+	return false;
+}
+
+void cHlsPlayerControl::ShowTimed(int Seconds)
+{
+	if (modeOnly)
+		Hide();
+	if (!visible) {
+		shown = ShowProgress(true);
+		timeoutShow = (shown && Seconds > 0) ? time(NULL) + Seconds : 0;
+	} else if (timeoutShow && Seconds > 0)
+		timeoutShow = time(NULL) + Seconds;
 }

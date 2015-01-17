@@ -16,6 +16,8 @@
 
 #include "m3u8Parser.h"
 #include "Config.h"
+#include "PVideo.h"
+#include "Media.h"
 
 class cHlsSegmentLoader : public cThread
 {
@@ -23,6 +25,7 @@ private:
 	int m_ringBufferSize;
 	int m_segmentsToBuffer;
 	unsigned int m_lastLoadedSegment;
+	unsigned int m_loadedSegments;
 	bool m_bufferFilled;
 
 	uchar* m_pBuffer;
@@ -64,6 +67,7 @@ class cHlsPlayer : public cPlayer, cThread
 {
 private:
 	cHlsSegmentLoader* m_pSegmentLoader;
+	plexclient::Video* m_pVideo;
 
 	int m_videoLenght;
 	int m_actualSegment;
@@ -81,11 +85,12 @@ protected:
 
 
 public:
-	cHlsPlayer(std::string startm3u8);
+	cHlsPlayer(std::string startm3u8, plexclient::Video* Video);
 	~cHlsPlayer();
 
 	virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);
 	virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
+	virtual double FramesPerSecond(void);	
 	void Pause(void);
 	void Play(void);
 	void Stop(void);

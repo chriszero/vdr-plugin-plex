@@ -1,16 +1,8 @@
 #include "XmlObject.h"
+#include <vdr/tools.h>
 
 namespace plexclient
 {
-
-XmlObject::XmlObject()
-{
-}
-
-XmlObject::~XmlObject()
-{
-}
-
 std::string XmlObject::GetNodeValue(Poco::XML::Node* pNode)
 {
 	std::string value;
@@ -37,6 +29,17 @@ long XmlObject::GetNodeValueAsLong(Poco::XML::Node* pNode)
 	if(pNode != 0) {
 		try {
 			value = atol(pNode->getNodeValue().c_str());
+		} catch(Poco::Exception) {}
+	}
+	return value;
+}
+
+double XmlObject::GetNodeValueAsDouble(Poco::XML::Node* pNode)
+{
+	double value = 0;
+	if(pNode != 0) {
+		try {
+			value = atod(pNode->getNodeValue().c_str());
 		} catch(Poco::Exception) {}
 	}
 	return value;

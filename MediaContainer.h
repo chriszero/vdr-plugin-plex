@@ -17,6 +17,7 @@
 #include "XmlObject.h"
 #include "Directory.h"
 #include "PVideo.h"
+#include "PlexServer.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::InputSource;
@@ -29,11 +30,11 @@ using Poco::Exception;
 
 namespace plexclient
 {
-
+	
 class MediaContainer: XmlObject
 {
 public:
-	MediaContainer(std::istream *response);
+	MediaContainer(std::istream *response, PlexServer* Server);
 
 	~MediaContainer();
 

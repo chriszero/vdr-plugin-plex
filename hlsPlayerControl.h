@@ -5,20 +5,33 @@
 #include <vdr/tools.h>
 
 #include "hlsPlayer.h"
+#include "PVideo.h"
 
 class cHlsPlayerControl : public cControl
 {
 private:
+	static volatile int active;
+	plexclient::Video* m_pVideo;
 	cHlsPlayer* player;
 	std::string m_title;
-	
-	bool visible;
+
+	cSkinDisplayReplay *displayReplay;
+	bool visible, modeOnly, shown;
+	int lastCurrent, lastTotal;
+	bool lastPlay, lastForward;
+	int lastSpeed;
+	time_t timeoutShow;
+
+	void ShowMode(void);
+	bool ShowProgress(bool Initial);
+	void ShowTimed(int Seconds = 0);
 
 protected:
 	//void ShowMode();
 
 public:
-	cHlsPlayerControl(cHlsPlayer* Player, std::string title);
+	static cControl* Create(plexclient::Video* Video);
+	cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video* Video);
 	virtual ~cHlsPlayerControl();
 
 	virtual void Show(void);
