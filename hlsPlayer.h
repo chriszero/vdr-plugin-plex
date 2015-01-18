@@ -68,6 +68,11 @@ class cHlsPlayer : public cPlayer, cThread
 private:
 	cHlsSegmentLoader* m_pSegmentLoader;
 	plexclient::Video* m_pVideo;
+	cMutex s_mutex;
+	
+	int m_jumpOffset;
+	int m_timeOffset;
+	bool m_doJump;
 
 	int m_videoLenght;
 	int m_actualSegment;
@@ -95,6 +100,8 @@ public:
 	void Play(void);
 	void Stop(void);
 	bool Active(void);
+	void JumpTo(int seconds);
+	void JumpRelative(int seconds);
 
 };
 

@@ -6,6 +6,8 @@
 
 #include <pcrecpp.h>
 
+#include "Plexservice.h"
+
 //--- cHlsSegmentLoader
 
 cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
@@ -43,8 +45,7 @@ void cHlsSegmentLoader::Action(void)
 		if( false == LoadIndexList() ) {
 			esyslog("[plex]LoadIndexList failed!");
 		}
-	}
-	else {
+	} else {
 		esyslog("[plex]LoadStartList failed!");
 		return;
 	}
@@ -56,7 +57,7 @@ void cHlsSegmentLoader::Action(void)
 	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*3);
 
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
-	
+
 	while(Running()) {
 		DoLoad();
 		cCondWait::SleepMs(3);
@@ -98,8 +99,7 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 		}
 		if(m_indexParser.TargetDuration > 3) {
 			m_segmentsToBuffer = 1;
-		}
-		else {
+		} else {
 			m_segmentsToBuffer = 2;
 		}
 	}
@@ -280,6 +280,8 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
 {
 	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8);
 	m_pVideo = Video;
+	m_timeOffset = 0;
+	m_doJump = false;
 }
 
 cHlsPlayer::~cHlsPlayer()
@@ -294,7 +296,21 @@ void cHlsPlayer::Action(void)
 	m_pSegmentLoader->Start();
 
 	while (Running()) {
-		if(m_pSegmentLoader->BufferFilled()) {
+		if(m_doJump && m_pSegmentLoader) {
+			DeviceFreeze();
+			int currentOffset = DeviceGetSTC() / (100 * 1000);
+			m_pSegmentLoader->StopLoader();
+			delete m_pSegmentLoader;
+			
+			std::string uri = plexclient::Plexservice::GetUniversalTranscodeUrl(m_pVideo, m_jumpOffset);
+			m_timeOffset = m_jumpOffset;
+			m_doJump = false;
+			
+			m_pSegmentLoader = new cHlsSegmentLoader(uri);
+			m_pSegmentLoader->Start();
+			DeviceClear();
+			DevicePlay();
+		} else if(m_pSegmentLoader && m_pSegmentLoader->BufferFilled()) {
 			DoPlay();
 		} else {
 			// Pause
@@ -307,11 +323,11 @@ bool cHlsPlayer::DoPlay(void)
 {
 	cPoller Poller;
 	if(DevicePoll(Poller, 10)) {
-		LOCK_THREAD;
+		cMutexLock lock(&s_mutex);
 
 // Handle running out of packets. Buffer-> Play-> Pause-> Buffer-> Play
 
-		for(int i = 0; i < 100; i++) {
+		for(int i = 0; i < 10; i++) {
 			// Get a pointer to start of the data and the number of avaliable bytes
 			int bytesAvaliable = 0;
 			uchar* toPlay = m_pSegmentLoader->m_pRingbuffer->Get(bytesAvaliable);
@@ -341,6 +357,7 @@ bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame)
 	long stc = DeviceGetSTC();
 	Total = m_pVideo->m_pMedia->m_lDuration / 1000 * FramesPerSecond(); // milliseconds
 	Current = stc / (100 * 1000) * FramesPerSecond(); // 100ns per Tick
+	Current += m_timeOffset; // apply offset
 	return true;
 }
 
@@ -358,7 +375,7 @@ void cHlsPlayer::Pause(void)
 	if (playMode == pmPause) {
 		Play();
 	} else {
-		LOCK_THREAD;
+		cMutexLock lock(&s_mutex);
 
 		DeviceFreeze();
 		playMode = pmPause;
@@ -369,7 +386,7 @@ void cHlsPlayer::Play(void)
 {
 	dsyslog("[plex]%s", __FUNCTION__);
 	if (playMode != pmPlay) {
-		LOCK_THREAD;
+		cMutexLock lock(&s_mutex);
 
 		DevicePlay();
 		playMode = pmPlay;
@@ -385,10 +402,24 @@ void cHlsPlayer::Stop(void)
 {
 	if (m_pSegmentLoader)
 		m_pSegmentLoader->StopLoader();
-	Cancel(1);
+	Cancel(0);
 }
 
 double cHlsPlayer::FramesPerSecond(void)
 {
 	return m_pVideo->m_pMedia->m_VideoFrameRate ? m_pVideo->m_pMedia->m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
+}
+
+void cHlsPlayer::JumpRelative(int seconds)
+{
+	long stc = DeviceGetSTC();
+	int current = stc / (100 * 1000);
+	JumpTo(current + seconds);
+}
+
+void cHlsPlayer::JumpTo(int seconds)
+{
+	if(seconds < 0) seconds = 0;
+	m_jumpOffset = seconds;
+	m_doJump = true;
 }

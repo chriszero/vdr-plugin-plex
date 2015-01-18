@@ -298,15 +298,16 @@ std::string Plexservice::encode(std::string message)
 }
 
 
-std::string Plexservice::GetUniversalTranscodeUrl(Video* video)
+std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server)
 {
+	PlexServer* pSrv = server ? server : video->m_pServer;
 	std::stringstream params;
 	params << "/video/:/transcode/universal/start.m3u8?";
-	params << "path=" << encode(pServer->GetUri() + video->m_sKey);
+	params << "path=" << encode(pSrv->GetUri() + video->m_sKey);
 	params << "&mediaIndex=0";
 	params << "&partIndex=0";
 	params << "&protocol=hls";
-	params << "&offset=0";
+	params << "&offset=" << offset;
 	params << "&fastSeek=1";
 	params << "&directPlay=0";
 	params << "&directStream=1";
@@ -319,7 +320,7 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video)
 	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
 
 	
-	return pServer->GetUri() + params.str();
+	return pSrv->GetUri() + params.str();
 }
 
 }

@@ -11,9 +11,7 @@ cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
 	if(!Video->m_pServer)
 		return NULL;
 
-	plexclient::Plexservice service(Video->m_pServer);
-	service.Authenticate();
-	std::string transcodeUri = service.GetUniversalTranscodeUrl(Video);
+	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(Video);
 
 	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, Video), Video);
 	playerControl->m_title = Video->m_sTitle;
@@ -118,11 +116,13 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 		break;
 	case kGreen|k_Repeat:
 	case kGreen:
-		//SkipSeconds(-60);
+		Hide();
+		player->JumpRelative(-600);
 		break;
 	case kYellow|k_Repeat:
 	case kYellow:
-		//SkipSeconds( 60);
+		Hide();
+		player->JumpRelative(600);
 		break;
 	case kStop:
 	case kBlue:
