@@ -31,7 +31,7 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video* Vide
 	lastSpeed = -2; // an invalid value
 	timeoutShow = 0;
 
-	cStatus::MsgReplaying(this, m_title.c_str(), NULL, true);
+	cStatus::MsgReplaying(this, m_title.c_str(), Video->m_pMedia->m_sPartFile.c_str(), true);
 }
 
 cHlsPlayerControl::~cHlsPlayerControl()
