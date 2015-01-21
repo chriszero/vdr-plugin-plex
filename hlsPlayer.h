@@ -23,10 +23,10 @@ class cHlsSegmentLoader : public cThread
 {
 private:
 	int m_ringBufferSize;
-	int m_segmentsToBuffer;
+	unsigned int m_segmentsToBuffer;
 	unsigned int m_lastLoadedSegment;
-	unsigned int m_loadedSegments;
 	bool m_bufferFilled;
+	bool m_newList;
 
 	uchar* m_pBuffer;
 
@@ -47,6 +47,7 @@ private:
 	int GetSegmentSize(int segmentIndex);
 	bool LoadSegment(std::string uri);
 	int EstimateSegmentSize();
+	bool LoadLists(void);
 
 protected:
 	void Action(void);
@@ -61,6 +62,7 @@ public:
 	bool BufferFilled(void);
 	bool Active(void);
 	bool StopLoader(void);
+	bool LoadM3u8(std::string uri);
 };
 
 class cHlsPlayer : public cPlayer, cThread
@@ -68,15 +70,16 @@ class cHlsPlayer : public cPlayer, cThread
 private:
 	cHlsSegmentLoader* m_pSegmentLoader;
 	plexclient::Video* m_pVideo;
-	cMutex s_mutex;
-	
+
 	int m_jumpOffset;
 	int m_timeOffset;
 	bool m_doJump;
+	bool m_isBuffering;
 
 	int m_videoLenght;
 	int m_actualSegment;
 	int m_actualTime;
+	long m_lastValidSTC;
 
 	enum ePlayModes { pmPlay, pmPause };
 	ePlayModes playMode;
@@ -90,12 +93,13 @@ protected:
 
 
 public:
+	//static cMutex s_mutex;
 	cHlsPlayer(std::string startm3u8, plexclient::Video* Video);
 	~cHlsPlayer();
 
 	virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);
 	virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
-	virtual double FramesPerSecond(void);	
+	virtual double FramesPerSecond(void);
 	void Pause(void);
 	void Play(void);
 	void Stop(void);

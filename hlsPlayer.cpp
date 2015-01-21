@@ -2,19 +2,22 @@
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/Exception.h>
 //#include <Poco/StreamCopier.h>
 
 #include <pcrecpp.h>
 
 #include "Plexservice.h"
 
+static cMutex hlsMutex;
+
 //--- cHlsSegmentLoader
 
 cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
 {
+	m_newList = false;
 	m_bufferFilled = false;
 	m_lastLoadedSegment = 0;
-	m_loadedSegments = 0;
 	m_segmentsToBuffer = 3;
 	m_pBuffer = new uchar[8192];
 
@@ -39,17 +42,16 @@ cHlsSegmentLoader::~cHlsSegmentLoader()
 	delete m_pRingbuffer;
 }
 
+bool cHlsSegmentLoader::LoadM3u8(std::string uri)
+{
+	LOCK_THREAD;
+	m_startUri = Poco::URI(uri);
+	return m_newList = true;
+}
+
 void cHlsSegmentLoader::Action(void)
 {
-	if( LoadStartList() ) {
-		if( false == LoadIndexList() ) {
-			esyslog("[plex]LoadIndexList failed!");
-		}
-	} else {
-		esyslog("[plex]LoadStartList failed!");
-		return;
-	}
-
+	if(!LoadLists()) return;
 
 	int estSize = EstimateSegmentSize();
 	m_ringBufferSize = MEGABYTE(estSize*3);
@@ -59,9 +61,37 @@ void cHlsSegmentLoader::Action(void)
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
 	while(Running()) {
-		DoLoad();
+		if(m_newList) {
+			hlsMutex.Lock();
+			m_bufferFilled = false;
+			m_lastLoadedSegment = 0;
+			LoadLists();
+			m_newList = false;
+			m_pRingbuffer->Clear();
+			isyslog("[plex] Ringbuffer Cleared, loading new segments");
+			hlsMutex.Unlock();
+		}
+		if (!DoLoad()) {
+			isyslog("[plex] No further segments to load");
+			StopLoader();
+			Cancel();
+		}
 		cCondWait::SleepMs(3);
 	}
+}
+
+bool cHlsSegmentLoader::LoadLists(void)
+{
+	if( LoadStartList() ) {
+		if( false == LoadIndexList() ) {
+			esyslog("[plex]LoadIndexList failed!");
+			return false;
+		}
+	} else {
+		esyslog("[plex]LoadStartList failed!");
+		return false;
+	}
+	return true;
 }
 
 bool cHlsSegmentLoader::LoadIndexList(void)
@@ -89,8 +119,8 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 			esyslog("[plex]%s Response Not Valid", __FUNCTION__);
 			return res;
 		}
-
-		res = m_indexParser.Parse(indexFile);
+		m_indexParser = cM3u8Parser();
+		res =  m_indexParser.Parse(indexFile);
 
 		if(res) {
 			// Segment URI is relative to index.m3u8
@@ -123,6 +153,7 @@ bool cHlsSegmentLoader::LoadStartList(void)
 		return res;
 	}
 
+	m_startParser = cM3u8Parser();
 	res = m_startParser.Parse(startFile);
 	if(res) {
 		// Get GUID
@@ -188,13 +219,17 @@ int cHlsSegmentLoader::GetSegmentSize(int segmentIndex)
 	if(m_indexParser.vPlaylistItems[segmentIndex].size > 0) {
 		return m_indexParser.vPlaylistItems[segmentIndex].size;
 	}
-	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_HEAD, GetSegmentUri(segmentIndex));
-	AddHeader(req);
-	m_pClientSession->sendRequest(req);
-	Poco::Net::HTTPResponse reqResponse;
-	m_pClientSession->receiveResponse(reqResponse);
-
-	return m_indexParser.vPlaylistItems[segmentIndex].size = reqResponse.getContentLength();
+	try {
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_HEAD, GetSegmentUri(segmentIndex));
+		AddHeader(req);
+		m_pClientSession->sendRequest(req);
+		Poco::Net::HTTPResponse reqResponse;
+		m_pClientSession->receiveResponse(reqResponse);
+		return m_indexParser.vPlaylistItems[segmentIndex].size = reqResponse.getContentLength();
+	} catch(Poco::IOException& exc) {
+		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
+		return INT_MAX;
+	}
 }
 
 std::string cHlsSegmentLoader::GetSegmentUri(int segmentIndex) const
@@ -222,24 +257,25 @@ bool cHlsSegmentLoader::ConnectToServer(void)
 
 bool cHlsSegmentLoader::DoLoad(void)
 {
+	LOCK_THREAD;
 	bool result = true;
+	if(m_lastLoadedSegment <  m_indexParser.vPlaylistItems.size()) {
+		int nextSegmentSize = GetSegmentSize(m_lastLoadedSegment);
 
-	int nextSegmentSize = GetSegmentSize(m_lastLoadedSegment + 1);
-	while(m_pRingbuffer->Free() > nextSegmentSize) {
+		if(m_pRingbuffer->Free() > nextSegmentSize) {
 
-		if(m_lastLoadedSegment + 1 <  m_indexParser.vPlaylistItems.size()) {
-			std::string segmentUri = GetSegmentUri(++m_lastLoadedSegment);
-			result = LoadSegment(segmentUri);
-			m_loadedSegments++;
-		} else {
-			// out of segments
-			StopLoader();
-			result = false;
+			if(nextSegmentSize <= TS_SIZE) { // skip empty segments
+				nextSegmentSize = GetSegmentSize(m_lastLoadedSegment++);
+			} else {
+				std::string segmentUri = GetSegmentUri(m_lastLoadedSegment++);
+				result = LoadSegment(segmentUri);
+			}
 		}
-		m_bufferFilled = m_lastLoadedSegment >= m_segmentsToBuffer;
-		nextSegmentSize = GetSegmentSize(m_lastLoadedSegment + 1);
+		m_bufferFilled = result;
+	} else {
+		result = false;
 	}
-	return m_bufferFilled = result;
+	return result;
 }
 
 bool cHlsSegmentLoader::BufferFilled(void)
@@ -250,15 +286,20 @@ bool cHlsSegmentLoader::BufferFilled(void)
 bool cHlsSegmentLoader::StopLoader(void)
 {
 	dsyslog("[plex]%s", __FUNCTION__);
-	std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
-	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
-	m_pClientSession->sendRequest(req);
-	Poco::Net::HTTPResponse reqResponse;
-	m_pClientSession->receiveResponse(reqResponse);
+	try {
+		std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
+		m_pClientSession->sendRequest(req);
+		Poco::Net::HTTPResponse reqResponse;
+		m_pClientSession->receiveResponse(reqResponse);
 
-	Cancel();
+		Cancel();
 
-	return reqResponse.getStatus() == 200;
+		return reqResponse.getStatus() == 200;
+	} catch(Poco::Exception& exc) {
+		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
+		return false;
+	}
 }
 void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
 {
@@ -282,11 +323,13 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
 	m_pVideo = Video;
 	m_timeOffset = 0;
 	m_doJump = false;
+	m_isBuffering = false;
 }
 
 cHlsPlayer::~cHlsPlayer()
 {
 	delete m_pSegmentLoader;
+	m_pSegmentLoader = NULL;
 }
 
 
@@ -296,18 +339,13 @@ void cHlsPlayer::Action(void)
 	m_pSegmentLoader->Start();
 
 	while (Running()) {
-		if(m_doJump && m_pSegmentLoader) {
+		if(m_doJump && m_pSegmentLoader && m_pSegmentLoader->BufferFilled()) {
+			LOCK_THREAD;
+
 			DeviceFreeze();
-			int currentOffset = DeviceGetSTC() / (100 * 1000);
-			m_pSegmentLoader->StopLoader();
-			delete m_pSegmentLoader;
-			
-			std::string uri = plexclient::Plexservice::GetUniversalTranscodeUrl(m_pVideo, m_jumpOffset);
-			m_timeOffset = m_jumpOffset;
 			m_doJump = false;
-			
-			m_pSegmentLoader = new cHlsSegmentLoader(uri);
-			m_pSegmentLoader->Start();
+			std::string uri = plexclient::Plexservice::GetUniversalTranscodeUrl(m_pVideo, m_jumpOffset);
+			m_pSegmentLoader->LoadM3u8(uri);
 			DeviceClear();
 			DevicePlay();
 		} else if(m_pSegmentLoader && m_pSegmentLoader->BufferFilled()) {
@@ -323,7 +361,7 @@ bool cHlsPlayer::DoPlay(void)
 {
 	cPoller Poller;
 	if(DevicePoll(Poller, 10)) {
-		cMutexLock lock(&s_mutex);
+		hlsMutex.Lock();
 
 // Handle running out of packets. Buffer-> Play-> Pause-> Buffer-> Play
 
@@ -339,6 +377,7 @@ bool cHlsPlayer::DoPlay(void)
 				break;
 			}
 		}
+		hlsMutex.Unlock();
 	}
 	return true;
 }
@@ -355,7 +394,7 @@ void cHlsPlayer::Activate(bool On)
 bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame)
 {
 	long stc = DeviceGetSTC();
-	Total = m_pVideo->m_pMedia->m_lDuration / 1000 * FramesPerSecond(); // milliseconds
+	Total = m_pVideo->m_pMedia->m_lDuration / 1000 * 25;//FramesPerSecond(); // milliseconds
 	Current = stc / (100 * 1000) * FramesPerSecond(); // 100ns per Tick
 	Current += m_timeOffset; // apply offset
 	return true;
@@ -371,12 +410,11 @@ bool cHlsPlayer::GetReplayMode(bool& Play, bool& Forward, int& Speed)
 
 void cHlsPlayer::Pause(void)
 {
+	LOCK_THREAD;
 	dsyslog("[plex]%s", __FUNCTION__);
 	if (playMode == pmPause) {
 		Play();
 	} else {
-		cMutexLock lock(&s_mutex);
-
 		DeviceFreeze();
 		playMode = pmPause;
 	}
@@ -384,10 +422,9 @@ void cHlsPlayer::Pause(void)
 
 void cHlsPlayer::Play(void)
 {
+	LOCK_THREAD;
 	dsyslog("[plex]%s", __FUNCTION__);
 	if (playMode != pmPlay) {
-		cMutexLock lock(&s_mutex);
-
 		DevicePlay();
 		playMode = pmPlay;
 	}
@@ -400,6 +437,8 @@ bool cHlsPlayer::Active(void)
 
 void cHlsPlayer::Stop(void)
 {
+	LOCK_THREAD;
+	dsyslog("[plex]%s", __FUNCTION__);
 	if (m_pSegmentLoader)
 		m_pSegmentLoader->StopLoader();
 	Cancel(0);
@@ -413,12 +452,18 @@ double cHlsPlayer::FramesPerSecond(void)
 void cHlsPlayer::JumpRelative(int seconds)
 {
 	long stc = DeviceGetSTC();
-	int current = stc / (100 * 1000);
-	JumpTo(current + seconds);
+	if(stc > 0) {
+		int current = stc / (100 * 1000);
+		JumpTo(current + seconds);
+	} else {
+		JumpTo(m_jumpOffset + seconds);
+	}
 }
 
 void cHlsPlayer::JumpTo(int seconds)
 {
+	LOCK_THREAD;
+	dsyslog("[plex]%s %d", __FUNCTION__, seconds);
 	if(seconds < 0) seconds = 0;
 	m_jumpOffset = seconds;
 	m_doJump = true;
