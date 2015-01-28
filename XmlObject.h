@@ -12,6 +12,7 @@ namespace plexclient
 {
 
 enum MediaType {UNDEF = 0, PHOTO, MOVIE, MUSIC, SHOW, SEASON};
+enum StreamType {sUNDEF = 0, sVIDEO = 1, sAUDIO = 2, sSUBTITLE = 3};
 
 class XmlObject
 {
@@ -25,6 +26,7 @@ protected:
 	static bool GetNodeValueAsBool(Poco::XML::Node* pNode);
 	static Poco::Timestamp GetNodeValueAsTimeStamp(Poco::XML::Node* pNode);
 	static MediaType GetNodeValueAsMediaType(Poco::XML::Node* pNode);
+	static StreamType GetNodeValueAsStreamType(Poco::XML::Node* pNode);
 
 private:
 };

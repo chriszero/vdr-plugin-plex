@@ -34,7 +34,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server)
 			pAttribs->release();
 
 		} else if(Poco::icompare(pChildNode->nodeName(), "Media") == 0) {
-			m_pMedia = new Media(pChildNode);
+			m_Media = Media(pChildNode);
 		} else if(Poco::icompare(pChildNode->nodeName(), "Genre") == 0) {
 			m_vGenre.push_back(GetNodeValue(pChildNode));
 		} else if(Poco::icompare(pChildNode->nodeName(), "Writer") == 0) {
@@ -51,10 +51,5 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server)
 		pChildNode = it.nextNode();
 	}
 }
-
-Video::~Video()
-{
-}
-
 
 }

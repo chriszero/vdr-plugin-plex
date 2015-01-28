@@ -141,7 +141,7 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 		std::cout << "FullUrl: " << fullUrl << std::endl;
 		
 		MediaContainer *pCont = Plexservice::GetMediaContainer(fullUrl);
-		std::string filePath = pCont->m_vVideos[0].m_pMedia->m_sPartKey;
+		std::string filePath = pCont->m_vVideos[0].m_Media.m_sPartKey;
 		Poco::URI fileuri(fullUrl);
 		fileuri.setPath(filePath);
 		

@@ -39,7 +39,6 @@ public:
 	std::string s_password;
 	
 	bool HideMainMenuEntry;
-	bool DisableRemote;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);

@@ -26,7 +26,6 @@ class Subscriber
 	
 	virtual std::string to_string() {
 		return "Subscriber-> Host: " + m_sHost + "; Port: " + std::string(itoa(m_iPort)) + "; Uuid:" + m_sUuid + "; CmdID:" + std::string(itoa(m_iCommandId));
-		return "";
 	}
 
 private:

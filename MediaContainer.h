@@ -36,8 +36,6 @@ class MediaContainer: XmlObject
 public:
 	MediaContainer(std::istream *response, PlexServer* Server);
 
-	~MediaContainer();
-
 protected:
 
 

@@ -4,6 +4,8 @@
 
 #include "PlexServer.h"
 #include "Plexservice.h"
+#include "MediaContainer.h"
+#include "PVideo.h"
 
 // static
 cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
@@ -11,17 +13,22 @@ cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
 	if(!Video->m_pServer)
 		return NULL;
 
-	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(Video);
+	// get Metadata
+	std::string uri = Video->m_pServer->GetUri() + Video->m_sKey;
+	plexclient::MediaContainer *pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
+	
+	std::cout << "Video Size" << pmcontainer->m_vVideos.size() << " Video: " << pmcontainer->m_vVideos[0].m_sKey << std::endl;
+	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer->m_vVideos[0]);
 
-	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, Video), Video);
-	playerControl->m_title = Video->m_sTitle;
+	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, &pmcontainer->m_vVideos[0]), pmcontainer);
+	playerControl->m_title = pmcontainer->m_vVideos[0].m_sTitle;
 	return playerControl;
 }
 
-cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video* Video) :cControl(Player)
+cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContainer* Container) :cControl(Player)
 {
 	player = Player;
-	m_pVideo = Video;
+	m_pVideo = &Container->m_vVideos[0];
 	//m_title = title;
 
 	displayReplay = NULL;
@@ -31,11 +38,12 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video* Vide
 	lastSpeed = -2; // an invalid value
 	timeoutShow = 0;
 
-	cStatus::MsgReplaying(this, m_title.c_str(), Video->m_pMedia->m_sPartFile.c_str(), true);
+	cStatus::MsgReplaying(this, m_title.c_str(), m_pVideo->m_Media.m_sPartFile.c_str(), true);
 }
 
 cHlsPlayerControl::~cHlsPlayerControl()
 {
+	//delete m_pMediaContainer;
 }
 
 cString cHlsPlayerControl::GetHeader(void)

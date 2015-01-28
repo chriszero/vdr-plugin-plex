@@ -1,5 +1,6 @@
 #include "hlsPlayer.h"
 
+#include <sys/time.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Exception.h>
@@ -8,6 +9,9 @@
 #include <pcrecpp.h>
 
 #include "Plexservice.h"
+#include "XmlObject.h"
+#include "Media.h"
+#include "Stream.h"
 
 static cMutex hlsMutex;
 
@@ -18,7 +22,7 @@ cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
 	m_newList = false;
 	m_bufferFilled = false;
 	m_lastLoadedSegment = 0;
-	m_segmentsToBuffer = 3;
+	m_segmentsToBuffer = 2;
 	m_pBuffer = new uchar[8192];
 
 	// Initialize members
@@ -54,9 +58,9 @@ void cHlsSegmentLoader::Action(void)
 	if(!LoadLists()) return;
 
 	int estSize = EstimateSegmentSize();
-	m_ringBufferSize = MEGABYTE(estSize*3);
+	m_ringBufferSize = MEGABYTE(estSize*m_segmentsToBuffer);
 
-	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*3);
+	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*m_segmentsToBuffer);
 
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
@@ -128,9 +132,9 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 			m_segmentUriPart = path.substr(0, path.find_last_of("/")+1);
 		}
 		if(m_indexParser.TargetDuration > 3) {
-			m_segmentsToBuffer = 1;
-		} else {
 			m_segmentsToBuffer = 2;
+		} else {
+			m_segmentsToBuffer = 3;
 		}
 	}
 	return res;
@@ -174,7 +178,11 @@ int cHlsSegmentLoader::EstimateSegmentSize()
 
 	int len = m_indexParser.TargetDuration;
 	double estSize = (bandw) * len;
-	estSize = max(estSize, 1.0); // default
+	estSize = max(estSize, 1.0);
+	 // default
+	if(estSize <= 1) {
+		estSize = 32;
+	}
 	return ceil(estSize);
 }
 
@@ -322,14 +330,32 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
 	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8);
 	m_pVideo = Video;
 	m_timeOffset = 0;
+	m_jumpOffset = 0;
+	m_tTimeSum = 0;
 	m_doJump = false;
 	m_isBuffering = false;
+	AudioIndexOffset = 1000; // Just a magic number
 }
 
 cHlsPlayer::~cHlsPlayer()
 {
 	delete m_pSegmentLoader;
 	m_pSegmentLoader = NULL;
+}
+
+void cHlsPlayer::SetAudioAndSubtitleTracks(void)
+{
+	//DeviceClrAvailableTracks();
+	DeviceSetAvailableTrack(ttDolby, 0, 0, "Current");
+	if(m_pVideo->m_Media.m_vStreams.size() > 0) {
+		std::vector<plexclient::Stream> streams = m_pVideo->m_Media.m_vStreams;
+		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
+			plexclient::Stream *pStream = &(*it);
+			if(pStream->m_eStreamType == plexclient::sAUDIO) {
+				DeviceSetAvailableTrack(ttDolby, pStream->m_iIndex, pStream->m_iIndex + AudioIndexOffset, pStream->m_sLanguage.c_str(), pStream->m_sCodec.c_str());
+			}
+		}
+	}
 }
 
 
@@ -344,12 +370,21 @@ void cHlsPlayer::Action(void)
 
 			DeviceFreeze();
 			m_doJump = false;
+			m_bFirstPlay = true;
 			std::string uri = plexclient::Plexservice::GetUniversalTranscodeUrl(m_pVideo, m_jumpOffset);
 			m_pSegmentLoader->LoadM3u8(uri);
+			m_timeOffset = m_jumpOffset;
 			DeviceClear();
 			DevicePlay();
+			playMode = pmPlay;
 		} else if(m_pSegmentLoader && m_pSegmentLoader->BufferFilled()) {
 			DoPlay();
+			if(m_bFirstPlay) {
+				SetAudioAndSubtitleTracks();
+				ResetPlayedSeconds();
+				m_bFirstPlay = false;
+			}
+			CountPlayedSeconds();
 		} else {
 			// Pause
 			cCondWait::SleepMs(3);
@@ -359,6 +394,7 @@ void cHlsPlayer::Action(void)
 
 bool cHlsPlayer::DoPlay(void)
 {
+	bool res = false;
 	cPoller Poller;
 	if(DevicePoll(Poller, 10)) {
 		hlsMutex.Lock();
@@ -372,6 +408,7 @@ bool cHlsPlayer::DoPlay(void)
 			if(bytesAvaliable >= TS_SIZE) {
 				int playedBytes = PlayTs(toPlay, TS_SIZE, false);
 				m_pSegmentLoader->m_pRingbuffer->Del(playedBytes);
+				res = true;
 			} else {
 				// Pause & Buffer
 				break;
@@ -379,7 +416,7 @@ bool cHlsPlayer::DoPlay(void)
 		}
 		hlsMutex.Unlock();
 	}
-	return true;
+	return res;
 }
 
 void cHlsPlayer::Activate(bool On)
@@ -391,12 +428,10 @@ void cHlsPlayer::Activate(bool On)
 	}
 }
 
-bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame)
+bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribute__((unused)))
 {
-	long stc = DeviceGetSTC();
-	Total = m_pVideo->m_pMedia->m_lDuration / 1000 * 25;//FramesPerSecond(); // milliseconds
-	Current = stc / (100 * 1000) * FramesPerSecond(); // 100ns per Tick
-	Current += m_timeOffset; // apply offset
+	Total = m_pVideo->m_Media.m_lDuration / 1000 * FramesPerSecond(); // milliseconds
+	Current = GetPlayedSeconds() * FramesPerSecond();
 	return true;
 }
 
@@ -446,18 +481,12 @@ void cHlsPlayer::Stop(void)
 
 double cHlsPlayer::FramesPerSecond(void)
 {
-	return m_pVideo->m_pMedia->m_VideoFrameRate ? m_pVideo->m_pMedia->m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
+	return m_pVideo->m_Media.m_VideoFrameRate ? m_pVideo->m_Media.m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
 }
 
 void cHlsPlayer::JumpRelative(int seconds)
 {
-	long stc = DeviceGetSTC();
-	if(stc > 0) {
-		int current = stc / (100 * 1000);
-		JumpTo(current + seconds);
-	} else {
-		JumpTo(m_jumpOffset + seconds);
-	}
+	JumpTo(GetPlayedSeconds() + seconds);
 }
 
 void cHlsPlayer::JumpTo(int seconds)
@@ -467,4 +496,69 @@ void cHlsPlayer::JumpTo(int seconds)
 	if(seconds < 0) seconds = 0;
 	m_jumpOffset = seconds;
 	m_doJump = true;
+}
+
+void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tTrackId* TrackId)
+{
+	dsyslog("[plex]%s %d %s", __FUNCTION__, TrackId->id, TrackId->language);
+	// Check if stream availiable
+	int streamId = 0;
+	if(m_pVideo->m_Media.m_vStreams.size() > 0) {
+		std::vector<plexclient::Stream> streams = m_pVideo->m_Media.m_vStreams;
+		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
+			plexclient::Stream *pStream = &(*it);
+			if(pStream->m_eStreamType == plexclient::sAUDIO && pStream->m_iIndex + AudioIndexOffset == TrackId->id) {
+				streamId = pStream->m_iID;
+				break;
+			}
+		}
+	}
+	// Then do the request
+	if(streamId > 0) {
+		Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
+
+		std::string uri = "/library/parts/" + std::string(itoa(m_pVideo->m_Media.m_iPartId)) + "?audioStreamID=" + std::string(itoa(streamId));
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
+		session.sendRequest(req);
+
+		Poco::Net::HTTPResponse resp;
+		session.receiveResponse(resp);
+
+		if(resp.getStatus() == 200) {
+			DeviceSetCurrentAudioTrack(eTrackType(ttDolby + 0)); // hacky
+			DeviceSetAvailableTrack(ttDolby, 0, 0, TrackId->language);
+			JumpRelative(0); // Reload Stream to get new Audio
+			dsyslog("[plex]: Set AudioStream: %d\n", TrackId->id);
+		}
+	}
+}
+
+unsigned long long cHlsPlayer::MsNow(void)
+{
+	static timeval tv;
+	gettimeofday(&tv, 0);
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+int cHlsPlayer::GetPlayedSeconds(void)
+{
+	return m_timeOffset + (m_tTimeSum / 1000);
+}
+
+void cHlsPlayer::CountPlayedSeconds(void)
+{
+	if (playMode == pmPlay) {
+		unsigned long long tTmp = MsNow();
+		m_tTimeSum += (tTmp - m_tLastTime);
+		m_tLastTime = tTmp;
+	}
+	else {
+		m_tLastTime = MsNow();
+	}
+}
+
+void cHlsPlayer::ResetPlayedSeconds(void)
+{
+	m_tTimeSum = 0;
+	m_tLastTime = MsNow();
 }

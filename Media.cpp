@@ -30,7 +30,6 @@ Media::Media(Poco::XML::Node* pNode)
 
 		}
 		if(Poco::icompare(pChildNode->nodeName(), "Part") == 0) {
-
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
 			m_sPartKey = GetNodeValue(pAttribs->getNamedItem("key"));
 			m_iPartId = GetNodeValueAsInt(pAttribs->getNamedItem("id"));
@@ -41,14 +40,11 @@ Media::Media(Poco::XML::Node* pNode)
 
 			pAttribs->release();
 		}
+		if(Poco::icompare(pChildNode->nodeName(), "Stream") == 0) {
+			m_vStreams.push_back(Stream(pChildNode));
+		}
 		pChildNode = it.nextNode();
 	}
 }
 
-Media::~Media()
-{
 }
-
-
-}
-

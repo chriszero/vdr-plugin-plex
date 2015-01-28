@@ -87,4 +87,20 @@ MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 	return type;
 }
 
+StreamType XmlObject::GetNodeValueAsStreamType(Poco::XML::Node* pNode)
+{
+	StreamType type = sUNDEF;
+
+	if(pNode != 0) {
+		int iType = GetNodeValueAsInt(pNode);
+		switch(iType) {
+			case 1: type = sVIDEO; break;
+			case 2: type = sAUDIO; break;
+			case 3: type = sSUBTITLE; break;
+			default: type = sUNDEF; break;
+		}
+	}
+	return type;
+}
+
 }

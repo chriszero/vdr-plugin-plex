@@ -68,6 +68,7 @@ public:
 class cHlsPlayer : public cPlayer, cThread
 {
 private:
+	int AudioIndexOffset;
 	cHlsSegmentLoader* m_pSegmentLoader;
 	plexclient::Video* m_pVideo;
 
@@ -80,12 +81,19 @@ private:
 	int m_actualSegment;
 	int m_actualTime;
 	long m_lastValidSTC;
+	
+	unsigned long long m_tLastTime;
+	unsigned long long m_tTimeSum;
+	bool m_bFirstPlay;
 
 	enum ePlayModes { pmPlay, pmPause };
 	ePlayModes playMode;
 
 	virtual void Activate(bool On);
-
+	unsigned long long MsNow(void);
+	int GetPlayedSeconds(void);
+	void CountPlayedSeconds(void);
+	void ResetPlayedSeconds(void);
 
 protected:
 	void Action(void);
@@ -100,12 +108,14 @@ public:
 	virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);
 	virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
 	virtual double FramesPerSecond(void);
+	virtual void SetAudioTrack(eTrackType Type, const tTrackId *TrackId);
 	void Pause(void);
 	void Play(void);
 	void Stop(void);
 	bool Active(void);
 	void JumpTo(int seconds);
 	void JumpRelative(int seconds);
+	void SetAudioAndSubtitleTracks(void);
 
 };
 

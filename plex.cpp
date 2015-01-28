@@ -2,10 +2,13 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 
+static const char *DESCRIPTION = "Plex for VDR Plugin";
+static const char *MAINMENUENTRY = "Plex for VDR";
+
 //////////////////////////////////////////////////////////////////////////////
 
-static char ConfigHideMainMenuEntry;	///< hide main menu entry
-char ConfigDisableRemote;		///< disable remote during external play
+//static char ConfigHideMainMenuEntry;	///< hide main menu entry
+//char ConfigDisableRemote;		///< disable remote during external play
 
 /**
 **	Play a file.
@@ -273,14 +276,6 @@ const char *cMyPlugin::Description(void)
 }
 
 /**
-**	Process the command line arguments.
-*/
-bool cMyPlugin::ProcessArgs(int argc, char *argv[])
-{
-	return true;
-}
-
-/**
 **	Start any background activities the plugin shall perform.
 */
 bool cMyPlugin::Initialize(void)
@@ -308,7 +303,7 @@ bool cMyPlugin::Initialize(void)
 */
 const char *cMyPlugin::MainMenuEntry(void)
 {
-    return ConfigHideMainMenuEntry ? NULL : MAINMENUENTRY;
+    return Config::GetInstance().HideMainMenuEntry ? NULL : MAINMENUENTRY;
 }
 
 /**
@@ -361,7 +356,6 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
     //dsyslog("[plex]%s: '%s' = '%s'\n", __FUNCTION__, name, value);
 
     if (strcasecmp(name, "HideMainMenuEntry") == 0) 	Config::GetInstance().HideMainMenuEntry = atoi(value) ? true : false;
-	else if (strcasecmp(name, "DisableRemote") == 0) 	Config::GetInstance().DisableRemote = atoi(value) ? true : false;
 	else if (strcasecmp(name, "Username") == 0) 		Config::GetInstance().s_username = std::string(value);
 	else if (strcasecmp(name, "Password") == 0) 		Config::GetInstance().s_password = std::string(value);
 	else if (strcasecmp(name, "UUID") == 0) 			Config::GetInstance().SetUUID(value);

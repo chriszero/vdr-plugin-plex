@@ -1,5 +1,6 @@
-#ifndef MEDIA_H
-#define MEDIA_H
+#ifndef STREAM_H
+#define STREAM_H
+
 
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
@@ -16,7 +17,6 @@
 #include <iostream>
 
 #include "XmlObject.h" // Base class: model::XmlObject
-#include "Stream.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::Document;
@@ -29,36 +29,23 @@ using Poco::Exception;
 namespace plexclient
 {
 
-class Media: XmlObject
+class Stream: XmlObject
 {
-	public:
-	Media() {};
-	Media(Poco::XML::Node* pNode);
+public:
+	Stream(Poco::XML::Node* pNode);
 
 public:
-	std::string m_sVideoResolution;
-	int m_iId;
-	long m_lDuration;
-	int m_iBitrate;
-	int m_iWidth;
-	int m_iHeight;
-	std::string m_sAspectRatio;
-	int m_iAudioChannels;
-	std::string m_sAudioCodec;
-	std::string m_sVideoCodec;
-	std::string m_sContainer;
-	double m_VideoFrameRate;
-
-	std::string m_sPartKey;
-	int m_iPartId;
-	long m_lPartDuration;
-	std::string m_sPartFile;
-	long m_lPartSize;
-	std::string m_sPartContainer;
-	
-	std::vector<Stream> m_vStreams;
+	int m_iID;
+	int m_iStreamType;
+	int m_iIndex;
+	int m_iChannels;
+	std::string m_sCodec;
+	std::string m_sCodecId;
+	std::string m_sLanguage;
+	std::string m_sLanguageCode;
+	StreamType m_eStreamType;
 };
 
 }
 
-#endif // MEDIA_H
+#endif // STREAM_H

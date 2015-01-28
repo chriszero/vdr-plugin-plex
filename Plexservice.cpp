@@ -207,11 +207,11 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
 
 	//std::cout << "URI: " << session->getHost() << "[" << pRequest->getURI() << "]" << std::endl;
 
+	MediaContainer* pAllsections = new MediaContainer(&rs, new PlexServer(fileuri.getHost(), fileuri.getPort()));
+	
 	delete pRequest;
 	delete session;
-	
-	MediaContainer* pAllsections = new MediaContainer(&rs, new PlexServer(fileuri.getHost(), fileuri.getPort()));
-	//Poco::StreamCopier::copyStream(rs, std::cout);
+
 	return pAllsections;
 }
 
@@ -319,7 +319,7 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 	params << "&videoQuality=100";
 	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
 
-	
+
 	return pSrv->GetUri() + params.str();
 }
 

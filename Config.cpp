@@ -67,7 +67,6 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	strn0cpy(Uuid, Config::GetInstance().GetUUID().c_str(), STRING_SIZE);
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&Config::GetInstance().HideMainMenuEntry, trVDR("no"), trVDR("yes")));
-    Add(new cMenuEditBoolItem(tr("Disable remote"), (int*)&Config::GetInstance().DisableRemote, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditStrItem(tr("Plex Username"), Username, STRING_SIZE));
 	Add(new cMenuEditStrItem(tr("Plex Password"), Password, STRING_SIZE));
 	cMenuEditStrItem* devUUID = new cMenuEditStrItem(tr("Current UUID"), Uuid, STRING_SIZE);
@@ -84,7 +83,6 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().s_password = std::string(Password);
 	
     SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
-    SetupStore("DisableRemote", Config::GetInstance().DisableRemote);
 	SetupStore("Username", Config::GetInstance().s_username.c_str());
 	SetupStore("Password", Config::GetInstance().s_password.c_str());
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());

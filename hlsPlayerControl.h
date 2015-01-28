@@ -5,12 +5,14 @@
 #include <vdr/tools.h>
 
 #include "hlsPlayer.h"
+#include "MediaContainer.h"
 #include "PVideo.h"
 
 class cHlsPlayerControl : public cControl
 {
 private:
 	static volatile int active;
+	plexclient::MediaContainer* m_pMediaContainer;
 	plexclient::Video* m_pVideo;
 	cHlsPlayer* player;
 	std::string m_title;
@@ -31,7 +33,7 @@ protected:
 
 public:
 	static cControl* Create(plexclient::Video* Video);
-	cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video* Video);
+	cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContainer* Container);
 	virtual ~cHlsPlayerControl();
 
 	virtual void Show(void);
