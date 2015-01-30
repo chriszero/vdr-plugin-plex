@@ -1,6 +1,6 @@
 #include "hlsPlayer.h"
 
-#include <sys/time.h>
+#include <vdr/tools.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Exception.h>
@@ -341,6 +341,7 @@ cHlsPlayer::~cHlsPlayer()
 {
 	delete m_pSegmentLoader;
 	m_pSegmentLoader = NULL;
+	Detach();
 }
 
 void cHlsPlayer::SetAudioAndSubtitleTracks(void)
@@ -363,6 +364,8 @@ void cHlsPlayer::Action(void)
 {
 	// Start SegmentLoader
 	m_pSegmentLoader->Start();
+	
+	m_bFirstPlay = true;
 
 	while (Running()) {
 		if(m_doJump && m_pSegmentLoader && m_pSegmentLoader->BufferFilled()) {
@@ -382,6 +385,7 @@ void cHlsPlayer::Action(void)
 			if(m_bFirstPlay) {
 				SetAudioAndSubtitleTracks();
 				ResetPlayedSeconds();
+				playMode = pmPlay;
 				m_bFirstPlay = false;
 			}
 			CountPlayedSeconds();
@@ -390,6 +394,8 @@ void cHlsPlayer::Action(void)
 			cCondWait::SleepMs(3);
 		}
 	}
+	
+	DeviceClear();
 }
 
 bool cHlsPlayer::DoPlay(void)
@@ -500,6 +506,7 @@ void cHlsPlayer::JumpTo(int seconds)
 
 void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tTrackId* TrackId)
 {
+	LOCK_THREAD;
 	dsyslog("[plex]%s %d %s", __FUNCTION__, TrackId->id, TrackId->language);
 	// Check if stream availiable
 	int streamId = 0;
@@ -533,13 +540,6 @@ void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tT
 	}
 }
 
-unsigned long long cHlsPlayer::MsNow(void)
-{
-	static timeval tv;
-	gettimeofday(&tv, 0);
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
 int cHlsPlayer::GetPlayedSeconds(void)
 {
 	return m_timeOffset + (m_tTimeSum / 1000);
@@ -548,17 +548,17 @@ int cHlsPlayer::GetPlayedSeconds(void)
 void cHlsPlayer::CountPlayedSeconds(void)
 {
 	if (playMode == pmPlay) {
-		unsigned long long tTmp = MsNow();
+		unsigned long long tTmp = cTimeMs::Now();
 		m_tTimeSum += (tTmp - m_tLastTime);
 		m_tLastTime = tTmp;
 	}
 	else {
-		m_tLastTime = MsNow();
+		m_tLastTime = cTimeMs::Now();
 	}
 }
 
 void cHlsPlayer::ResetPlayedSeconds(void)
 {
 	m_tTimeSum = 0;
-	m_tLastTime = MsNow();
+	m_tLastTime = cTimeMs::Now();
 }

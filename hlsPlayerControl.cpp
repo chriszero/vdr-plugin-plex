@@ -16,8 +16,7 @@ cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
 	// get Metadata
 	std::string uri = Video->m_pServer->GetUri() + Video->m_sKey;
 	plexclient::MediaContainer *pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
-	
-	std::cout << "Video Size" << pmcontainer->m_vVideos.size() << " Video: " << pmcontainer->m_vVideos[0].m_sKey << std::endl;
+
 	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer->m_vVideos[0]);
 
 	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, &pmcontainer->m_vVideos[0]), pmcontainer);
@@ -39,11 +38,6 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContai
 	timeoutShow = 0;
 
 	cStatus::MsgReplaying(this, m_title.c_str(), m_pVideo->m_Media.m_sPartFile.c_str(), true);
-}
-
-cHlsPlayerControl::~cHlsPlayerControl()
-{
-	//delete m_pMediaContainer;
 }
 
 cString cHlsPlayerControl::GetHeader(void)

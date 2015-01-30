@@ -90,7 +90,6 @@ private:
 	ePlayModes playMode;
 
 	virtual void Activate(bool On);
-	unsigned long long MsNow(void);
 	int GetPlayedSeconds(void);
 	void CountPlayedSeconds(void);
 	void ResetPlayedSeconds(void);

@@ -34,7 +34,6 @@ protected:
 public:
 	static cControl* Create(plexclient::Video* Video);
 	cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContainer* Container);
-	virtual ~cHlsPlayerControl();
 
 	virtual void Show(void);
 	virtual void Hide(void);
