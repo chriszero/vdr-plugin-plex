@@ -40,6 +40,14 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContai
 	cStatus::MsgReplaying(this, m_title.c_str(), m_pVideo->m_Media.m_sPartFile.c_str(), true);
 }
 
+cHlsPlayerControl::~cHlsPlayerControl()
+{
+	dsyslog("[plex]: '%s'", __FUNCTION__);
+	delete player;	
+	Hide();
+	cStatus::MsgReplaying(this, NULL, NULL, false);
+}
+
 cString cHlsPlayerControl::GetHeader(void)
 {
 	return m_title.c_str();
