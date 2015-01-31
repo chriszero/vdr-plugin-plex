@@ -48,11 +48,11 @@ private:
 	bool LoadSegment(std::string uri);
 	int EstimateSegmentSize();
 	bool LoadLists(void);
+	
 
 protected:
 	void Action(void);
 	bool DoLoad(void);
-	void AddHeader(Poco::Net::HTTPRequest& req);
 
 public:
 	cHlsSegmentLoader(std::string startm3u8);
@@ -63,6 +63,8 @@ public:
 	bool Active(void);
 	bool StopLoader(void);
 	bool LoadM3u8(std::string uri);
+	void AddHeader(Poco::Net::HTTPRequest& req);
+	void Ping(void);
 };
 
 class cHlsPlayer : public cPlayer, cThread
@@ -85,6 +87,7 @@ private:
 	unsigned long long m_tLastTime;
 	unsigned long long m_tTimeSum;
 	bool m_bFirstPlay;
+	cTimeMs m_tTimer;
 
 	enum ePlayModes { pmPlay, pmPause };
 	ePlayModes playMode;
@@ -93,6 +96,8 @@ private:
 	int GetPlayedSeconds(void);
 	void CountPlayedSeconds(void);
 	void ResetPlayedSeconds(void);
+	void ReportProgress(bool stopped = false);
+	void SetWatched(void);
 
 protected:
 	void Action(void);

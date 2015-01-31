@@ -43,8 +43,9 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContai
 cHlsPlayerControl::~cHlsPlayerControl()
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
-	delete player;	
 	Hide();
+	delete player;
+	player = NULL;
 	cStatus::MsgReplaying(this, NULL, NULL, false);
 }
 
@@ -232,8 +233,10 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 			lastCurrent = lastTotal = -1;
 		}
 		if (Current != lastCurrent || Total != lastTotal) {
-			if (Total != lastTotal) {
+			if (Setup.ShowRemainingTime || Total != lastTotal) {
 				int Index = Total;
+				if (Setup.ShowRemainingTime)
+					Index = Current - Index;
 				displayReplay->SetTotal(IndexToHMSF(Index, false, FramesPerSecond()));
 				if (!Initial)
 					displayReplay->Flush();

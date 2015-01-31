@@ -179,7 +179,7 @@ int cHlsSegmentLoader::EstimateSegmentSize()
 	int len = m_indexParser.TargetDuration;
 	double estSize = (bandw) * len;
 	estSize = max(estSize, 1.0);
-	 // default
+	// default
 	if(estSize <= 1) {
 		estSize = 32;
 	}
@@ -323,6 +323,22 @@ bool cHlsSegmentLoader::Active(void)
 	return Running();
 }
 
+void cHlsSegmentLoader::Ping(void)
+{
+	dsyslog("[plex]%s", __FUNCTION__);
+	try {
+		std::string uri = "/video/:/transcode/universal/ping?session=" + Config::GetInstance().GetUUID();
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+		AddHeader(req);
+		m_pClientSession->sendRequest(req);
+		Poco::Net::HTTPResponse reqResponse;
+		m_pClientSession->receiveResponse(reqResponse);
+
+	} catch(Poco::Exception& exc) {
+		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
+	}
+}
+
 //--- cHlsPlayer
 
 cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
@@ -335,6 +351,7 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
 	m_doJump = false;
 	m_isBuffering = false;
 	AudioIndexOffset = 1000; // Just a magic number
+	m_tTimer.Set(1);
 }
 
 cHlsPlayer::~cHlsPlayer()
@@ -364,7 +381,7 @@ void cHlsPlayer::Action(void)
 {
 	// Start SegmentLoader
 	m_pSegmentLoader->Start();
-	
+
 	m_bFirstPlay = true;
 
 	while (Running()) {
@@ -393,8 +410,20 @@ void cHlsPlayer::Action(void)
 			// Pause
 			cCondWait::SleepMs(3);
 		}
+		// statusupdates to pms every 60s
+		if(m_pSegmentLoader && m_tTimer.TimedOut()) {
+			if(playMode == pmPause) {
+				m_pSegmentLoader->Ping();
+			}
+			ReportProgress();
+			m_tTimer.Set(60000);
+		}
 	}
-	
+	// set as watched if >= 90%
+	int t = m_pVideo->m_Media.m_lDuration / 1000 * 0.9;
+	if( GetPlayedSeconds() >= t) {
+		SetWatched();
+	}
 	DeviceClear();
 }
 
@@ -480,9 +509,10 @@ void cHlsPlayer::Stop(void)
 {
 	LOCK_THREAD;
 	dsyslog("[plex]%s", __FUNCTION__);
+	ReportProgress(true);
 	if (m_pSegmentLoader)
 		m_pSegmentLoader->StopLoader();
-	Cancel(0);
+	Cancel(1);
 }
 
 double cHlsPlayer::FramesPerSecond(void)
@@ -551,8 +581,7 @@ void cHlsPlayer::CountPlayedSeconds(void)
 		unsigned long long tTmp = cTimeMs::Now();
 		m_tTimeSum += (tTmp - m_tLastTime);
 		m_tLastTime = tTmp;
-	}
-	else {
+	} else {
 		m_tLastTime = cTimeMs::Now();
 	}
 }
@@ -561,4 +590,46 @@ void cHlsPlayer::ResetPlayedSeconds(void)
 {
 	m_tTimeSum = 0;
 	m_tLastTime = cTimeMs::Now();
+}
+
+void cHlsPlayer::ReportProgress(bool stopped)
+{
+	std::string state;
+	if(stopped) {
+		state = "stopped";
+	}
+	else if (playMode == pmPlay) {
+		state = "playing";
+	}
+	else {
+		state = "paused";
+	}
+	
+	Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
+	std::string uri = "/:/progress?key=" + std::string(itoa(m_pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
+	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+	session.sendRequest(req);
+
+	Poco::Net::HTTPResponse resp;
+	session.receiveResponse(resp);
+
+	if(resp.getStatus() == 200) {
+		dsyslog("[plex] %s", __FUNCTION__);
+	}
+
+}
+
+void cHlsPlayer::SetWatched(void)
+{
+	Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
+	std::string uri = "/:/scrobble?key=" + std::string(itoa(m_pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library";
+	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+	session.sendRequest(req);
+
+	Poco::Net::HTTPResponse resp;
+	session.receiveResponse(resp);
+
+	if(resp.getStatus() == 200) {
+		dsyslog("[plex] %s", __FUNCTION__);
+	}
 }
