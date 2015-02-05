@@ -2,30 +2,51 @@
 #define SUBSCRIPTIONMANAGER_H
 
 #include <vdr/tools.h>
+#include <vdr/status.h>
 #include <string>
 #include <iostream>
 #include <map>
 //#include <mutex>
 #include <sstream>
+#include "hlsPlayerControl.h"
+#include "PVideo.h"
 
 namespace plexclient
 {
 
+class cSubscriberStatus : public cStatus
+{
+protected:
+	virtual void ChannelSwitch(const cDevice *Device, int ChannelNumber, bool LiveView);
+	virtual void Replaying(const cControl *DvbPlayerControl, const char *Name, const char *FileName, bool On);
+	virtual void SetVolume(int Volume, bool Absolute);
+
+public:
+	cSubscriberStatus();
+	bool PlayerPaused;
+	bool PlayerStopped;
+	cControl* pControl;
+	Video* pVideo;
+	int Volume;
+
+};
+
 class Subscriber
 {
-	public:
-	int m_iCommandId;
+	friend class SubscriptionManager;
+public:
+	std::string m_iCommandId;
 	Subscriber() {};
-	Subscriber(std::string protocol, std::string host, int port, std::string uuid, int commandId);
-	
+	Subscriber(std::string protocol, std::string host, int port, std::string uuid, std::string commandId);
+
 	std::string GetUuid() {
 		return m_sUuid;
 	}
-	
+
 	void SendUpdate(std::string msg, bool isNav);
-	
+
 	virtual std::string to_string() {
-		return "Subscriber-> Host: " + m_sHost + "; Port: " + std::string(itoa(m_iPort)) + "; Uuid:" + m_sUuid + "; CmdID:" + std::string(itoa(m_iCommandId));
+		return "Subscriber-> Host: " + m_sHost + "; Port: " + std::string(itoa(m_iPort)) + "; Uuid:" + m_sUuid + "; CmdID:" + m_iCommandId;
 	}
 
 private:
@@ -33,11 +54,11 @@ private:
 	std::string m_sHost;
 	int m_iPort;
 	std::string m_sUuid;
-	
+
 	int m_iAge;
 };
-	
-	
+
+
 class SubscriptionManager
 {
 public:
@@ -47,29 +68,39 @@ public:
 	}
 	void AddSubscriber(Subscriber subs);
 	void RemoveSubscriber(std::string uuid);
+	void UpdateSubscriber(std::string uuid, std::string commandId);
 	std::string GetMsg(std::string commandId);
 	void Notify();
-	
-	private:
+
+private:
 	SubscriptionManager();
-	//std::mutex mutex;
+	cMutexLock m_myLock;
+	cMutex m_myMutex;
 	std::map<std::string, Subscriber> m_mSubcribers;
+	cSubscriberStatus* m_pStatus;
+	bool m_bStoppedSent;
+
+	void NotifyServer();
+	void Cleanup();
+	std::string GetTimelineXml();
 };
 
 class ActionManager
 {
-	public:
+public:
 	static ActionManager& GetInstance() {
 		static ActionManager instance;
 		return instance;
 	}
-	void AddAction(std::string file);
-	std::string GetAction();
+	void AddAction(Video* video);
+	Video* GetAction();
 	bool IsAction();
-	
-	private:
+
+private:
+	cMutexLock m_myLock;
+	cMutex m_myMutex;
 	ActionManager();
-	std::string m_sAction;
+	Video* m_Action;
 	bool m_isAction;
 };
 

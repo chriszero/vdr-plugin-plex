@@ -337,8 +337,8 @@ void cMyPlugin::MainThreadHook(void)
 	// dsyslog("[plex]%s:\n", __FUNCTION__);
 	// Start Tasks, e.g. Play Video
 	if(plexclient::ActionManager::GetInstance().IsAction()) {
-		std::string file = plexclient::ActionManager::GetInstance().GetAction();
-		//PlayFile(file, NULL);
+		plexclient::Video* video = plexclient::ActionManager::GetInstance().GetAction();
+		PlayFile(video);
 	}
 }
 

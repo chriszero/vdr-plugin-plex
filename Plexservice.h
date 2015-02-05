@@ -62,8 +62,6 @@ public:
 	static std::string GetUniversalTranscodeUrl(Video* video, int offset = 0, PlexServer* server = 0);
 
 	static MediaContainer* GetMediaContainer(std::string fullUrl);
-
-protected:
 	static std::string encode(std::string message);
 
 private:

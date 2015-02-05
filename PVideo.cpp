@@ -5,6 +5,7 @@ namespace plexclient
 
 Video::Video(Poco::XML::Node* pNode, PlexServer* Server)
 {
+	m_iMyPlayOffset = 0;
 	m_pServer = Server;
 	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
 	Poco::XML::Node* pChildNode = it.nextNode();

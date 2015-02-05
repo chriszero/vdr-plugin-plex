@@ -61,6 +61,7 @@ public:
 	std::string m_sCollection;
 	Media m_Media;
 	PlexServer* m_pServer;
+	int m_iMyPlayOffset;
 };
 
 }

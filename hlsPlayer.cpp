@@ -341,11 +341,12 @@ void cHlsSegmentLoader::Ping(void)
 
 //--- cHlsPlayer
 
-cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
+cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video, int offset)
 {
+	dsyslog("[plex]: '%s'", __FUNCTION__);
 	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8);
 	m_pVideo = Video;
-	m_timeOffset = 0;
+	m_timeOffset = offset;
 	m_jumpOffset = 0;
 	m_tTimeSum = 0;
 	m_doJump = false;
@@ -356,6 +357,7 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video)
 
 cHlsPlayer::~cHlsPlayer()
 {
+	dsyslog("[plex]: '%s'", __FUNCTION__);
 	delete m_pSegmentLoader;
 	m_pSegmentLoader = NULL;
 	Detach();

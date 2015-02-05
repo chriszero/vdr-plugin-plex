@@ -36,12 +36,15 @@ protected:
 	std::string GetOKMsg();
 	void AddHeaders(Poco::Net::HTTPServerResponse& response, Poco::Net::HTTPServerRequest& request);
 	std::map<std::string, std::string> ParseQuery(std::string query);
+	void UpdateCommandId(Poco::Net::HTTPServerRequest& request);
 };
 
 class SubscribeRequestHandler : public PlexHTTPRequestHandler
 {
 public:
 	virtual void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	void Subscribe(Poco::Net::HTTPServerRequest& request);
+	void Unsubscribe(Poco::Net::HTTPServerRequest& request);
 };
 
 class ResourceRequestHandler : public PlexHTTPRequestHandler

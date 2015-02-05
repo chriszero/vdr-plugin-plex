@@ -10,10 +10,12 @@
 #include "PlexHTTPRequestHandler.h"
 #include "PlexReqHandlerFactory.h"
 
+#include <vdr/thread.h>
+
 namespace plexclient
 {
 
-class ControlServer
+class ControlServer : public cThread
 {
 
 public:
@@ -21,12 +23,14 @@ public:
 		static ControlServer instance;
 		return instance;
 	}
-	void Start();
 	void Stop();
+
+protected:
+	void Action();
 
 private:
 	ControlServer();
-	
+
 	Poco::Net::ServerSocket *m_pSvs;
 	Poco::Net::HTTPServer *m_pSrv;
 

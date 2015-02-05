@@ -106,7 +106,7 @@ protected:
 
 public:
 	//static cMutex s_mutex;
-	cHlsPlayer(std::string startm3u8, plexclient::Video* Video);
+	cHlsPlayer(std::string startm3u8, plexclient::Video* Video, int offset = 0);
 	~cHlsPlayer();
 
 	virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);

@@ -12,20 +12,26 @@ cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
 {
 	if(!Video->m_pServer)
 		return NULL;
+	
+	// Stop already playing stream
+	cHlsPlayerControl* c = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));	
+	if(c) {
+		c->Stop();
+	}
 
 	// get Metadata
 	std::string uri = Video->m_pServer->GetUri() + Video->m_sKey;
 	plexclient::MediaContainer *pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
 
-	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer->m_vVideos[0]);
-
-	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, &pmcontainer->m_vVideos[0]), pmcontainer);
+	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer->m_vVideos[0], Video->m_iMyPlayOffset);
+	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, &pmcontainer->m_vVideos[0], Video->m_iMyPlayOffset), pmcontainer);
 	playerControl->m_title = pmcontainer->m_vVideos[0].m_sTitle;
 	return playerControl;
 }
 
 cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContainer* Container) :cControl(Player)
 {
+	dsyslog("[plex]: '%s'", __FUNCTION__);
 	player = Player;
 	m_pVideo = &Container->m_vVideos[0];
 	//m_title = title;
@@ -190,6 +196,13 @@ void cHlsPlayerControl::Stop(void)
 {
 	if(player)
 		player->Stop();
+}
+
+void cHlsPlayerControl::SeekTo(int offset)
+{
+	if (player) {
+		player->JumpTo(offset);
+	}
 }
 
 void cHlsPlayerControl::ShowMode(void)
