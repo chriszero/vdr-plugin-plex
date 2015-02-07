@@ -10,6 +10,7 @@
 #include <Poco/Net/MessageHeader.h>
 
 #include "Plexservice.h"
+#include "plexgdm.h"
 
 namespace plexclient
 {
@@ -45,8 +46,20 @@ void SubscriptionManager::NotifyServer()
 			total = total / m_pStatus->pControl->FramesPerSecond() * 1000;
 			m_pStatus->pControl->GetReplayMode(play, forward, speed);
 			pVid = m_pStatus->pVideo;
+		} else {
+			return;
 		}
-		else {
+		
+		std::string server;
+		int port;
+		if(pVid) {
+			server = pVid->m_pServer->GetIpAdress();
+			port = pVid->m_pServer->GetPort();
+		} else if ( plexgdm::GetInstance().GetPlexservers().size() > 0) {
+			server = plexgdm::GetInstance().GetPlexservers().at(0).GetIpAdress();
+			port = plexgdm::GetInstance().GetPlexservers().at(0).GetPort();
+		} else {
+			// no plexservers in network
 			return;
 		}
 
@@ -75,16 +88,15 @@ void SubscriptionManager::NotifyServer()
 		Request.add("X-Plex-Provides", "player");
 		Request.add("X-Plex-Version", "0.0.1a");
 		
-		Poco::Net::HTTPClientSession session(pVid->m_pServer->GetIpAdress(), pVid->m_pServer->GetPort());
-		
+		Poco::Net::HTTPClientSession session(server, port);
+
 		session.sendRequest(Request);
 		Poco::Net::HTTPResponse response;
 		session.receiveResponse(response);
-		
+
 		if(m_pStatus->PlayerStopped) {
 			m_bStoppedSent = true;
-		}
-		else {
+		} else {
 			m_bStoppedSent = false;
 		}
 	} catch (Poco::Exception& e) {
@@ -271,7 +283,7 @@ void cSubscriberStatus::Replaying(const cControl* DvbPlayerControl, const char* 
 	} else {
 		pVideo = NULL;
 	}
-	
+
 	SubscriptionManager::GetInstance().Notify();
 }
 
