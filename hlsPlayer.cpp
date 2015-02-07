@@ -278,6 +278,10 @@ bool cHlsSegmentLoader::DoLoad(void)
 				std::string segmentUri = GetSegmentUri(m_lastLoadedSegment++);
 				result = LoadSegment(segmentUri);
 			}
+		} else {
+			if(nextSegmentSize >= m_ringBufferSize) {
+				ResizeRingbuffer(nextSegmentSize + MEGABYTE(1));
+			}
 		}
 		m_bufferFilled = result;
 	} else {
@@ -337,6 +341,25 @@ void cHlsSegmentLoader::Ping(void)
 	} catch(Poco::Exception& exc) {
 		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
 	}
+}
+
+void cHlsSegmentLoader::ResizeRingbuffer(int newsize)
+{
+	hlsMutex.Lock();
+	isyslog("[plex] %s, Oldsize: %d, Newsize: %d", __FUNCTION__, m_ringBufferSize, newsize);
+	//Create new Ringbuffer
+	cRingBufferLinear* newBuffer = new cRingBufferLinear(newsize, 2*TS_SIZE);
+	// Copy old data
+	int count = 0;
+	uchar* pData = m_pRingbuffer->Get(count);
+	newBuffer->Put(pData, count);
+	// delete old buffer
+	delete m_pRingbuffer;
+	m_pRingbuffer = NULL;
+	// assing new buffer
+	m_pRingbuffer = newBuffer;
+	m_ringBufferSize = newsize;
+	hlsMutex.Unlock();
 }
 
 //--- cHlsPlayer

@@ -48,6 +48,7 @@ private:
 	bool LoadSegment(std::string uri);
 	int EstimateSegmentSize();
 	bool LoadLists(void);
+	void ResizeRingbuffer(int newsize);
 	
 
 protected:
