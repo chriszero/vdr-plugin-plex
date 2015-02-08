@@ -18,7 +18,8 @@ void PlexHTTPRequestHandler::AddHeaders(Poco::Net::HTTPServerResponse& response,
 		response.add("Access-Control-Max-Age", "1209600");
 		response.add("Access-Control-Allow-Origin", "*");
 		response.add("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT, HEAD");
-		response.add("Access-Control-Allow-Headers", "x-plex-version, x-plex-platform-version, "
+		response.add("Access-Control-Allow-Headers",
+		             "x-plex-version, x-plex-platform-version, "
 		             "x-plex-username, x-plex-client-identifier, "
 		             "x-plex-target-client-identifier, x-plex-device-name, "
 		             "x-plex-platform, x-plex-product, accept, x-plex-device");
@@ -36,14 +37,14 @@ void PlexHTTPRequestHandler::AddHeaders(Poco::Net::HTTPServerResponse& response,
 		response.add("X-Plex-Device", "PC");
 		response.add("X-Plex-Username", Config::GetInstance().GetUsername());
 	}
-	//header.MessageHeader(header);
+	// header.MessageHeader(header);
 }
 
 std::map<std::string, std::string> PlexHTTPRequestHandler::ParseQuery(std::string query)
 {
 	std::map<std::string, std::string> querymap;
 	Poco::StringTokenizer queryTokens(query, "&");
-	for(Poco::StringTokenizer::Iterator token = queryTokens.begin() ; token != queryTokens.end(); ++token) {
+	for(Poco::StringTokenizer::Iterator token = queryTokens.begin(); token != queryTokens.end(); ++token) {
 		Poco::StringTokenizer subTokens(*token, "=");
 		querymap[subTokens[0]] = subTokens[1];
 	}
@@ -55,12 +56,11 @@ std::string PlexHTTPRequestHandler::GetOKMsg()
 	return "<?xml version=\"1.0\" encoding=\"utf-8\"?> <Response code=\"200\" status=\"OK\" />";
 }
 
-void PlexHTTPRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+void PlexHTTPRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+        Poco::Net::HTTPServerResponse& response)
 {
-	UpdateCommandId(request);
-
-	AddHeaders(response, request);
-	response.send() << GetOKMsg();
+	response.send() << " "; // Stream must not be empty!
+	response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_NOT_FOUND);
 }
 
 void PlexHTTPRequestHandler::UpdateCommandId(Poco::Net::HTTPServerRequest& request)
@@ -69,13 +69,14 @@ void PlexHTTPRequestHandler::UpdateCommandId(Poco::Net::HTTPServerRequest& reque
 	std::map<std::string, std::string> query = ParseQuery(uri.getQuery()); // port=32400&commandID=0&protocol=http
 
 	std::string uuid = request.get("X-Plex-Client-Identifier", "");
-	if (uuid.length() != 0) {
+	if(uuid.length() != 0) {
 		std::string command = query["commandID"];
 		SubscriptionManager::GetInstance().UpdateSubscriber(uuid, command);
 	}
 }
 
-void SubscribeRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+void SubscribeRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+        Poco::Net::HTTPServerResponse& response)
 {
 	UpdateCommandId(request);
 	Poco::URI uri(request.getURI());
@@ -85,7 +86,7 @@ void SubscribeRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
 		usleep(900 * 1000);
 	}
 
-	if(request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS)  {
+	if(request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
 		AddHeaders(response, request);
 		response.send() << " "; // Stream must not be empty!
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
@@ -93,20 +94,20 @@ void SubscribeRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
 	}
 
 	// parse query
-	if(request.getURI().find("/subscribe")!= std::string::npos) {
+	if(request.getURI().find("/subscribe") != std::string::npos) {
 		Subscribe(request);
 		AddHeaders(response, request);
 		response.send() << GetOKMsg();
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
-	} else if(request.getURI().find("/unsubscribe")!= std::string::npos) {
+	} else if(request.getURI().find("/unsubscribe") != std::string::npos) {
 		Unsubscribe(request);
 		AddHeaders(response, request);
 		response.send() << GetOKMsg();
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
-	} else if(request.getURI().find("/poll")!= std::string::npos) {
-		response.add("X-Plex-Client-Identifier",Config::GetInstance().GetUUID());
-		response.add("Access-Control-Expose-Headers","X-Plex-Client-Identifier");
-		response.add("Access-Control-Allow-Origin","*");
+	} else if(request.getURI().find("/poll") != std::string::npos) {
+		response.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
+		response.add("Access-Control-Expose-Headers", "X-Plex-Client-Identifier");
+		response.add("Access-Control-Allow-Origin", "*");
 		response.setContentType("text/xml");
 		response.send() << SubscriptionManager::GetInstance().GetMsg(query["commandID"]);
 		response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
@@ -123,7 +124,8 @@ void SubscribeRequestHandler::Subscribe(Poco::Net::HTTPServerRequest& request)
 		int port = atoi(query["port"].c_str());
 		std::string command = query["commandID"];
 
-		SubscriptionManager::GetInstance().AddSubscriber(Subscriber(query["protocol"], request.clientAddress().host().toString(), port, uuid, command));
+		SubscriptionManager::GetInstance().AddSubscriber(
+		    Subscriber(query["protocol"], request.clientAddress().host().toString(), port, uuid, command));
 	}
 }
 
@@ -135,7 +137,8 @@ void SubscribeRequestHandler::Unsubscribe(Poco::Net::HTTPServerRequest& request)
 	}
 }
 
-void ResourceRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+void ResourceRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+        Poco::Net::HTTPServerResponse& response)
 {
 	UpdateCommandId(request);
 	AddHeaders(response, request);
@@ -143,20 +146,22 @@ void ResourceRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 	std::ostream& ostr = response.send();
 	ostr << "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 	     "<MediaContainer>"
-	     "<Player title=\"" << Config::GetInstance().GetHostname() << "\""
+	     "<Player title=\"" << Config::GetInstance().GetHostname()
+	     << "\""
 	     " protocol=\"plex\""
 	     " protocolVersion=\"1\""
 	     " protocolCapabilities=\"navigation,playback,timeline\""
 	     " machineIdentifier=\"" << Config::GetInstance().GetUUID() << "\""
 	     " product=\"PlexVDR\""
 	     " platform=\"Linux\""
-	     " platformVersion=\"" << VERSION << "\""
+	     " platformVersion=\"" << VERSION
+	     << "\""
 	     " deviceClass=\"HTPC\""
 	     "/> </MediaContainer>";
 
 	response.setStatus(Poco::Net::HTTPResponse::HTTP_REASON_OK);
 
-	//dsyslog("[plex]Resources Response sent...");
+	// dsyslog("[plex]Resources Response sent...");
 }
 
 void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -171,92 +176,95 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 			usleep(900 * 1000);
 		}
 
-		if(request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS)  {
+		if(request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
 			AddHeaders(response, request);
 			response.send() << " "; // Stream must not be empty!
 			return;
 		}
 
-		if(request.getURI().find("/poll")!= std::string::npos) {
-			response.add("X-Plex-Client-Identifier",Config::GetInstance().GetUUID());
-			response.add("Access-Control-Expose-Headers","X-Plex-Client-Identifier");
-			response.add("Access-Control-Allow-Origin","*");
+		if(request.getURI().find("/poll") != std::string::npos) {
+			response.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
+			response.add("Access-Control-Expose-Headers", "X-Plex-Client-Identifier");
+			response.add("Access-Control-Allow-Origin", "*");
 			response.setContentType("text/xml");
 			std::ostream& ostr = response.send();
 			ostr << SubscriptionManager::GetInstance().GetMsg(query["commandID"]);
 
-		} else if(request.getURI().find("/playback/playMedia")!= std::string::npos) {
-			AddHeaders(response, request);
-
-			std::string protocol = query["protocol"];
-			std::string address = query["address"];
-			std::string port = query["port"];
-			std::string key = query["key"];
-
-			std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
-
-			MediaContainer *pCont = Plexservice::GetMediaContainer(fullUrl);
-
-			// MUSS im Maintread des Plugins/VDR gestartet werden
-			if(query.find("offset") != query.end()) {
-				pCont->m_vVideos[0].m_iMyPlayOffset = atoi(query["offset"].c_str()) / 1000;
-			}
-			ActionManager::GetInstance().AddAction(&pCont->m_vVideos[0]); // MemoryLeak?
-
-			response.send() << GetOKMsg();
-
-			SubscriptionManager::GetInstance().Notify();
-
-		} else if(request.getURI().find("/navigation")!= std::string::npos) {
-			if(request.getURI().find("/moveUp")!= std::string::npos) {
+		} else if(request.getURI().find("/navigation") != std::string::npos) {
+			if(request.getURI().find("/moveUp") != std::string::npos) {
 				cRemote::Put(kUp);
-			} else if(request.getURI().find("/moveDown")!= std::string::npos) {
+			} else if(request.getURI().find("/moveDown") != std::string::npos) {
 				cRemote::Put(kDown);
-			} else if(request.getURI().find("/moveLeft")!= std::string::npos) {
+			} else if(request.getURI().find("/moveLeft") != std::string::npos) {
 				cRemote::Put(kLeft);
-			} else if(request.getURI().find("/moveRight")!= std::string::npos) {
+			} else if(request.getURI().find("/moveRight") != std::string::npos) {
 				cRemote::Put(kRight);
-			} else if(request.getURI().find("/select")!= std::string::npos) {
+			} else if(request.getURI().find("/select") != std::string::npos) {
 				cRemote::Put(kOk);
-			} else if(request.getURI().find("/home")!= std::string::npos) {
+			} else if(request.getURI().find("/home") != std::string::npos) {
 				cRemote::Put(kMenu);
-			} else if(request.getURI().find("/back")!= std::string::npos) {
+			} else if(request.getURI().find("/back") != std::string::npos) {
 				cRemote::Put(kBack);
 			}
-
 			response.send() << GetOKMsg();
-		} else if(request.getURI().find("/playback")!= std::string::npos) {
-			if(request.getURI().find("/seekTo")!= std::string::npos) {
+			
+		} else if(request.getURI().find("/playback") != std::string::npos) {
+			if(request.getURI().find("/playback/seekTo") != std::string::npos) {
+				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 				if(query.find("offset") != query.end()) {
 					int offset = atoi(query["offset"].c_str()) / 1000;
-					cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 					if(control) {
 						isyslog("[plex] Seeking to %d", offset);
 						control->SeekTo(offset);
 					}
 				}
-			} else if(request.getURI().find("/play")!= std::string::npos) {
-				cRemote::Put(kPlay);
-			} else if(request.getURI().find("/pause")!= std::string::npos) {
-				cRemote::Put(kPause);
-			} else if(request.getURI().find("/stop")!= std::string::npos) {
-				cRemote::Put(kStop);
-			} else if(request.getURI().find("/stepForward")!= std::string::npos) {
-				cRemote::Put(kFastFwd);
-			} else if(request.getURI().find("/stepBack")!= std::string::npos) {
+			} else if(request.getURI().find("/playback/playMedia") != std::string::npos) {
+				AddHeaders(response, request);
+				std::string protocol = query["protocol"];
+				std::string address = query["address"];
+				std::string port = query["port"];
+				std::string key = query["key"];
+
+				std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
+
+				MediaContainer* pCont = Plexservice::GetMediaContainer(fullUrl);
+
+				// MUSS im Maintread des Plugins/VDR gestartet werden
+				if(query.find("offset") != query.end()) {
+					pCont->m_vVideos[0].m_iMyPlayOffset = atoi(query["offset"].c_str()) / 1000;
+				}
+				ActionManager::GetInstance().AddAction(&pCont->m_vVideos[0]); // MemoryLeak?
+			} else if(request.getURI().find("/playback/play") != std::string::npos) {
+					cRemote::Put(kPlay);
+			} else if(request.getURI().find("/playback/pause") != std::string::npos) {
+					cRemote::Put(kPause);
+			} else if(request.getURI().find("/playback/stop") != std::string::npos) {
+					cRemote::Put(kStop);
+			} else if(request.getURI().find("/playback/stepForward") != std::string::npos) {
+				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
+				if(control) {
+					control->JumpRelative(30);
+				} else
+					cRemote::Put(kFastFwd);
+			} else if(request.getURI().find("/playback/stepBack") != std::string::npos) {
+				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
+				if(control) {
+					control->JumpRelative(-15);
+				}
 				cRemote::Put(kFastRew);
-			} else if(request.getURI().find("/skipNext")!= std::string::npos) {
+			} else if(request.getURI().find("/playback/skipNext") != std::string::npos) {
 				cRemote::Put(kFastFwd);
-			} else if(request.getURI().find("/skipPrevious")!= std::string::npos) {
+			} else if(request.getURI().find("/playback/skipPrevious") != std::string::npos) {
 				cRemote::Put(kFastRew);
 			}
+			
 			SubscriptionManager::GetInstance().Notify();
 			response.send() << GetOKMsg();
 		}
-	} catch (Poco::Exception& e) {
+		
+	} catch(Poco::Exception& e) {
 		std::cerr << e.displayText() << std::endl;
 	}
-
 }
 
-}
+} // namespace

@@ -205,6 +205,12 @@ void cHlsPlayerControl::SeekTo(int offset)
 	}
 }
 
+void cHlsPlayerControl::JumpRelative(int offset)
+{
+	if (player) 
+		player->JumpRelative(offset);
+}
+
 void cHlsPlayerControl::ShowMode(void)
 {
 	//dsyslog("[plex]: '%s'\n", __FUNCTION__);

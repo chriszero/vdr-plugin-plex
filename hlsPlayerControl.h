@@ -49,6 +49,7 @@ public:
 	void Play(void);
 	void Stop(void);
 	void SeekTo(int offset);
+	void JumpRelative(int offset);
 
 
 };
