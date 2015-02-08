@@ -17,9 +17,7 @@ namespace plexclient
 class cSubscriberStatus : public cStatus
 {
 protected:
-	virtual void ChannelSwitch(const cDevice *Device, int ChannelNumber, bool LiveView);
 	virtual void Replaying(const cControl *DvbPlayerControl, const char *Name, const char *FileName, bool On);
-	virtual void SetVolume(int Volume, bool Absolute);
 
 public:
 	cSubscriberStatus();

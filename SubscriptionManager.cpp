@@ -267,11 +267,6 @@ cSubscriberStatus::cSubscriberStatus()
 	pControl = NULL;
 }
 
-void cSubscriberStatus::ChannelSwitch(const cDevice* Device, int ChannelNumber, bool LiveView)
-{
-	dsyslog("[plex]: '%s'", __FUNCTION__);
-}
-
 void cSubscriberStatus::Replaying(const cControl* DvbPlayerControl, const char* Name, const char* FileName, bool On)
 {
 	//dsyslog("[plex]: '%s'", __FUNCTION__);
@@ -285,11 +280,6 @@ void cSubscriberStatus::Replaying(const cControl* DvbPlayerControl, const char* 
 	}
 
 	SubscriptionManager::GetInstance().Notify();
-}
-
-void cSubscriberStatus::SetVolume(int Volume, bool Absolute)
-{
-	dsyslog("[plex]: '%s'", __FUNCTION__);
 }
 
 } // Namespace
