@@ -184,7 +184,7 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
 	Poco::URI fileuri(fullUrl);
 
 	Poco::Net::HTTPRequest* pRequest = new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
-	        fileuri.getPath(), Poco::Net::HTTPMessage::HTTP_1_1);
+	        fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
 
 	pRequest->add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
 
@@ -204,8 +204,6 @@ MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
 	session->sendRequest(*pRequest);
 	Poco::Net::HTTPResponse response;
 	std::istream &rs = session->receiveResponse(response);
-
-	//std::cout << "URI: " << session->getHost() << "[" << pRequest->getURI() << "]" << std::endl;
 
 	MediaContainer* pAllsections = new MediaContainer(&rs, new PlexServer(fileuri.getHost(), fileuri.getPort()));
 	

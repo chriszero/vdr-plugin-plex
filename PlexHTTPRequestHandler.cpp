@@ -44,9 +44,9 @@ std::map<std::string, std::string> PlexHTTPRequestHandler::ParseQuery(std::strin
 {
 	std::map<std::string, std::string> querymap;
 	Poco::StringTokenizer queryTokens(query, "&");
-	for(Poco::StringTokenizer::Iterator token = queryTokens.begin(); token != queryTokens.end(); ++token) {
-		Poco::StringTokenizer subTokens(*token, "=");
-		querymap[subTokens[0]] = subTokens[1];
+	for(Poco::StringTokenizer::Iterator token = queryTokens.begin(); token != queryTokens.end(); token++) {
+		int pos = token->find("=");
+		querymap[token->substr(0, pos)] = token->substr(pos+1, std::string::npos);
 	}
 	return querymap;
 }
@@ -207,7 +207,7 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				cRemote::Put(kBack);
 			}
 			response.send() << GetOKMsg();
-			
+
 		} else if(request.getURI().find("/playback") != std::string::npos) {
 			if(request.getURI().find("/playback/seekTo") != std::string::npos) {
 				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
@@ -224,9 +224,9 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				std::string address = query["address"];
 				std::string port = query["port"];
 				std::string key = query["key"];
-
+				
 				std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
-
+				std::cout << fullUrl << std::endl;
 				MediaContainer* pCont = Plexservice::GetMediaContainer(fullUrl);
 
 				// MUSS im Maintread des Plugins/VDR gestartet werden
@@ -235,11 +235,11 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				}
 				ActionManager::GetInstance().AddAction(&pCont->m_vVideos[0]); // MemoryLeak?
 			} else if(request.getURI().find("/playback/play") != std::string::npos) {
-					cRemote::Put(kPlay);
+				cRemote::Put(kPlay);
 			} else if(request.getURI().find("/playback/pause") != std::string::npos) {
-					cRemote::Put(kPause);
+				cRemote::Put(kPause);
 			} else if(request.getURI().find("/playback/stop") != std::string::npos) {
-					cRemote::Put(kStop);
+				cRemote::Put(kStop);
 			} else if(request.getURI().find("/playback/stepForward") != std::string::npos) {
 				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 				if(control) {
@@ -257,11 +257,11 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 			} else if(request.getURI().find("/playback/skipPrevious") != std::string::npos) {
 				cRemote::Put(kFastRew);
 			}
-			
+
 			SubscriptionManager::GetInstance().Notify();
 			response.send() << GetOKMsg();
 		}
-		
+
 	} catch(Poco::Exception& e) {
 		std::cerr << e.displayText() << std::endl;
 	}

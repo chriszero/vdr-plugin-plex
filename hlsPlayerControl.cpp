@@ -12,9 +12,9 @@ cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
 {
 	if(!Video->m_pServer)
 		return NULL;
-	
+
 	// Stop already playing stream
-	cHlsPlayerControl* c = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));	
+	cHlsPlayerControl* c = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 	if(c) {
 		c->Stop();
 	}
@@ -207,13 +207,13 @@ void cHlsPlayerControl::SeekTo(int offset)
 
 void cHlsPlayerControl::JumpRelative(int offset)
 {
-	if (player) 
+	if (player)
 		player->JumpRelative(offset);
 }
 
 void cHlsPlayerControl::ShowMode(void)
 {
-	//dsyslog("[plex]: '%s'\n", __FUNCTION__);
+	dsyslog("[plex]: '%s'\n", __FUNCTION__);
 	if (visible || Setup.ShowReplayMode && !cOsd::IsOpen()) {
 		bool Play, Forward;
 		int Speed;
@@ -241,7 +241,7 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 {
 	int Current, Total;
 
-	if (GetIndex(Current, Total) && Total > 0) {
+	if (GetIndex(Current, Total)) {
 		if (!visible) {
 			displayReplay = Skins.Current()->DisplayReplay(modeOnly);
 			//displayReplay->SetMarks(player->Marks());
@@ -256,10 +256,14 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 				int Index = Total;
 				if (Setup.ShowRemainingTime)
 					Index = Current - Index;
+				if(Total == 0) // Webstreams
+					Index = Current;
 				displayReplay->SetTotal(IndexToHMSF(Index, false, FramesPerSecond()));
 				if (!Initial)
 					displayReplay->Flush();
 			}
+			if(Total == 0) // Webstreams
+				Total = Current;
 			displayReplay->SetProgress(Current, Total);
 			if (!Initial)
 				displayReplay->Flush();

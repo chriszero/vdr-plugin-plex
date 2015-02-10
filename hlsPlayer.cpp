@@ -75,13 +75,14 @@ void cHlsSegmentLoader::Action(void)
 			isyslog("[plex] Ringbuffer Cleared, loading new segments");
 			hlsMutex.Unlock();
 		}
-		if (!DoLoad()) {
-			isyslog("[plex] No further segments to load");
-			StopLoader();
+		if (!DoLoad() && m_pRingbuffer->Available() < TS_SIZE) {
+			isyslog("[plex] No further segments to load and buffer empty, end of stream!");
 			Cancel();
+
 		}
 		cCondWait::SleepMs(3);
 	}
+	StopLoader();
 }
 
 bool cHlsSegmentLoader::LoadLists(void)
@@ -348,7 +349,7 @@ void cHlsSegmentLoader::ResizeRingbuffer(int newsize)
 	hlsMutex.Lock();
 	isyslog("[plex] %s, Oldsize: %d, Newsize: %d", __FUNCTION__, m_ringBufferSize, newsize);
 	//Create new Ringbuffer
-	cRingBufferLinear* newBuffer = new cRingBufferLinear(newsize, 2*TS_SIZE);
+	cRingBufferLinear* newBuffer = new cRingBufferLinear(newsize, TS_SIZE);
 	// Copy old data
 	int count = 0;
 	uchar* pData = m_pRingbuffer->Get(count);
@@ -622,14 +623,12 @@ void cHlsPlayer::ReportProgress(bool stopped)
 	std::string state;
 	if(stopped) {
 		state = "stopped";
-	}
-	else if (playMode == pmPlay) {
+	} else if (playMode == pmPlay) {
 		state = "playing";
-	}
-	else {
+	} else {
 		state = "paused";
 	}
-	
+
 	Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
 	std::string uri = "/:/progress?key=" + std::string(itoa(m_pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
