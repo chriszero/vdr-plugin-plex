@@ -23,6 +23,7 @@ cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
 	m_bufferFilled = false;
 	m_lastLoadedSegment = 0;
 	m_segmentsToBuffer = 2;
+	m_streamlenght = 0;
 	m_pBuffer = new uchar[8192];
 
 	// Initialize members
@@ -75,7 +76,9 @@ void cHlsSegmentLoader::Action(void)
 			isyslog("[plex] Ringbuffer Cleared, loading new segments");
 			hlsMutex.Unlock();
 		}
-		if (!DoLoad() && m_pRingbuffer->Available() < TS_SIZE) {
+		int count = 0;
+		m_pRingbuffer->Get(count);
+		if (!DoLoad() && count < TS_SIZE) {
 			isyslog("[plex] No further segments to load and buffer empty, end of stream!");
 			Cancel();
 
@@ -136,6 +139,12 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 			m_segmentsToBuffer = 2;
 		} else {
 			m_segmentsToBuffer = 3;
+		}
+
+		// Get stream lenght
+		m_streamlenght = 0;
+		for(unsigned int i = 0; i < m_indexParser.vPlaylistItems.size(); i++) {
+			m_streamlenght += m_indexParser.vPlaylistItems[i].length;
 		}
 	}
 	return res;
@@ -237,7 +246,7 @@ int cHlsSegmentLoader::GetSegmentSize(int segmentIndex)
 		return m_indexParser.vPlaylistItems[segmentIndex].size = reqResponse.getContentLength();
 	} catch(Poco::IOException& exc) {
 		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
-		return INT_MAX;
+		return 0;
 	}
 }
 
@@ -363,6 +372,11 @@ void cHlsSegmentLoader::ResizeRingbuffer(int newsize)
 	hlsMutex.Unlock();
 }
 
+int cHlsSegmentLoader::GetStreamLenght()
+{
+	return m_streamlenght;
+}
+
 //--- cHlsPlayer
 
 cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video, int offset)
@@ -382,6 +396,7 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video, int offs
 cHlsPlayer::~cHlsPlayer()
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
+	Cancel();
 	delete m_pSegmentLoader;
 	m_pSegmentLoader = NULL;
 	Detach();
@@ -491,8 +506,14 @@ void cHlsPlayer::Activate(bool On)
 
 bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribute__((unused)))
 {
-	Total = m_pVideo->m_Media.m_lDuration / 1000 * FramesPerSecond(); // milliseconds
-	Current = GetPlayedSeconds() * FramesPerSecond();
+	if(m_pVideo) {
+		if( m_pVideo->m_Media.m_lDuration == 0) {
+			Total = m_pSegmentLoader->GetStreamLenght() * FramesPerSecond();
+		} else {
+			Total = m_pVideo->m_Media.m_lDuration / 1000 * FramesPerSecond(); // milliseconds
+		}
+		Current = GetPlayedSeconds() * FramesPerSecond();
+	}
 	return true;
 }
 
@@ -543,7 +564,10 @@ void cHlsPlayer::Stop(void)
 
 double cHlsPlayer::FramesPerSecond(void)
 {
-	return m_pVideo->m_Media.m_VideoFrameRate ? m_pVideo->m_Media.m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
+	if(m_pVideo) {
+		return m_pVideo->m_Media.m_VideoFrameRate ? m_pVideo->m_Media.m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
+	}
+	return DEFAULTFRAMESPERSECOND;
 }
 
 void cHlsPlayer::JumpRelative(int seconds)

@@ -27,6 +27,7 @@ private:
 	unsigned int m_lastLoadedSegment;
 	bool m_bufferFilled;
 	bool m_newList;
+	int m_streamlenght;
 
 	uchar* m_pBuffer;
 
@@ -66,6 +67,7 @@ public:
 	bool LoadM3u8(std::string uri);
 	void AddHeader(Poco::Net::HTTPRequest& req);
 	void Ping(void);
+	int GetStreamLenght();
 };
 
 class cHlsPlayer : public cPlayer, cThread

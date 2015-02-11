@@ -234,9 +234,7 @@ void Subscriber::SendUpdate(std::string msg, bool isNav)
 		Poco::Net::HTTPResponse response;
 		session.receiveResponse(response);
 
-	} catch (Poco::Exception& e) {
-		std::cout << e.displayText() << std::endl;
-	}
+	} catch (Poco::Exception& e) {}
 }
 
 ActionManager::ActionManager() {}
