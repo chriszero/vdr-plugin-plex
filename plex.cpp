@@ -52,7 +52,7 @@ void cPlexBrowser::CreateMenu()
 	// Clear Menu
 	Clear();
 	// Directory or Video?
-	if(pCont->m_vDirectories.size() > 0) {
+	if(pCont && pCont->m_vDirectories.size() > 0) {
 
 		for(std::vector<plexclient::Directory>::iterator it = pCont->m_vDirectories.begin(); it != pCont->m_vDirectories.end(); ++it) {
 			plexclient::Directory *pDir = &(*it);
@@ -60,7 +60,7 @@ void cPlexBrowser::CreateMenu()
 		}
 	}
 
-	if(pCont->m_vVideos.size() > 0) {
+	if(pCont && pCont->m_vVideos.size() > 0) {
 		for(std::vector<plexclient::Video>::iterator it = pCont->m_vVideos.begin(); it != pCont->m_vVideos.end(); ++it) {
 			plexclient::Video *vid = &(*it); // cast raw pointer
 			Add(new cPlexOsdItem( vid->m_sTitle.c_str(), vid) );
@@ -291,18 +291,10 @@ bool cMyPlugin::Initialize(void)
 {
 	// First Startup? Save UUID
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
-
-	plexclient::plexgdm::GetInstance().discover();
-
-	if (plexclient::plexgdm::GetInstance().GetPlexservers().size() > 0) {
-		plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), DESCRIPTION, "3200", "VDR", VERSION);
-		plexclient::plexgdm::GetInstance().Start();
-
-		plexclient::ControlServer::GetInstance().Start();
-
-	} else {
-		esyslog("[plex]No Plexmediaserver found");
-	}
+	
+	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), DESCRIPTION, "3200", "VDR", VERSION);
+	plexclient::plexgdm::GetInstance().Start();
+	plexclient::ControlServer::GetInstance().Start();
 
 	return true;
 }

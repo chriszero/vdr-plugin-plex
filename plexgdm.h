@@ -15,6 +15,7 @@
 #include <Poco/Format.h>
 
 #include <vdr/thread.h>
+#include <vdr/tools.h>
 
 #include "PlexServer.h"
 
@@ -32,11 +33,11 @@ public:
 	void clientDetails(std::string c_id, std::string c_name, std::string c_port, std::string c_product, std::string c_version);
 	std::string getClientDetails();
 	PlexServer* getServerList();
-	void discover();;
+	void discover();
 	void checkClientRegistration();
-	
+
 	void Action(void);
-	
+
 	//void startAll();
 	void startRegistration();
 
@@ -50,10 +51,13 @@ public:
 protected:
 
 
-	private:
+private:
 	plexgdm();
 	cMutex m_mutex;
 	cCondVar m_waitCondition;
+	int _discoverInterval;
+	cTimeMs _discoverTimer;
+	bool _helloSent;
 
 	Poco::Net::SocketAddress m_discoverAdress;
 	Poco::Net::SocketAddress m_clientRegisterGroup;
