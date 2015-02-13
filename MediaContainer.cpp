@@ -2,7 +2,7 @@
 
 namespace plexclient
 {
-MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
+MediaContainer::MediaContainer(std::istream* response, PlexServer Server)
 {
 	try {
 		InputSource src(*response);

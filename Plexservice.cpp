@@ -146,7 +146,7 @@ MediaContainer* Plexservice::GetSection(std::string section)
 
 		dsyslog("[plex] URI: %s[s%]", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
 
-		MediaContainer* pAllsections = new MediaContainer(&rs, this->pServer);
+		MediaContainer* pAllsections = new MediaContainer(&rs, *pServer);
 		//Poco::StreamCopier::copyStream(rs, std::cout);
 		delete pRequest;
 		return pAllsections;
@@ -178,39 +178,35 @@ Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 	return pRequest;
 }
 
-MediaContainer* Plexservice::GetMediaContainer(std::string fullUrl)
+MediaContainer Plexservice::GetMediaContainer(std::string fullUrl)
 {
 
 	Poco::URI fileuri(fullUrl);
 
-	Poco::Net::HTTPRequest* pRequest = new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
-	        fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
+	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
 
-	pRequest->add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
+	request.add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
 
 	//pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
-	pRequest->add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-	pRequest->add("X-Plex-Device", "PC");
-	pRequest->add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
-	pRequest->add("X-Plex-Language", Config::GetInstance().GetLanguage());
-	pRequest->add("X-Plex-Model", "Linux");
-	pRequest->add("X-Plex-Platform", "VDR");
-	pRequest->add("X-Plex-Product", "plex for vdr");
-	pRequest->add("X-Plex-Provides", "player");
-	pRequest->add("X-Plex-Version", "0.0.1a");
+	request.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
+	request.add("X-Plex-Device", "PC");
+	request.add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
+	request.add("X-Plex-Language", Config::GetInstance().GetLanguage());
+	request.add("X-Plex-Model", "Linux");
+	request.add("X-Plex-Platform", "VDR");
+	request.add("X-Plex-Product", "plex for vdr");
+	request.add("X-Plex-Provides", "player");
+	request.add("X-Plex-Version", "0.0.1a");
 
-	Poco::Net::HTTPClientSession* session = new Poco::Net::HTTPClientSession(fileuri.getHost(), fileuri.getPort());
+	Poco::Net::HTTPClientSession session(fileuri.getHost(), fileuri.getPort());
 
-	session->sendRequest(*pRequest);
+	session.sendRequest(request);
 	Poco::Net::HTTPResponse response;
-	std::istream &rs = session->receiveResponse(response);
+	std::istream &rs = session.receiveResponse(response);
 
-	MediaContainer* pAllsections = new MediaContainer(&rs, new PlexServer(fileuri.getHost(), fileuri.getPort()));
-	
-	delete pRequest;
-	delete session;
+	MediaContainer allsections(&rs, PlexServer(fileuri.getHost(), fileuri.getPort()));
 
-	return pAllsections;
+	return allsections;
 }
 
 #ifdef CRYPTOPP
@@ -298,7 +294,7 @@ std::string Plexservice::encode(std::string message)
 
 std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server)
 {
-	PlexServer* pSrv = server ? server : video->m_pServer;
+	PlexServer* pSrv = server ? server : &video->m_Server;
 	std::stringstream params;
 	params << "/video/:/transcode/universal/start.m3u8?";
 	params << "path=" << encode(pSrv->GetUri() + video->m_sKey);

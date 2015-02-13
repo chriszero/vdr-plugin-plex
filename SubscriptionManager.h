@@ -90,15 +90,15 @@ public:
 		static ActionManager instance;
 		return instance;
 	}
-	void AddAction(Video* video);
-	Video* GetAction();
+	void AddAction(Video video);
+	Video GetAction();
 	bool IsAction();
 
 private:
 	cMutexLock m_myLock;
 	cMutex m_myMutex;
 	ActionManager();
-	Video* m_Action;
+	Video m_Action;
 	bool m_isAction;
 };
 

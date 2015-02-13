@@ -33,7 +33,8 @@ namespace plexclient
 class Video: XmlObject
 {
 public:
-	Video(Poco::XML::Node* pNode, PlexServer* Server);
+	Video(Poco::XML::Node* pNode, PlexServer Server);
+	Video() {};
 
 public:
 	int m_iRatingKey;
@@ -60,7 +61,7 @@ public:
 	std::vector<std::string> m_vRole;
 	std::string m_sCollection;
 	Media m_Media;
-	PlexServer* m_pServer;
+	PlexServer m_Server;
 	int m_iMyPlayOffset;
 };
 

@@ -379,11 +379,11 @@ int cHlsSegmentLoader::GetStreamLenght()
 
 //--- cHlsPlayer
 
-cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video* Video, int offset)
+cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offset)
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
 	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8);
-	m_pVideo = Video;
+	m_Video = Video;
 	m_timeOffset = offset;
 	m_jumpOffset = 0;
 	m_tTimeSum = 0;
@@ -406,8 +406,8 @@ void cHlsPlayer::SetAudioAndSubtitleTracks(void)
 {
 	//DeviceClrAvailableTracks();
 	DeviceSetAvailableTrack(ttDolby, 0, 0, "Current");
-	if(m_pVideo->m_Media.m_vStreams.size() > 0) {
-		std::vector<plexclient::Stream> streams = m_pVideo->m_Media.m_vStreams;
+	if(m_Video.m_Media.m_vStreams.size() > 0) {
+		std::vector<plexclient::Stream> streams = m_Video.m_Media.m_vStreams;
 		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
 			plexclient::Stream *pStream = &(*it);
 			if(pStream->m_eStreamType == plexclient::sAUDIO) {
@@ -432,7 +432,7 @@ void cHlsPlayer::Action(void)
 			DeviceFreeze();
 			m_doJump = false;
 			m_bFirstPlay = true;
-			std::string uri = plexclient::Plexservice::GetUniversalTranscodeUrl(m_pVideo, m_jumpOffset);
+			std::string uri = plexclient::Plexservice::GetUniversalTranscodeUrl(&m_Video, m_jumpOffset);
 			m_pSegmentLoader->LoadM3u8(uri);
 			m_timeOffset = m_jumpOffset;
 			DeviceClear();
@@ -461,7 +461,7 @@ void cHlsPlayer::Action(void)
 		}
 	}
 	// set as watched if >= 90%
-	int t = m_pVideo->m_Media.m_lDuration / 1000 * 0.9;
+	int t = m_Video.m_Media.m_lDuration / 1000 * 0.9;
 	if( GetPlayedSeconds() >= t) {
 		SetWatched();
 	}
@@ -506,14 +506,12 @@ void cHlsPlayer::Activate(bool On)
 
 bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribute__((unused)))
 {
-	if(m_pVideo) {
-		if( m_pVideo->m_Media.m_lDuration == 0) {
-			Total = m_pSegmentLoader->GetStreamLenght() * FramesPerSecond();
-		} else {
-			Total = m_pVideo->m_Media.m_lDuration / 1000 * FramesPerSecond(); // milliseconds
-		}
-		Current = GetPlayedSeconds() * FramesPerSecond();
+	if(m_Video.m_Media.m_lDuration > 0) {
+		Total = m_Video.m_Media.m_lDuration / 1000 * FramesPerSecond(); // milliseconds
+	} else {
+		Total = m_pSegmentLoader->GetStreamLenght() * FramesPerSecond();
 	}
+	Current = GetPlayedSeconds() * FramesPerSecond();
 	return true;
 }
 
@@ -564,10 +562,7 @@ void cHlsPlayer::Stop(void)
 
 double cHlsPlayer::FramesPerSecond(void)
 {
-	if(m_pVideo) {
-		return m_pVideo->m_Media.m_VideoFrameRate ? m_pVideo->m_Media.m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
-	}
-	return DEFAULTFRAMESPERSECOND;
+	return m_Video.m_Media.m_VideoFrameRate ? m_Video.m_Media.m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
 }
 
 void cHlsPlayer::JumpRelative(int seconds)
@@ -590,8 +585,8 @@ void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tT
 	dsyslog("[plex]%s %d %s", __FUNCTION__, TrackId->id, TrackId->language);
 	// Check if stream availiable
 	int streamId = 0;
-	if(m_pVideo->m_Media.m_vStreams.size() > 0) {
-		std::vector<plexclient::Stream> streams = m_pVideo->m_Media.m_vStreams;
+	if(m_Video.m_Media.m_vStreams.size() > 0) {
+		std::vector<plexclient::Stream> streams = m_Video.m_Media.m_vStreams;
 		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
 			plexclient::Stream *pStream = &(*it);
 			if(pStream->m_eStreamType == plexclient::sAUDIO && pStream->m_iIndex + AudioIndexOffset == TrackId->id) {
@@ -602,9 +597,9 @@ void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tT
 	}
 	// Then do the request
 	if(streamId > 0) {
-		Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
+		Poco::Net::HTTPClientSession session(m_Video.m_Server.GetIpAdress(), m_Video.m_Server.GetPort());
 
-		std::string uri = "/library/parts/" + std::string(itoa(m_pVideo->m_Media.m_iPartId)) + "?audioStreamID=" + std::string(itoa(streamId));
+		std::string uri = "/library/parts/" + std::string(itoa(m_Video.m_Media.m_iPartId)) + "?audioStreamID=" + std::string(itoa(streamId));
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
 		session.sendRequest(req);
 
@@ -653,8 +648,8 @@ void cHlsPlayer::ReportProgress(bool stopped)
 		state = "paused";
 	}
 
-	Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
-	std::string uri = "/:/progress?key=" + std::string(itoa(m_pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
+	Poco::Net::HTTPClientSession session(m_Video.m_Server.GetIpAdress(), m_Video.m_Server.GetPort());
+	std::string uri = "/:/progress?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
 	session.sendRequest(req);
 
@@ -669,8 +664,8 @@ void cHlsPlayer::ReportProgress(bool stopped)
 
 void cHlsPlayer::SetWatched(void)
 {
-	Poco::Net::HTTPClientSession session(m_pVideo->m_pServer->GetIpAdress(), m_pVideo->m_pServer->GetPort());
-	std::string uri = "/:/scrobble?key=" + std::string(itoa(m_pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library";
+	Poco::Net::HTTPClientSession session(m_Video.m_Server.GetIpAdress(), m_Video.m_Server.GetPort());
+	std::string uri = "/:/scrobble?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library";
 	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
 	session.sendRequest(req);
 

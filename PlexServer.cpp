@@ -42,8 +42,4 @@ std::string PlexServer::GetUri()
 	return std::string("http://") + m_sIpAddress + ":" + std::string(itoa(m_nPort));
 }
 
-PlexServer::~PlexServer()
-{
-}
-
 }

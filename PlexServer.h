@@ -21,7 +21,7 @@ class PlexServer
 public:
 	PlexServer(std::string data, std::string ip);
 	PlexServer(std::string ip, int port);
-	~PlexServer();
+	PlexServer() {};
 
 	int GetMaster() const {
 		return m_nMaster;

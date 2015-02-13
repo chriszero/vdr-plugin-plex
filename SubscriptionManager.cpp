@@ -53,8 +53,8 @@ void SubscriptionManager::NotifyServer()
 		std::string server;
 		int port;
 		if(pVid) {
-			server = pVid->m_pServer->GetIpAdress();
-			port = pVid->m_pServer->GetPort();
+			server = pVid->m_Server.GetIpAdress();
+			port = pVid->m_Server.GetPort();
 		} else if ( plexgdm::GetInstance().GetPlexservers().size() > 0) {
 			server = plexgdm::GetInstance().GetPlexservers().at(0).GetIpAdress();
 			port = plexgdm::GetInstance().GetPlexservers().at(0).GetPort();
@@ -169,10 +169,10 @@ std::string SubscriptionManager::GetTimelineXml()
 	msg << " duration=\"" << total << "\"";
 	msg << " seekRange=\"0-" << total << "\"";
 	msg << " controllable=\"true\"";
-	msg << " machineIdentifier=\"" << (pVid ? pVid->m_pServer->GetUuid()	 : "") << "\"";
+	msg << " machineIdentifier=\"" << (pVid ? pVid->m_Server.GetUuid()	 : "") << "\"";
 	msg << " protocol=\"http\"";
-	msg << " address=\"" << (pVid ? pVid->m_pServer->GetIpAdress() : "") << "\"";
-	msg << " port=\"" << (pVid ? pVid->m_pServer->GetPort() : 0) << "\"";
+	msg << " address=\"" << (pVid ? pVid->m_Server.GetIpAdress() : "") << "\"";
+	msg << " port=\"" << (pVid ? pVid->m_Server.GetPort() : 0) << "\"";
 	msg << " guid=\"" << Config::GetInstance().GetUUID() << "\"";
 	msg << " containerKey=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";
 	msg << " key=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";
@@ -239,14 +239,14 @@ void Subscriber::SendUpdate(std::string msg, bool isNav)
 
 ActionManager::ActionManager() {}
 
-void ActionManager::AddAction(Video* video)
+void ActionManager::AddAction(Video video)
 {
 	m_myLock.Lock(&m_myMutex);
 	m_Action = video;
 	m_isAction = true;
 }
 
-Video* ActionManager::GetAction()
+Video ActionManager::GetAction()
 {
 	m_myLock.Lock(&m_myMutex);
 	m_isAction = false;
@@ -272,7 +272,7 @@ void cSubscriberStatus::Replaying(const cControl* DvbPlayerControl, const char* 
 	pControl = const_cast<cControl*>(DvbPlayerControl);
 	cHlsPlayerControl* hlsControl = dynamic_cast<cHlsPlayerControl*>(pControl);
 	if(hlsControl) {
-		pVideo = hlsControl->m_pVideo;
+		pVideo = &hlsControl->m_Video;
 	} else {
 		pVideo = NULL;
 	}

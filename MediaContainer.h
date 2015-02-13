@@ -34,7 +34,7 @@ namespace plexclient
 class MediaContainer: XmlObject
 {
 public:
-	MediaContainer(std::istream *response, PlexServer* Server);
+	MediaContainer(std::istream *response, PlexServer Server);
 
 protected:
 

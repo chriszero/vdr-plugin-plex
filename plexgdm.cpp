@@ -12,7 +12,7 @@ plexgdm::plexgdm()
 	_multicastAddress = "239.0.0.250";
 	_clientUpdatePort = 32412;
 	_helloSent = false;
-	_discoverInterval = 10 * 1000;
+	_discoverInterval = 30 * 1000;
 	_discoverTimer.Set(1);
 
 	m_discoverAdress = Poco::Net::SocketAddress(_multicastAddress, 32414);

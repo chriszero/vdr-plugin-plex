@@ -8,11 +8,8 @@
 #include "PVideo.h"
 
 // static
-cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
+cControl* cHlsPlayerControl::Create(plexclient::Video Video)
 {
-	if(!Video->m_pServer)
-		return NULL;
-
 	// Stop already playing stream
 	cHlsPlayerControl* c = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 	if(c) {
@@ -20,20 +17,20 @@ cControl* cHlsPlayerControl::Create(plexclient::Video* Video)
 	}
 
 	// get Metadata
-	std::string uri = Video->m_pServer->GetUri() + Video->m_sKey;
-	plexclient::MediaContainer *pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
+	std::string uri = Video.m_Server.GetUri() + Video.m_sKey;
+	plexclient::MediaContainer pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
 
-	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer->m_vVideos[0], Video->m_iMyPlayOffset);
-	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, &pmcontainer->m_vVideos[0], Video->m_iMyPlayOffset), pmcontainer);
-	playerControl->m_title = pmcontainer->m_vVideos[0].m_sTitle;
+	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer.m_vVideos[0], Video.m_iMyPlayOffset);
+	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, pmcontainer.m_vVideos[0], Video.m_iMyPlayOffset), pmcontainer.m_vVideos[0]);
+	playerControl->m_title = pmcontainer.m_vVideos[0].m_sTitle;
 	return playerControl;
 }
 
-cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContainer* Container) :cControl(Player)
+cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video Video) :cControl(Player)
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
 	player = Player;
-	m_pVideo = &Container->m_vVideos[0];
+	m_Video = Video;
 	//m_title = title;
 
 	displayReplay = NULL;
@@ -43,7 +40,7 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContai
 	lastSpeed = -2; // an invalid value
 	timeoutShow = 0;
 
-	cStatus::MsgReplaying(this, m_title.c_str(), m_pVideo->m_Media.m_sPartFile.c_str(), true);
+	cStatus::MsgReplaying(this, m_title.c_str(), m_Video.m_Media.m_sPartFile.c_str(), true);
 }
 
 cHlsPlayerControl::~cHlsPlayerControl()

@@ -15,10 +15,10 @@ static const char *MAINMENUENTRY = "Plex for VDR";
 **
 **	@param filename	path and file name
 */
-static void PlayFile(plexclient::Video* pVid)
+static void PlayFile(plexclient::Video Vid)
 {
-	isyslog("[plex]: play file '%s'\n", pVid->m_sKey.c_str());
-	cControl* control = cHlsPlayerControl::Create(pVid);
+	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
+	cControl* control = cHlsPlayerControl::Create(Vid);
 	if(control) {
 		cControl::Launch(control);
 	}
@@ -142,8 +142,7 @@ eOSState cPlexBrowser::ProcessSelected()
 
 
 	if(item->IsVideo()) {
-		plexclient::Video* pVid = item->GetAttachedVideo();
-		PlayFile(pVid);
+		PlayFile(*item->GetAttachedVideo());
 		return osEnd;
 	}
 
@@ -329,8 +328,7 @@ void cMyPlugin::MainThreadHook(void)
 	// dsyslog("[plex]%s:\n", __FUNCTION__);
 	// Start Tasks, e.g. Play Video
 	if(plexclient::ActionManager::GetInstance().IsAction()) {
-		plexclient::Video* video = plexclient::ActionManager::GetInstance().GetAction();
-		PlayFile(video);
+		PlayFile(plexclient::ActionManager::GetInstance().GetAction());
 	}
 }
 

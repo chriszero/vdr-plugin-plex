@@ -75,7 +75,7 @@ class cHlsPlayer : public cPlayer, cThread
 private:
 	int AudioIndexOffset;
 	cHlsSegmentLoader* m_pSegmentLoader;
-	plexclient::Video* m_pVideo;
+	plexclient::Video m_Video;
 
 	int m_jumpOffset;
 	int m_timeOffset;
@@ -109,7 +109,7 @@ protected:
 
 public:
 	//static cMutex s_mutex;
-	cHlsPlayer(std::string startm3u8, plexclient::Video* Video, int offset = 0);
+	cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offset = 0);
 	~cHlsPlayer();
 
 	virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);

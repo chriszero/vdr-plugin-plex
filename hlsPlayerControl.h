@@ -12,7 +12,6 @@ class cHlsPlayerControl : public cControl
 {
 private:
 	static volatile int active;
-	plexclient::MediaContainer* m_pMediaContainer;
 	cHlsPlayer* player;
 	std::string m_title;
 
@@ -31,10 +30,10 @@ protected:
 	//void ShowMode();
 
 public:
-	plexclient::Video* m_pVideo;
+	plexclient::Video m_Video;
 
-	static cControl* Create(plexclient::Video* Video);
-	cHlsPlayerControl(cHlsPlayer* Player, plexclient::MediaContainer* Container);
+	static cControl* Create(plexclient::Video Video);
+	cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video Video);
 	virtual ~cHlsPlayerControl();
 
 	virtual void Show(void);

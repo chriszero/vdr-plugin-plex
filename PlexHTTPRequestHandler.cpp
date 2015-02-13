@@ -3,6 +3,8 @@
 #include <vdr/keys.h>
 #include <unistd.h>
 
+#include <Poco/SharedPtr.h>
+
 #include "hlsPlayerControl.h"
 
 namespace plexclient
@@ -224,16 +226,17 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				std::string address = query["address"];
 				std::string port = query["port"];
 				std::string key = query["key"];
-				
+
 				std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
 				std::cout << fullUrl << std::endl;
-				MediaContainer* pCont = Plexservice::GetMediaContainer(fullUrl);
+				MediaContainer Cont = Plexservice::GetMediaContainer(fullUrl);
 
 				// MUSS im Maintread des Plugins/VDR gestartet werden
 				if(query.find("offset") != query.end()) {
-					pCont->m_vVideos[0].m_iMyPlayOffset = atoi(query["offset"].c_str()) / 1000;
+					Cont.m_vVideos[0].m_iMyPlayOffset = atoi(query["offset"].c_str()) / 1000;
 				}
-				ActionManager::GetInstance().AddAction(&pCont->m_vVideos[0]); // MemoryLeak?
+				//Poco::
+				ActionManager::GetInstance().AddAction(Cont.m_vVideos[0]);
 			} else if(request.getURI().find("/playback/play") != std::string::npos) {
 				cRemote::Put(kPlay);
 			} else if(request.getURI().find("/playback/pause") != std::string::npos) {
