@@ -13,17 +13,6 @@
 #include <vdr/osd.h>
 #include <vdr/menuitems.h>
 
-
-
-/// vdr-plugin version number.
-/// Makefile extracts the version number for generating the file name
-/// for the distribution archive.
-static const char *const VERSION = "0.0.1"
-#ifdef GIT_REV
-    "-GIT" GIT_REV
-#endif
-    ;
-
 #define STRING_SIZE 256
 
 class Config

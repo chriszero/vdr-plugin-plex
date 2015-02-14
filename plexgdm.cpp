@@ -142,9 +142,7 @@ void plexgdm::discover()
 					vBuffer[sender.host().toString()] = buf;
 				}
 			}
-		} catch(Poco::TimeoutException& exc) {
-			dsyslog("[plex]TimeoutException in %s s%", __func__, exc.displayText().c_str());
-		}
+		} catch(Poco::TimeoutException) {}
 
 		socket.close();
 		m_discoveryComplete = true;

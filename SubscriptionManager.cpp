@@ -11,6 +11,7 @@
 
 #include "Plexservice.h"
 #include "plexgdm.h"
+#include "PlexHelper.h"
 
 namespace plexclient
 {
@@ -77,17 +78,8 @@ void SubscriptionManager::NotifyServer()
 
 		Poco::Net::HTTPRequest Request(Poco::Net::HTTPRequest::HTTP_GET, uri.str(), Poco::Net::HTTPMessage::HTTP_1_1);
 
-		Request.add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
-		Request.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-		Request.add("X-Plex-Device", "PC");
-		Request.add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
-		Request.add("X-Plex-Language", Config::GetInstance().GetLanguage());
-		Request.add("X-Plex-Model", "Linux");
-		Request.add("X-Plex-Platform", "VDR");
-		Request.add("X-Plex-Product", "plex-vdr");
-		Request.add("X-Plex-Provides", "player");
-		Request.add("X-Plex-Version", "0.0.1a");
-		
+		PlexHelper::AddHttpHeader(Request);
+				
 		Poco::Net::HTTPClientSession session(server, port);
 
 		session.sendRequest(Request);
@@ -99,9 +91,7 @@ void SubscriptionManager::NotifyServer()
 		} else {
 			m_bStoppedSent = false;
 		}
-	} catch (Poco::Exception& e) {
-		std::cout << e.displayText() << std::endl;
-	}
+	} catch (Poco::Exception& e) {}
 
 }
 
@@ -214,17 +204,7 @@ void Subscriber::SendUpdate(std::string msg, bool isNav)
 		Poco::Net::HTTPRequest Request(Poco::Net::HTTPRequest::HTTP_POST,
 		                               "/:/timeline", Poco::Net::HTTPMessage::HTTP_1_1);
 
-		Request.add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
-
-		Request.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-		Request.add("X-Plex-Device", "PC");
-		Request.add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
-		Request.add("X-Plex-Language", Config::GetInstance().GetLanguage());
-		Request.add("X-Plex-Model", "Linux");
-		Request.add("X-Plex-Platform", "VDR");
-		Request.add("X-Plex-Product", "plex-vdr");
-		Request.add("X-Plex-Provides", "player");
-		Request.add("X-Plex-Version", "0.0.1a");
+		PlexHelper::AddHttpHeader(Request);
 
 		Poco::Net::HTTPClientSession session(m_sHost, m_iPort);
 

@@ -12,6 +12,7 @@
 #include <Poco/String.h>
 
 #include "XmlObject.h"
+#include "MediaContainer.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::Document;
@@ -23,16 +24,20 @@ using Poco::Exception;
 
 namespace plexclient
 {
-
+class MediaContainer;
+	
 class Directory: XmlObject
-{
+{	
 public:
-	Directory(Poco::XML::Node* pNode);
-	~Directory();
+	Directory(Poco::XML::Node* pNode, MediaContainer* parent);
 
 public:
 	bool m_bAllowSync;
+	int m_iIndex;
+	int m_iYear;
 	std::string m_sTitle;
+	std::string m_sTitle1;
+	std::string m_sTitle2;
 	std::string m_sComposite;
 	std::string m_sLanguage;
 	std::string m_sUuid;
@@ -42,7 +47,9 @@ public:
 	Poco::Timestamp m_tCreatedAt;
 	std::string m_sKey;
 	MediaType m_eType;
-
+	MediaContainer* m_pParent;
+	
+	std::string GetTitle();
 };
 
 }

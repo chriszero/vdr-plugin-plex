@@ -235,7 +235,7 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				if(query.find("offset") != query.end()) {
 					Cont.m_vVideos[0].m_iMyPlayOffset = atoi(query["offset"].c_str()) / 1000;
 				}
-				//Poco::
+				
 				ActionManager::GetInstance().AddAction(Cont.m_vVideos[0]);
 			} else if(request.getURI().find("/playback/play") != std::string::npos) {
 				cRemote::Put(kPlay);

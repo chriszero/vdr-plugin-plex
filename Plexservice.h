@@ -33,15 +33,6 @@
 #include "user.h"
 #include "MediaContainer.h"
 
-#ifdef CRYPTOPP
-#include <cryptopp/cryptlib.h>
-#include <cryptopp/hmac.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/base64.h>
-#include <cryptopp/filters.h>
-#include <cryptopp/hex.h>
-#endif
-
 namespace plexclient
 {
 
@@ -76,14 +67,6 @@ private:
 
 	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);
 	Poco::Net::HTTPRequest* CreateRequest(std::string path);
-
-#ifdef CRYPTOPP
-protected:
-	std::string computeHMAC(std::string message);
-public:
-	std::string GetTranscodeUrl(Video* video);
-#endif
-
 };
 
 }

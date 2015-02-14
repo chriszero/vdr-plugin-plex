@@ -14,7 +14,7 @@ std::string XmlObject::GetNodeValue(Poco::XML::Node* pNode)
 
 int XmlObject::GetNodeValueAsInt(Poco::XML::Node* pNode)
 {
-	int value = 0;
+	int value = -1;
 	if(pNode != 0) {
 		try {
 			value = atoi(pNode->getNodeValue().c_str());
@@ -25,7 +25,7 @@ int XmlObject::GetNodeValueAsInt(Poco::XML::Node* pNode)
 
 long XmlObject::GetNodeValueAsLong(Poco::XML::Node* pNode)
 {
-	long value = 0;
+	long value = -1;
 	if(pNode != 0) {
 		try {
 			value = atol(pNode->getNodeValue().c_str());
@@ -36,7 +36,7 @@ long XmlObject::GetNodeValueAsLong(Poco::XML::Node* pNode)
 
 double XmlObject::GetNodeValueAsDouble(Poco::XML::Node* pNode)
 {
-	double value = 0;
+	double value = -1;
 	if(pNode != 0) {
 		try {
 			value = atod(pNode->getNodeValue().c_str());
@@ -81,7 +81,9 @@ MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 		} else if (Poco::icompare(sType, "show") == 0) {
 			type = SHOW;
 		} else if (Poco::icompare(sType, "season") == 0) {
-			type = SHOW;
+			type = SEASON;
+		} else if (Poco::icompare(sType, "episode") == 0) {
+			type = EPISODE;
 		}
 	}
 	return type;

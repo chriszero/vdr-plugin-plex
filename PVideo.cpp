@@ -1,9 +1,10 @@
 #include "PVideo.h"
+#include <Poco/Format.h>
 
 namespace plexclient
 {
 
-Video::Video(Poco::XML::Node* pNode, PlexServer Server)
+Video::Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent)
 {
 	m_iMyPlayOffset = 0;
 	m_Server = Server;
@@ -16,6 +17,8 @@ Video::Video(Poco::XML::Node* pNode, PlexServer Server)
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
 			m_iRatingKey = GetNodeValueAsInt(pAttribs->getNamedItem("ratingKey"));
+			m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
+			m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 			m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
 			m_sStudio = GetNodeValue(pAttribs->getNamedItem("studio"));
 			m_tType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
@@ -51,6 +54,25 @@ Video::Video(Poco::XML::Node* pNode, PlexServer Server)
 		}
 		pChildNode = it.nextNode();
 	}
+	if (m_iParentIndex < 0) {
+		m_iParentIndex = parent->m_iParentIndex;
+	}
 }
 
+std::string Video::GetTitle()
+{
+	std::string res = m_sTitle;
+	switch(m_tType) {
+	case MOVIE:
+		res = Poco::format("%s (%d)", m_sTitle, m_iYear);
+		break;
+	case EPISODE:
+		res = Poco::format("%02dx%02d - %s", m_iParentIndex, m_iIndex, m_sTitle);
+		break;
+	default:
+		break;
+	}
+	return res;
 }
+
+} // Namespace

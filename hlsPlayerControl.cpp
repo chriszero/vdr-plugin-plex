@@ -46,10 +46,10 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video Video
 cHlsPlayerControl::~cHlsPlayerControl()
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
+	cStatus::MsgReplaying(this, NULL, NULL, false);
 	Hide();
 	delete player;
 	player = NULL;
-	cStatus::MsgReplaying(this, NULL, NULL, false);
 }
 
 cString cHlsPlayerControl::GetHeader(void)
@@ -74,7 +74,7 @@ void cHlsPlayerControl::Hide(void)
 
 void cHlsPlayerControl::Show(void)
 {
-	ShowTimed();
+	ShowTimed(3);
 }
 
 eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
@@ -111,32 +111,15 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 	case kDown:
 		Pause();
 		break;
-	case kFastRew|k_Release:
-	case kLeft|k_Release:
-		//if (Setup.MultiSpeedMode) break;
-	case kFastRew:
-	case kLeft:
-		//Backward();
-		break;
-	case kFastFwd|k_Release:
-	case kRight|k_Release:
-		//if (Setup.MultiSpeedMode) break;
-	case kFastFwd:
-	case kRight:
-		//Forward();
-		break;
-	case kRed:
-		//TimeSearch();
-		break;
 	case kGreen|k_Repeat:
 	case kGreen:
-		Hide();
-		player->JumpRelative(-600);
+		//Hide();
+		player->JumpRelative(-300);
 		break;
 	case kYellow|k_Repeat:
 	case kYellow:
-		Hide();
-		player->JumpRelative(600);
+		//Hide();
+		player->JumpRelative(300);
 		break;
 	case kStop:
 	case kBlue:
@@ -241,7 +224,7 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 	if (GetIndex(Current, Total)) {
 		if (!visible) {
 			displayReplay = Skins.Current()->DisplayReplay(modeOnly);
-			//displayReplay->SetMarks(player->Marks());
+			displayReplay->SetButtons(NULL,"-10m","+10m",tr("Stop"));
 			SetNeedsFastResponse(true);
 			visible = true;
 		}
@@ -265,16 +248,7 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 			if (!Initial)
 				displayReplay->Flush();
 			displayReplay->SetCurrent(IndexToHMSF(Current, false, FramesPerSecond()));
-
-			cString Title;
-			//cString Pos = player ? player->PosStr() : cString(NULL);
-			//if (*Pos && strlen(Pos) > 1) {
-			//	Title = cString::sprintf("%s (%s)", m_title.c_str(), *Pos);
-			//} else {
-			Title = m_title.c_str();
-			//}
-			displayReplay->SetTitle(Title);
-
+			displayReplay->SetTitle(m_title.c_str());
 			displayReplay->Flush();
 			lastCurrent = Current;
 		}

@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "XmlObject.h"
+#include "MediaContainer.h"
 #include "Media.h"
 #include "PlexServer.h"
 
@@ -29,11 +30,12 @@ using Poco::Exception;
 
 namespace plexclient
 {
+class MediaContainer;
 	
 class Video: XmlObject
 {
 public:
-	Video(Poco::XML::Node* pNode, PlexServer Server);
+	Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent);
 	Video() {};
 
 public:
@@ -63,6 +65,10 @@ public:
 	Media m_Media;
 	PlexServer m_Server;
 	int m_iMyPlayOffset;
+	int m_iIndex;
+	int m_iParentIndex;
+	
+	std::string GetTitle();
 };
 
 }

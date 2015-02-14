@@ -8,52 +8,20 @@
 # By default the main source file also carries this name.
 
 PLUGIN = plex
+VERSION := $(shell git describe --tags master)
 
 LIBS += -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoXML -lPocoFoundation -lpcrecpp
 
 ### Configuration (edit this for your needs)
 
-    # support avfs a virtual file system
-# FIXME: AVFS isn't working, corrupts memory
-#AVFS ?= $(shell test -x /usr/bin/avfs-config && echo 1)
-    # use ffmpeg libswscale
-#SWSCALE ?= $(shell pkg-config --exists libswscale && echo 1)
-    # support png images
-#PNG ?= $(shell pkg-config --exists libpng && echo 1)
-    # support jpg images
-#JPG ?= $(shell test -r /usr/include/jpeglib.h && echo 1)
-
 CONFIG := #-DDEBUG			# uncomment to build DEBUG
 
-ifeq ($(AVFS),1)
-CONFIG += -DUSE_AVFS
-_CFLAGS += $(shell /usr/bin/avfs-config --cflags)
-LIBS += $(shell /usr/bin/avfs-config --libs)
-endif
-ifeq ($(SWSCALE),1)
-CONFIG += -DUSE_SWSCALE
-_CFLAGS += $(shell pkg-config --cflags libswscale)
-LIBS += $(shell pkg-config --libs libswscale)
-endif
-ifeq ($(PNG),1)
-CONFIG += -DUSE_PNG
-_CFLAGS += $(shell pkg-config --cflags libpng)
-LIBS += $(shell pkg-config --libs libpng)
-endif
-ifeq ($(JPG),1)
-CONFIG += -DUSE_JPG
-_CFLAGS += -I/usr/include
-LIBS += -Ljpeg
 
-endif
-
-
-_CFLAGS += $(shell pkg-config --cflags xcb xcb-image xcb-keysyms xcb-icccm)
-#LIBS += -lrt $(shell pkg-config --libs xcb xcb-image xcb-keysyms xcb-icccm)
+_CFLAGS += $(shell pkg-config --cflags libpcrecpp)
 
 ### The version number of this plugin (taken from the main source file):
 
-VERSION = $(shell grep 'static const char \*const VERSION *=' $(PLUGIN).cpp | awk '{ print $$7 }' | sed -e 's/[";]//g')
+VERSION = $(shell grep 'static const char \*const VERSION *=' $(PLUGIN).h | awk '{ print $$7 }' | sed -e 's/[";]//g')
 GIT_REV = $(shell git describe --always 2>/dev/null)
 
 ### The directory environment:

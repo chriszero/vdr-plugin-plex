@@ -1,12 +1,13 @@
 #include "Plexservice.h"
 
+#include "PlexHelper.h"
+
 namespace plexclient
 {
 
 Plexservice::Plexservice(PlexServer *server)
 {
 	pServer = server;
-	USERAGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17";
 }
 
 Plexservice::~Plexservice()
@@ -56,13 +57,7 @@ std::string Plexservice::GetMyPlexToken()
 			Poco::Net::HTTPSClientSession plexSession("plex.tv", 443, context);
 			Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/users/sign_in.xml", Poco::Net::HTTPMessage::HTTP_1_1);
 
-			request.add("X-Plex-Platform", "VDR");
-			request.add("X-Plex-Platform-Version", "2.0.4");
-			request.add("X-Plex-Provides", "player");
-			request.add("X-Plex-Product", "plex for vdr");
-			request.add("X-Plex-Version", "0.0.1a");
-			request.add("X-Plex-Device", "Linux");
-			request.add("X-Plex-Client-Identifier", "plex for vdr");
+			PlexHelper::AddHttpHeader(request);
 			request.add("Authorization", Poco::format("Basic %s", m_sToken));
 
 			plexSession.sendRequest(request);
@@ -103,18 +98,6 @@ void Plexservice::Authenticate()
 		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
 	}
 }
-/*
-void Plexservice::DiscoverAllServers()
-{
-	// try automatic discovery via multicast
-	plexgdm gdmClient = plexgdm();
-	gdmClient.discover();
-	pServer = gdmClient.GetPServer();
-	if (pServer == 0) {
-		perror("No Plexserver found");
-	}
-}
- */
 
 PlexServer* Plexservice::GetServer()
 {
@@ -129,7 +112,7 @@ MediaContainer* Plexservice::GetAllSections()
 MediaContainer* Plexservice::GetSection(std::string section)
 {
 	std::string token = GetMyPlexToken();
-	if(GetHttpSession(true)) {
+	if(GetHttpSession()) {
 
 		Poco::Net::HTTPRequest *pRequest;
 		if(section[0]=='/') { // Full URI?
@@ -162,41 +145,16 @@ Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 	Poco::Net::HTTPRequest *pRequest = new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
 	        path, Poco::Net::HTTPMessage::HTTP_1_1);
 
-	pRequest->add("User-Agent", USERAGENT);
-
-	//pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
-	pRequest->add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-	pRequest->add("X-Plex-Device", "PC");
-	pRequest->add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
-	pRequest->add("X-Plex-Language", Config::GetInstance().GetLanguage());
-	pRequest->add("X-Plex-Model", "Linux");
-	pRequest->add("X-Plex-Platform", "VDR");
-	pRequest->add("X-Plex-Product", "plex for vdr");
-	pRequest->add("X-Plex-Provides", "player");
-	pRequest->add("X-Plex-Version", "0.0.1a");
+	PlexHelper::AddHttpHeader(*pRequest);
 
 	return pRequest;
 }
 
 MediaContainer Plexservice::GetMediaContainer(std::string fullUrl)
 {
-
 	Poco::URI fileuri(fullUrl);
-
 	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
-
-	request.add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
-
-	//pRequest->add("X-Plex-Client-Capabilities", "protocols=shoutcast,http-video;videoDecoders=h264{profile:high&resolution:1080&level:51};audioDecoders=mp3,aac");
-	request.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-	request.add("X-Plex-Device", "PC");
-	request.add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
-	request.add("X-Plex-Language", Config::GetInstance().GetLanguage());
-	request.add("X-Plex-Model", "Linux");
-	request.add("X-Plex-Platform", "VDR");
-	request.add("X-Plex-Product", "plex for vdr");
-	request.add("X-Plex-Provides", "player");
-	request.add("X-Plex-Version", "0.0.1a");
+	PlexHelper::AddHttpHeader(request);
 
 	Poco::Net::HTTPClientSession session(fileuri.getHost(), fileuri.getPort());
 
@@ -208,81 +166,6 @@ MediaContainer Plexservice::GetMediaContainer(std::string fullUrl)
 
 	return allsections;
 }
-
-#ifdef CRYPTOPP
-std::string Plexservice::computeHMAC(std::string message)
-{
-	using CryptoPP::Exception;
-	using CryptoPP::HMAC;
-	using CryptoPP::SHA256;
-	using CryptoPP::Base64Encoder;
-	using CryptoPP::Base64Decoder;
-	using CryptoPP::StringSink;
-	using CryptoPP::ArraySink;
-	using CryptoPP::StringSource;
-	using CryptoPP::HashFilter;
-
-	const std::string transcode_private = "k3U6GLkZOoNIoSgjDshPErvqMIFdE0xMTx8kgsrhnC0=";
-
-	std::string encoded;
-	byte key[32];
-
-	StringSource(transcode_private, true,
-	             new Base64Decoder(
-	                 new ArraySink(key, 32)
-	             ) // Base64Encoder
-	            ); // StringSource
-
-	try {
-		HMAC<SHA256> hmac((byte*)key, sizeof(key));
-
-		StringSource(message, true,
-		             new HashFilter(hmac,
-		                            new Base64Encoder(
-		                                new StringSink(encoded),
-		                                false
-		                            ) // Base64Encoder
-		                           ) // HashFilter
-		            ); // StringSource
-	} catch(const CryptoPP::Exception& e) {
-		std::cerr << e.what() << std::endl;
-	}
-	return encoded;
-}
-
-std::string Plexservice::GetTranscodeUrl(Video* video)
-{
-	const std::string transcodeURL = "/video/:/transcode/segmented/start.m3u8?";
-	const std::string transcode_public = "KQMIY6GATPC63AIMC4R2";
-
-	std::stringstream params;
-	params << "identifier=com.plexapp.plugins.library";
-	params << "&url=" << encode(pServer->GetUri() + video->m_pMedia->m_sPartKey);
-	params << "&quality=8";
-	params << "&ratingKey=" << video->m_iRatingKey;
-	params << "&3g=0";
-	params << "&offset=0";
-	params << "&directStream=1";
-	params << "&maxVideoBitrate=30000";
-
-	int time = std::time(0);
-	std::string message = Poco::format("%s@%d", transcodeURL + params.str(), time);
-
-	std::string b64hmacMessage = computeHMAC(message);
-
-	std::stringstream plexAccess;
-	plexAccess << "&X-Plex-Access-Key=" << encode(transcode_public);
-	plexAccess << "&X-Plex-Access-Time=" << Poco::format("%d", time);
-	plexAccess << "&X-Plex-Access-Code=" <<  encode(b64hmacMessage);
-	plexAccess << "&X-Plex-Client-Capabilities=";
-	plexAccess << encode("protocols=http-live-streaming,http-streaming-video-720p,http-streaming-video-1080p;");
-	plexAccess << encode("videoDecoders=h264{profile:high&resolution:1080&level:51};");
-	plexAccess << encode("audioDecoders=aac,ac3{channels:6}");
-
-	std::string fullQuery = params.str() + plexAccess.str();
-	return pServer->GetUri() + transcodeURL + fullQuery;
-}
-#endif
 
 std::string Plexservice::encode(std::string message)
 {

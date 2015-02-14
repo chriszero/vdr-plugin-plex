@@ -30,7 +30,9 @@ using Poco::Exception;
 
 namespace plexclient
 {
-	
+class Video;
+class Directory;
+
 class MediaContainer: XmlObject
 {
 public:
@@ -47,6 +49,7 @@ public:
 	std::string m_sArt;
 	std::string m_sThumb;
 	std::string m_sTitle;
+	std::string m_sTitle1;
 	std::string m_sTitle2;
 	std::string m_sViewGroup;
 	int m_iLibrarySectionID;
@@ -54,7 +57,8 @@ public:
 	std::string m_sLibrarySectionUUID;
 	std::string m_sMediaTagPrefix;
 	int m_iSize;
-
+	std::string m_sSummary;
+	int m_iParentIndex;
 };
 
 }

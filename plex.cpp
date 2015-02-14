@@ -2,14 +2,6 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 
-static const char *DESCRIPTION = "Plex for VDR Plugin";
-static const char *MAINMENUENTRY = "Plex for VDR";
-
-//////////////////////////////////////////////////////////////////////////////
-
-//static char ConfigHideMainMenuEntry;	///< hide main menu entry
-//char ConfigDisableRemote;		///< disable remote during external play
-
 /**
 **	Play a file.
 **
@@ -34,11 +26,11 @@ static plexclient::PlexServer* pPlexServer;
 
 cPlexBrowser::cPlexBrowser(const char *title, plexclient::PlexServer* pServ) :cOsdMenu(title)
 {
-
 	dsyslog("[plex]%s:\n", __FUNCTION__);
 	pService = new plexclient::Plexservice(pServ);
 	pService->Authenticate();
 	pCont = pService->GetAllSections();
+	SetMenuCategory(mcRecording);
 	CreateMenu();
 }
 
@@ -56,21 +48,20 @@ void cPlexBrowser::CreateMenu()
 
 		for(std::vector<plexclient::Directory>::iterator it = pCont->m_vDirectories.begin(); it != pCont->m_vDirectories.end(); ++it) {
 			plexclient::Directory *pDir = &(*it);
-			Add(new cPlexOsdItem( pDir->m_sTitle.c_str(), pDir) );
+			Add(new cPlexOsdItem( pDir->GetTitle().c_str(), pDir) );
 		}
 	}
 
 	if(pCont && pCont->m_vVideos.size() > 0) {
 		for(std::vector<plexclient::Video>::iterator it = pCont->m_vVideos.begin(); it != pCont->m_vVideos.end(); ++it) {
 			plexclient::Video *vid = &(*it); // cast raw pointer
-			Add(new cPlexOsdItem( vid->m_sTitle.c_str(), vid) );
+			Add(new cPlexOsdItem( vid->GetTitle().c_str(), vid) );
 		}
 	}
 
 	if(Count() < 1) {
 		Add(new cPlexOsdItem("Empty"));
 	}
-
 	Display();
 }
 
@@ -174,6 +165,48 @@ eOSState cPlexBrowser::ProcessSelected()
 	return osContinue;
 }
 
+
+cPlexInfo::cPlexInfo(plexclient::Video* video) : cOsdMenu(video->GetTitle().c_str())
+{
+	cOsdMenu::Display();
+	
+	Add(new cOsdItem(video->m_sSummary.c_str()));
+}
+
+eOSState cPlexInfo::ProcessKey(eKeys Key)
+{
+	switch (int(Key)) {
+	case kUp|k_Repeat:
+	case kUp:
+	case kDown|k_Repeat:
+	case kDown:
+	case kLeft|k_Repeat:
+	case kLeft:
+	case kRight|k_Repeat:
+	case kRight:
+		DisplayMenu()->Scroll(NORMALKEY(Key) == kUp || NORMALKEY(Key) == kLeft, NORMALKEY(Key) == kLeft || NORMALKEY(Key) == kRight);
+		cStatus::MsgOsdTextItem(NULL, NORMALKEY(Key) == kUp || NORMALKEY(Key) == kLeft);
+		return osContinue;
+	case kInfo:
+		return osBack;
+	default:
+		break;
+	}
+
+	eOSState state = cOsdMenu::ProcessKey(Key);
+
+	if (state == osUnknown) {
+		switch (Key) {
+		case kGreen:
+			cRemote::Put(Key, true);
+		case kOk:
+			return osBack;
+		default:
+			break;
+		}
+	}
+	return state;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 //	cOsdMenu
@@ -290,7 +323,7 @@ bool cMyPlugin::Initialize(void)
 {
 	// First Startup? Save UUID
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
-	
+
 	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), DESCRIPTION, "3200", "VDR", VERSION);
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();

@@ -23,88 +23,17 @@
 #include <iterator>
 #include <algorithm>
 
-/**
-**	Device plugin remote class.
-*/
-class cMyRemote:public cRemote
-{
-public:
 
-	/**
-	**	Soft device remote class constructor.
-	**
-	**	@param name	remote name
-	*/
-	cMyRemote(const char *name):cRemote(name) {
-	}
-
-	/**
-	**	Put keycode into vdr event queue.
-	**
-	**	@param code	key code
-	**	@param repeat	flag key repeated
-	**	@param release	flag key released
-	*/
-	bool Put(const char *code, bool repeat = false, bool release = false) {
-		return cRemote::Put(code, repeat, release);
-	}
-};
-
-/**
-**	Player class.
-*/
-class cMyPlayer:public cPlayer
-{
-private:
-	char *FileName;			///< file to play
-
-public:
-	cMyPlayer(const char *);		///< player constructor
-	virtual ~ cMyPlayer();		///< player destructor
-	void Activate(bool);		///< player attached/detached
-	/// get current replay mode
-	virtual bool GetReplayMode(bool &, bool &, int &);
-};
-
-/**
-**	Status class.
-**
-**	To get volume changes.
-*/
-class cMyStatus:public cStatus
-{
-private:
-	int Volume;				///< current volume
-
-public:
-	cMyStatus(void);			///< my status constructor
-
-protected:
-	virtual void SetVolume(int, bool);	///< volume changed
-};
-
-/**
-**	Our player control class.
-*/
-class cMyControl:public cControl
-{
-private:
-	cMyPlayer * Player;			///< our player
-	cSkinDisplayReplay *Display;	///< our osd display
-	void ShowReplayMode(void);		///< display replay mode
-	void ShowProgress(void);		///< display progress bar
-	virtual void Show(void);		///< show replay control
-	virtual void Hide(void);		///< hide replay control
-	bool infoVisible;			///< RecordingInfo visible
-	time_t timeoutShow;			///< timeout shown control
-
-public:
-	cMyControl(const char *);		///< player control constructor
-	virtual ~ cMyControl();		///< player control destructor
-
-	virtual eOSState ProcessKey(eKeys);	///< handle keyboard input
-
-};
+/// vdr-plugin version number.
+/// Makefile extracts the version number for generating the file name
+/// for the distribution archive.
+static const char *const VERSION = "0.1.0"
+#ifdef GIT_REV
+    "-GIT" GIT_REV
+#endif
+;
+static const char *const DESCRIPTION = "Plex for VDR Plugin";
+static const char *const MAINMENUENTRY = "Plex for VDR";
 
 /*
  *	Plex Browser
@@ -137,6 +66,14 @@ public:
 
 };
 
+class cPlexInfo : public cOsdMenu
+{
+
+public:
+	cPlexInfo(plexclient::Video* video);
+	virtual eOSState ProcessKey(eKeys Keys);
+};
+
 /**
 **	Play plugin menu class.
 */
@@ -147,50 +84,6 @@ public:
 	cPlayMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
 	virtual ~ cPlayMenu();
 	virtual eOSState ProcessKey(eKeys);
-};
-
-/**
-**	My device plugin OSD class.
-*/
-class cMyOsd:public cOsd
-{
-public:
-	static volatile char Dirty;		///< flag force redraw everything
-	int OsdLevel;			///< current osd level
-
-	cMyOsd(int, int, uint);		///< osd constructor
-	virtual ~ cMyOsd(void);		///< osd destructor
-	virtual void Flush(void);		///< commits all data to the hardware
-	virtual void SetActive(bool);	///< sets OSD to be the active one
-};
-
-/**
-**	My device plugin OSD provider class.
-*/
-class cMyOsdProvider:public cOsdProvider
-{
-private:
-	static cOsd *Osd;
-
-public:
-	virtual cOsd * CreateOsd(int, int, uint);
-	virtual bool ProvidesTrueColor(void);
-	cMyOsdProvider(void);
-};
-
-/**
-**	Dummy device class.
-*/
-class cMyDevice:public cDevice
-{
-public:
-	cMyDevice(void);
-	virtual ~ cMyDevice(void);
-
-	virtual void GetOsdSize(int &, int &, double &);
-
-protected:
-	virtual void MakePrimaryDevice(bool);
 };
 
 class cMyPlugin:public cPlugin
