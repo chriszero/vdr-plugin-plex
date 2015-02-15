@@ -23,7 +23,6 @@ public:
 	cPlexOsdItem(const char* title, plexclient::PlexServer* server);
 	cPlexOsdItem(const char* title, plexclient::Video* obj);
 	cPlexOsdItem(const char* title, plexclient::Directory* obj);
-	~cPlexOsdItem();
 	plexclient::Video* GetAttachedVideo();
 	plexclient::Directory* GetAttachedDirectory();
 	plexclient::PlexServer* GetAttachedServer();

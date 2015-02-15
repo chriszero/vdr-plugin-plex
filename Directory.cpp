@@ -7,7 +7,6 @@ namespace plexclient
 Directory::Directory(Poco::XML::Node* pNode, MediaContainer* parent)
 {
 	if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
-		m_pParent = parent;
 		Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
 		m_bAllowSync = GetNodeValueAsBool(pAttribs->getNamedItem("allowSync"));
@@ -28,13 +27,14 @@ Directory::Directory(Poco::XML::Node* pNode, MediaContainer* parent)
 
 		pAttribs->release();
 	}
+	if(m_sTitle2.empty()) m_sTitle2 = parent->m_sTitle2;
 }
 
 std::string Directory::GetTitle()
 {
 	switch(m_eType) {
 	case SEASON:
-		return Poco::format("%s - Staffel %d", m_pParent->m_sTitle2, m_iIndex);
+		return Poco::format("%s - Staffel %d", m_sTitle2, m_iIndex);
 	default:
 		return m_sTitle;
 	}

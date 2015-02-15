@@ -43,7 +43,3 @@ plexclient::Directory* cPlexOsdItem::GetAttachedDirectory() {
 plexclient::PlexServer* cPlexOsdItem::GetAttachedServer() {
 	return pserver;
 }
-
-cPlexOsdItem::~cPlexOsdItem()
-{
-}

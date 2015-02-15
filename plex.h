@@ -22,6 +22,7 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <memory>
 
 
 /// vdr-plugin version number.
@@ -43,7 +44,7 @@ class cPlexBrowser :public cOsdMenu
 {
 private:
 	plexclient::Plexservice* pService;
-	plexclient::MediaContainer *pCont;
+	std::shared_ptr<plexclient::MediaContainer> pCont;
 	std::vector<plexclient::Video> *v_Vid;
 	std::vector<plexclient::Directory> *v_Dir;
 	std::vector<std::string> m_vStack;

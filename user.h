@@ -28,8 +28,6 @@ class user
 public:
 	user(std::istream *response);
 
-	~user();
-
 	std::string authenticationToken;
 
 protected:

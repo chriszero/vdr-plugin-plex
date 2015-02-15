@@ -1,6 +1,7 @@
 #include "Plexservice.h"
 
 #include "PlexHelper.h"
+#include <memory>
 
 namespace plexclient
 {
@@ -36,18 +37,19 @@ Poco::Net::HTTPClientSession* Plexservice::GetHttpSession(bool createNew)
 
 std::string Plexservice::GetMyPlexToken()
 {
-	// Syncronize
-	Poco::Mutex::ScopedLock lock(m_mutex);
+	static bool done;
+	static std::string myToken;
 
 	//todo: cache token in file or db
-	if(&m_sToken != 0 || m_sToken.empty()) {
+	if(!done || myToken.empty()) {
+		std::cout << "Get Token" << std::endl;
 		std::stringstream ss;
 		Poco::Base64Encoder b64(ss);
 
 		b64 << Config::GetInstance().GetUsername() << ":" << Config::GetInstance().GetPassword();
 
 		b64.close();
-		m_sToken = ss.str();
+		std::string tempToken = ss.str();
 
 		Poco::Net::Context::Ptr context = new Poco::Net::Context(
 		    Poco::Net::Context::CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE, // VERIFY_NONE...?!
@@ -58,22 +60,27 @@ std::string Plexservice::GetMyPlexToken()
 			Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/users/sign_in.xml", Poco::Net::HTTPMessage::HTTP_1_1);
 
 			PlexHelper::AddHttpHeader(request);
-			request.add("Authorization", Poco::format("Basic %s", m_sToken));
+			request.add("Authorization", Poco::format("Basic %s", tempToken));
 
 			plexSession.sendRequest(request);
 
 			Poco::Net::HTTPResponse response;
 			std::istream &rs = plexSession.receiveResponse(response);
-			// parse the XML Response
-			user *u = new user(&rs);
-			m_sToken = u->authenticationToken;
+			if(response.getStatus() == 201) {
+				// parse the XML Response
+				user u(&rs);
+				myToken = u.authenticationToken;
+			} else {
+				esyslog("[plex] plex.tv Login failed, check you creditials.");
+			}
+			done = true;
 			plexSession.detachSocket();
 		} catch (Poco::Exception &exc) {
 			esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
 		}
 
 	}
-	return m_sToken;
+	return myToken;
 }
 
 void Plexservice::Authenticate()
@@ -104,23 +111,22 @@ PlexServer* Plexservice::GetServer()
 	return pServer;
 }
 
-MediaContainer* Plexservice::GetAllSections()
+std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, bool putOnStack)
 {
-	return GetSection("");
-}
-
-MediaContainer* Plexservice::GetSection(std::string section)
-{
-	std::string token = GetMyPlexToken();
 	if(GetHttpSession()) {
 
 		Poco::Net::HTTPRequest *pRequest;
+		std::string uri;
 		if(section[0]=='/') { // Full URI?
-			pRequest = CreateRequest(Poco::format("%s?X-Plex-Token=%s", section, token));
-		} else if(false == section.empty()) {
-			pRequest = CreateRequest(Poco::format("/library/sections/%s?X-Plex-Token=%s", section, token));
+			uri = section;
 		} else {
-			pRequest = CreateRequest("/library/sections/?X-Plex-Token=" + token);
+			uri = Poco::format("%s/%s", m_vUriStack.top(), section);// m_vUriStack.top() + "/" + section;
+		}
+		
+		pRequest = CreateRequest(uri);
+		if(putOnStack) {
+			m_vUriStack.push(uri);
+			std::cout << "Get: " << uri << std::endl;
 		}
 
 		m_pPlexSession->sendRequest(*pRequest);
@@ -129,7 +135,7 @@ MediaContainer* Plexservice::GetSection(std::string section)
 
 		dsyslog("[plex] URI: %s[s%]", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
 
-		MediaContainer* pAllsections = new MediaContainer(&rs, *pServer);
+		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, *pServer));
 		//Poco::StreamCopier::copyStream(rs, std::cout);
 		delete pRequest;
 		return pAllsections;
@@ -140,12 +146,28 @@ MediaContainer* Plexservice::GetSection(std::string section)
 	}
 }
 
+std::shared_ptr<MediaContainer> Plexservice::GetLastSection()
+{
+	if(m_vUriStack.size() > 1) {
+		// discard last one
+		m_vUriStack.pop();
+		std::string uri = m_vUriStack.top();
+		std::cout << "Pop: " << uri << std::endl;
+		return GetSection(uri, false);
+	}
+	return NULL;
+}
+
 Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 {
 	Poco::Net::HTTPRequest *pRequest = new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
 	        path, Poco::Net::HTTPMessage::HTTP_1_1);
 
 	PlexHelper::AddHttpHeader(*pRequest);
+	// Add PlexToken to Header
+	std::string token = GetMyPlexToken();
+	if(!token.empty())
+		pRequest->add("X-Plex-Token", token);
 
 	return pRequest;
 }

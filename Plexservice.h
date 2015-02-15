@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
-#include <vector>
+#include <stack>
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory>
@@ -43,27 +43,23 @@ public:
 	~Plexservice();
 
 	void DisplaySections();
-	MediaContainer* GetAllSections();
-	MediaContainer* GetSection(std::string section);
+	std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);
+	std::shared_ptr<MediaContainer> GetLastSection();
 	void GetAuthDetails();
-	std::string GetMyPlexToken();
 	void Authenticate();
-	//void DiscoverFirstServer();
+	
 	PlexServer* GetServer();
 	static std::string GetUniversalTranscodeUrl(Video* video, int offset = 0, PlexServer* server = 0);
-
+	static std::string GetMyPlexToken();
 	static MediaContainer GetMediaContainer(std::string fullUrl);
 	static std::string encode(std::string message);
 
 private:
 	Poco::Mutex m_mutex;
-	// Never Access m_sToken directly! => possible race condition
-	std::string m_sToken;
-
-	std::string USERAGENT;
-
 	Poco::Net::HTTPClientSession *m_pPlexSession;
 	PlexServer *pServer;
+
+	std::stack<std::string> m_vUriStack;
 
 	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);
 	Poco::Net::HTTPRequest* CreateRequest(std::string path);

@@ -29,7 +29,8 @@ cPlexBrowser::cPlexBrowser(const char *title, plexclient::PlexServer* pServ) :cO
 	dsyslog("[plex]%s:\n", __FUNCTION__);
 	pService = new plexclient::Plexservice(pServ);
 	pService->Authenticate();
-	pCont = pService->GetAllSections();
+	pCont = pService->GetSection("/library/sections");
+	//pChannels = pService->GetSection("/video");
 	SetMenuCategory(mcRecording);
 	CreateMenu();
 }
@@ -100,28 +101,11 @@ eOSState cPlexBrowser::ProcessKey(eKeys key)
 
 eOSState cPlexBrowser::LevelUp()
 {
-	if(m_vStack.size() <= 1) {
-		m_vStack.clear();
+	pCont = pService->GetLastSection();
+	if(!pCont) {
 		ShowBrowser = 0;
 		return osEnd;
 	}
-
-	m_vStack.pop_back();
-
-	std::string uri;
-	for(unsigned int i = 0; i < m_vStack.size(); i++) {
-		if(m_vStack[i][0]=='/') {
-			uri = m_vStack[i];
-			continue;
-		}
-		uri += m_vStack[i];
-		if(i+1 < m_vStack.size()) {
-			uri += "/";
-		}
-	}
-
-	pCont = pService->GetSection(uri);
-
 	CreateMenu();
 	return osContinue;
 }
@@ -137,25 +121,9 @@ eOSState cPlexBrowser::ProcessSelected()
 		return osEnd;
 	}
 
-
 	if(item->IsDir()) {
 		plexclient::Directory* pDir = item->GetAttachedDirectory();
-
-		m_vStack.push_back(pDir->m_sKey);
-		std::string uri;
-		for(unsigned int i = 0; i < m_vStack.size(); i++) {
-			if(m_vStack[i][0]=='/') {
-				uri = m_vStack[i];
-				continue;
-			}
-			uri += m_vStack[i];
-			if(i+1 < m_vStack.size()) {
-				uri += "/";
-			}
-		}
-		std::cout << "m_sSection: " << uri << std::endl;
-
-		pCont = pService->GetSection(uri);
+		pCont = pService->GetSection(pDir->m_sKey);
 
 		CreateMenu();
 		return osContinue;
@@ -169,7 +137,7 @@ eOSState cPlexBrowser::ProcessSelected()
 cPlexInfo::cPlexInfo(plexclient::Video* video) : cOsdMenu(video->GetTitle().c_str())
 {
 	cOsdMenu::Display();
-	
+
 	Add(new cOsdItem(video->m_sSummary.c_str()));
 }
 

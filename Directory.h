@@ -47,7 +47,6 @@ public:
 	Poco::Timestamp m_tCreatedAt;
 	std::string m_sKey;
 	MediaType m_eType;
-	MediaContainer* m_pParent;
 	
 	std::string GetTitle();
 };

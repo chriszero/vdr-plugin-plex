@@ -39,7 +39,8 @@ TMPDIR ?= /tmp
 export CFLAGS	= $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
 
-##CXXFLAGS += -std=gnu++0x -Wunused-variable -Wunused-parameter
+CXXFLAGS += -std=gnu++0x
+#CXXFLAGS += -std=c++11
 
 ifeq ($(CFLAGS),)
 $(error CFLAGS not set)
