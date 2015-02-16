@@ -22,22 +22,16 @@ static void PlayFile(plexclient::Video Vid)
 
 
 static char ShowBrowser;		///< flag show browser
-static plexclient::PlexServer* pPlexServer;
+static std::shared_ptr<plexclient::Plexservice> pPlexService;
 
-cPlexBrowser::cPlexBrowser(const char *title, plexclient::PlexServer* pServ) :cOsdMenu(title)
+cPlexBrowser::cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service) :cOsdMenu(title)
 {
 	dsyslog("[plex]%s:\n", __FUNCTION__);
-	pService = new plexclient::Plexservice(pServ);
+	pService = Service;
 	pService->Authenticate();
-	pCont = pService->GetSection("/library/sections");
-	//pChannels = pService->GetSection("/video");
+	pCont = pService->GetSection(pService->StartUri);
 	SetMenuCategory(mcRecording);
 	CreateMenu();
-}
-
-cPlexBrowser::~cPlexBrowser()
-{
-	delete pService;
 }
 
 void cPlexBrowser::CreateMenu()
@@ -124,7 +118,7 @@ eOSState cPlexBrowser::ProcessSelected()
 	if(item->IsDir()) {
 		plexclient::Directory* pDir = item->GetAttachedDirectory();
 		pCont = pService->GetSection(pDir->m_sKey);
-
+		//SetTitle(pDir->m_sTitle.c_str());
 		CreateMenu();
 		return osContinue;
 	}
@@ -189,8 +183,14 @@ cPlayMenu::cPlayMenu(const char *title, int c0, int c1, int c2, int c3, int c4)
 	SetHasHotkeys();
 
 	for(std::vector<plexclient::PlexServer>::iterator it = plexclient::plexgdm::GetInstance().GetPlexservers().begin(); it != plexclient::plexgdm::GetInstance().GetPlexservers().end(); ++it) {
-		plexclient::PlexServer *pServer = &(*it);
-		Add(new cPlexOsdItem(pServer->GetServerName().c_str(), pServer));
+		//&(*it)
+		auto s1 = std::make_shared<plexclient::Plexservice>( &(*it) );
+		s1->StartUri = "/library/sections";
+		Add(new cPlexOsdItem(Poco::format("%s - Library", it->GetServerName()).c_str(),  s1));
+		
+		auto s2 = std::make_shared<plexclient::Plexservice>( &(*it) );
+		s2->StartUri = "/video";
+		Add(new cPlexOsdItem(Poco::format("%s - Video Channels", it->GetServerName()).c_str(), s2 ));
 	}
 
 	if(Count() < 1) {
@@ -227,7 +227,7 @@ eOSState cPlayMenu::ProcessKey(eKeys key)
 	case osUnknown:
 		switch (key) {
 		case kOk:
-			pPlexServer = item->GetAttachedServer();
+			pPlexService = item->GetAttachedService();
 			ShowBrowser = 1;
 			return osPlugin;		// restart with OSD browser
 		default:
@@ -315,7 +315,7 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
 
 	if (ShowBrowser) {
-		return new cPlexBrowser("Browse Plex", pPlexServer);
+		return new cPlexBrowser("Browse Plex", pPlexService);
 	}
 	return new cPlayMenu("Plex");
 }

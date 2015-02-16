@@ -1,31 +1,33 @@
 #ifndef CPLEXOSDITEM_H
 #define CPLEXOSDITEM_H
 
+#include <memory>
+
 #include <vdr/osd.h> // Base class: cOsdItem
 #include <vdr/interface.h>
 #include <vdr/plugin.h>
 
 #include "PVideo.h"
 #include "Directory.h"
-#include "PlexServer.h"
+#include "Plexservice.h"
 
 class cPlexOsdItem : public cOsdItem
 {
 private:
-	plexclient::Video *item;
-	plexclient::Directory *dir;
-	plexclient::PlexServer *pserver;
+	plexclient::Video* item;
+	plexclient::Directory* dir;
+	std::shared_ptr<plexclient::Plexservice> pservice;
 	bool m_bVideo;	
 	bool m_bDir;
 
 public:
 	cPlexOsdItem(const char* title);
-	cPlexOsdItem(const char* title, plexclient::PlexServer* server);
+	cPlexOsdItem(const char* title, std::shared_ptr<plexclient::Plexservice> service);
 	cPlexOsdItem(const char* title, plexclient::Video* obj);
 	cPlexOsdItem(const char* title, plexclient::Directory* obj);
 	plexclient::Video* GetAttachedVideo();
 	plexclient::Directory* GetAttachedDirectory();
-	plexclient::PlexServer* GetAttachedServer();
+	std::shared_ptr<plexclient::Plexservice> GetAttachedService();
 	
 	bool IsVideo() const {
 		return m_bVideo;

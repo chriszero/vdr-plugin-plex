@@ -126,7 +126,6 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		pRequest = CreateRequest(uri);
 		if(putOnStack) {
 			m_vUriStack.push(uri);
-			std::cout << "Get: " << uri << std::endl;
 		}
 
 		m_pPlexSession->sendRequest(*pRequest);
@@ -152,7 +151,6 @@ std::shared_ptr<MediaContainer> Plexservice::GetLastSection()
 		// discard last one
 		m_vUriStack.pop();
 		std::string uri = m_vUriStack.top();
-		std::cout << "Pop: " << uri << std::endl;
 		return GetSection(uri, false);
 	}
 	return NULL;

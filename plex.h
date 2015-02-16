@@ -43,7 +43,7 @@ static const char *const MAINMENUENTRY = "Plex for VDR";
 class cPlexBrowser :public cOsdMenu
 {
 private:
-	plexclient::Plexservice* pService;
+	std::shared_ptr<plexclient::Plexservice> pService;
 	std::shared_ptr<plexclient::MediaContainer> pCont;
 	std::vector<plexclient::Video> *v_Vid;
 	std::vector<plexclient::Directory> *v_Dir;
@@ -58,11 +58,7 @@ private:
 	eOSState ProcessSelected();
 
 public:
-	cPlexBrowser(const char *title, plexclient::PlexServer* pServ);
-	~cPlexBrowser();
-	/// File browser destructor
-	//virtual ~ cPlexBrowser();
-	/// Process keyboard input
+	cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service);
 	virtual eOSState ProcessKey(eKeys);
 
 };

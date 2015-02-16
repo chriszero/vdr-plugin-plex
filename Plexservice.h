@@ -47,12 +47,14 @@ public:
 	std::shared_ptr<MediaContainer> GetLastSection();
 	void GetAuthDetails();
 	void Authenticate();
-	
 	PlexServer* GetServer();
+	
 	static std::string GetUniversalTranscodeUrl(Video* video, int offset = 0, PlexServer* server = 0);
 	static std::string GetMyPlexToken();
 	static MediaContainer GetMediaContainer(std::string fullUrl);
 	static std::string encode(std::string message);
+
+	std::string StartUri;
 
 private:
 	Poco::Mutex m_mutex;
