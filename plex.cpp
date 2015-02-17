@@ -67,9 +67,9 @@ eOSState cPlexBrowser::ProcessKey(eKeys key)
 
 	// call standard function
 	state = cOsdMenu::ProcessKey(key);
-	if (state || key != kNone) {
-		dsyslog("[plex]%s: state=%d key=%d\n", __FUNCTION__, state, key);
-	}
+	//if (state || key != kNone) {
+	//	dsyslog("[plex]%s: state=%d key=%d\n", __FUNCTION__, state, key);
+	//}
 
 	switch (state) {
 	case osUnknown:
@@ -118,7 +118,7 @@ eOSState cPlexBrowser::ProcessSelected()
 	if(item->IsDir()) {
 		plexclient::Directory* pDir = item->GetAttachedDirectory();
 		pCont = pService->GetSection(pDir->m_sKey);
-		//SetTitle(pDir->m_sTitle.c_str());
+		//SetTitle(pDir->m_sTitle);
 		CreateMenu();
 		return osContinue;
 	}
@@ -214,9 +214,9 @@ eOSState cPlayMenu::ProcessKey(eKeys key)
 {
 	eOSState state;
 
-	if (key != kNone) {
-		dsyslog("[plex]%s: key=%d\n", __FUNCTION__, key);
-	}
+	//if (key != kNone) {
+	//	dsyslog("[plex]%s: key=%d\n", __FUNCTION__, key);
+	//}
 	// call standard function
 	state = cOsdMenu::ProcessKey(key);
 

@@ -65,6 +65,7 @@ private:
 
 	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);
 	Poco::Net::HTTPRequest* CreateRequest(std::string path);
+	
 };
 
 }

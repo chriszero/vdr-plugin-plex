@@ -39,10 +39,9 @@ std::string Plexservice::GetMyPlexToken()
 {
 	static bool done;
 	static std::string myToken;
-
+	
 	//todo: cache token in file or db
-	if(!done || myToken.empty()) {
-		std::cout << "Get Token" << std::endl;
+	if(!done) {
 		std::stringstream ss;
 		Poco::Base64Encoder b64(ss);
 
@@ -77,6 +76,7 @@ std::string Plexservice::GetMyPlexToken()
 			plexSession.detachSocket();
 		} catch (Poco::Exception &exc) {
 			esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
+			done = true;
 		}
 
 	}
@@ -120,7 +120,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		if(section[0]=='/') { // Full URI?
 			uri = section;
 		} else {
-			uri = Poco::format("%s/%s", m_vUriStack.top(), section);// m_vUriStack.top() + "/" + section;
+			uri = Poco::format("%s/%s", m_vUriStack.top(), section);
 		}
 		
 		pRequest = CreateRequest(uri);
@@ -132,10 +132,10 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		Poco::Net::HTTPResponse response;
 		std::istream &rs = m_pPlexSession->receiveResponse(response);
 
-		dsyslog("[plex] URI: %s[s%]", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
+		dsyslog("[plex] URI: http://%s:32400%s", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
 
 		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, *pServer));
-		//Poco::StreamCopier::copyStream(rs, std::cout);
+		
 		delete pRequest;
 		return pAllsections;
 
