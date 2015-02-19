@@ -28,6 +28,7 @@ public:
 	std::string s_password;
 	
 	bool HideMainMenuEntry;
+	bool UseCustomTranscodeProfile = false;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
@@ -57,6 +58,8 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	char Username[STRING_SIZE];
 	char Password[STRING_SIZE];
 	char Uuid[STRING_SIZE];
+	int HideMainMenuEntry;
+	int UseCustomTranscodeProfile;
 
     virtual void Store(void);
 

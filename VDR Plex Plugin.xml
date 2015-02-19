@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Edit for your needs (audioCodec)
+Copy this custom transcode profile to your "/Library/Application Support/Plex Media Server/Profiles"
+Restart the PMS.
+In the pluign options set "Use custom transcode profile" to "yes"
+-->
+<Client name="VDR Plex Plugin">
+  <TranscodeTargets>
+    <VideoProfile protocol="hls" container="mpegts" codec="h264" audioCodec="ac3,mp2,dts" context="streaming">
+      <Setting name="VideoEncodeFlags" value="-x264opts bframes=3:cabac=1" />
+    </VideoProfile>
+    <MusicProfile container="mp3" codec="mp3" />
+    <PhotoProfile container="jpeg" />
+  </TranscodeTargets>
+  <DirectPlayProfiles>
+  </DirectPlayProfiles>
+  <CodecProfiles>
+  </CodecProfiles>
+</Client>
