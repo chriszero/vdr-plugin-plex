@@ -28,7 +28,7 @@ public:
 	std::string s_password;
 	
 	bool HideMainMenuEntry;
-	bool UseCustomTranscodeProfile = false;
+	bool UseCustomTranscodeProfile;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
