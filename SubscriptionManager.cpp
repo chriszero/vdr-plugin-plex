@@ -155,21 +155,21 @@ std::string SubscriptionManager::GetTimelineXml()
 	else 						msg << "playing";
 
 	msg << "\" time=\"" << current << "\" type=\"video\"";
-
-	msg << " duration=\"" << total << "\"";
-	msg << " seekRange=\"0-" << total << "\"";
-	msg << " controllable=\"true\"";
-	msg << " machineIdentifier=\"" << (pVid ? pVid->m_Server.GetUuid()	 : "") << "\"";
-	msg << " protocol=\"http\"";
-	msg << " address=\"" << (pVid ? pVid->m_Server.GetIpAdress() : "") << "\"";
-	msg << " port=\"" << (pVid ? pVid->m_Server.GetPort() : 0) << "\"";
-	msg << " guid=\"" << Config::GetInstance().GetUUID() << "\"";
-	msg << " containerKey=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";
-	msg << " key=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";
-	msg << " ratingKey=\"" << (pVid ? pVid->m_iRatingKey : 900000) << "\"";
-	msg << " volume=\"" << m_pStatus->Volume << "\"";
-	msg << " shuffle=\"false\"";
-
+	if (!m_pStatus->PlayerStopped) {
+		msg << " duration=\"" << total << "\"";
+		msg << " seekRange=\"0-" << total << "\"";
+		msg << " controllable=\"true\"";
+		msg << " machineIdentifier=\"" << (pVid ? pVid->m_Server.GetUuid()	 : "") << "\"";
+		msg << " protocol=\"http\"";
+		msg << " address=\"" << (pVid ? pVid->m_Server.GetIpAdress() : "") << "\"";
+		msg << " port=\"" << (pVid ? pVid->m_Server.GetPort() : 0) << "\"";
+		msg << " guid=\"" << Config::GetInstance().GetUUID() << "\"";
+		msg << " containerKey=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";
+		msg << " key=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";
+		msg << " ratingKey=\"" << (pVid ? pVid->m_iRatingKey : 900000) << "\"";
+		msg << " volume=\"" << m_pStatus->Volume << "\"";
+		msg << " shuffle=\"false\"";
+	}
 	msg <<  "/>";
 	return msg.str();
 }
@@ -255,6 +255,7 @@ void cSubscriberStatus::Replaying(const cControl* DvbPlayerControl, const char* 
 		pVideo = &hlsControl->m_Video;
 	} else {
 		pVideo = NULL;
+		pControl = NULL;
 	}
 
 	SubscriptionManager::GetInstance().Notify();
