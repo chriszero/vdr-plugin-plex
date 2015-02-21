@@ -47,6 +47,16 @@ cHlsSegmentLoader::~cHlsSegmentLoader()
 	delete m_pRingbuffer;
 }
 
+void cHlsSegmentLoader::SkipEmptySegments(int segmentDuration) 
+{
+	pcrecpp::RE re("&offset=(\\d+)", pcrecpp::RE_Options(PCRE_CASELESS));
+	int value;
+	re.PartialMatch(m_startUri.getQuery(), &value);
+	if (value > segmentDuration) {
+		m_lastLoadedSegment = (value / segmentDuration) - 1;
+	}
+}
+
 bool cHlsSegmentLoader::LoadM3u8(std::string uri)
 {
 	LOCK_THREAD;
@@ -105,47 +115,55 @@ bool cHlsSegmentLoader::LoadLists(void)
 bool cHlsSegmentLoader::LoadIndexList(void)
 {
 	bool res = false;
-	ConnectToServer();
-	if(m_startParser.MasterPlaylist && m_startParser.vPlaylistItems.size() > 0) {
-		// Todo: make it universal, might only work for Plexmediaserver
+	try {
 		ConnectToServer();
+		if(m_startParser.MasterPlaylist && m_startParser.vPlaylistItems.size() > 0) {
+			// Todo: make it universal, might only work for Plexmediaserver
+			ConnectToServer();
 
-		std::string startUri = m_startUri.toString();
-		startUri = startUri.substr(0, startUri.find_last_of("/")+1);
+			std::string startUri = m_startUri.toString();
+			startUri = startUri.substr(0, startUri.find_last_of("/")+1);
 
-		Poco::URI indexUri(startUri+m_startParser.vPlaylistItems[0].file);
+			Poco::URI indexUri(startUri+m_startParser.vPlaylistItems[0].file);
 
-		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, indexUri.getPath());
-		AddHeader(request);
-		// same server
-		m_pClientSession->sendRequest(request);
+			Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, indexUri.getPath());
+			AddHeader(request);
+			// same server
+			m_pClientSession->sendRequest(request);
 
-		Poco::Net::HTTPResponse responseStart;
-		std::istream& indexFile = m_pClientSession->receiveResponse(responseStart);
+			Poco::Net::HTTPResponse responseStart;
+			std::istream& indexFile = m_pClientSession->receiveResponse(responseStart);
 
-		if(responseStart.getStatus() != 200) {
-			esyslog("[plex]%s Response Not Valid", __FUNCTION__);
-			return res;
+			if(responseStart.getStatus() != 200) {
+				esyslog("[plex]%s Response Not Valid", __FUNCTION__);
+				return res;
+			}
+			m_indexParser = cM3u8Parser();
+			res =  m_indexParser.Parse(indexFile);
+
+			if(res) {
+				// Segment URI is relative to index.m3u8
+				std::string path = indexUri.getPath();
+				m_segmentUriPart = path.substr(0, path.find_last_of("/")+1);
+			}
+			if(m_indexParser.TargetDuration > 3) {
+				m_segmentsToBuffer = 2;
+			} else {
+				m_segmentsToBuffer = 3;
+			}
+			
+			SkipEmptySegments(m_indexParser.TargetDuration);
+
+			// Get stream lenght
+			m_streamlenght = 0;
+			for(unsigned int i = 0; i < m_indexParser.vPlaylistItems.size(); i++) {
+				m_streamlenght += m_indexParser.vPlaylistItems[i].length;
+			}
 		}
-		m_indexParser = cM3u8Parser();
-		res =  m_indexParser.Parse(indexFile);
 
-		if(res) {
-			// Segment URI is relative to index.m3u8
-			std::string path = indexUri.getPath();
-			m_segmentUriPart = path.substr(0, path.find_last_of("/")+1);
-		}
-		if(m_indexParser.TargetDuration > 3) {
-			m_segmentsToBuffer = 2;
-		} else {
-			m_segmentsToBuffer = 3;
-		}
-
-		// Get stream lenght
-		m_streamlenght = 0;
-		for(unsigned int i = 0; i < m_indexParser.vPlaylistItems.size(); i++) {
-			m_streamlenght += m_indexParser.vPlaylistItems[i].length;
-		}
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex] %s %s", __FUNCTION__, exc.displayText().c_str());
+		res = false;
 	}
 	return res;
 }
@@ -154,27 +172,31 @@ bool cHlsSegmentLoader::LoadStartList(void)
 {
 	bool res = false;
 	ConnectToServer();
+	try {
+		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, m_startUri.getPathAndQuery());
+		AddHeader(request);
+		m_pClientSession->sendRequest(request);
 
-	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, m_startUri.getPathAndQuery());
-	AddHeader(request);
-	m_pClientSession->sendRequest(request);
+		Poco::Net::HTTPResponse responseStart;
+		std::istream& startFile = m_pClientSession->receiveResponse(responseStart);
 
-	Poco::Net::HTTPResponse responseStart;
-	std::istream& startFile = m_pClientSession->receiveResponse(responseStart);
+		if(responseStart.getStatus() != 200) {
+			esyslog("[plex]%s Response Not Valid", __FUNCTION__);
+			return res;
+		}
 
-	if(responseStart.getStatus() != 200) {
-		esyslog("[plex]%s Response Not Valid", __FUNCTION__);
-		return res;
-	}
-
-	m_startParser = cM3u8Parser();
-	res = m_startParser.Parse(startFile);
-	if(res) {
-		// Get GUID
-		pcrecpp::RE re("([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})", pcrecpp::RE_Options(PCRE_CASELESS));
-		string value;
-		re.PartialMatch(m_startParser.vPlaylistItems[0].file, &value);
-		m_sessionCookie = value;
+		m_startParser = cM3u8Parser();
+		res = m_startParser.Parse(startFile);
+		if(res) {
+			// Get GUID
+			pcrecpp::RE re("([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})", pcrecpp::RE_Options(PCRE_CASELESS));
+			string value;
+			re.PartialMatch(m_startParser.vPlaylistItems[0].file, &value);
+			m_sessionCookie = value;
+		}
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex] %s %s", __FUNCTION__, exc.displayText().c_str());
+		res = false;
 	}
 	return res;
 }

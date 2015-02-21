@@ -21,18 +21,20 @@ cPlexBrowser::cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexse
 	pService->Authenticate();
 	if(pService == pLastService) {
 		pCont = pService->GetLastSection(true);
-	}
-	else {
+	} else {
 		pCont = pService->GetSection(pService->StartUri);
 	}
 	SetMenuCategory(mcRecording);
 	CreateMenu();
 }
 
-cPlexBrowser* cPlexBrowser::RecoverLastState() 
+cPlexBrowser* cPlexBrowser::RecoverLastState()
 {
-	cPlexBrowser* pBrowser = new cPlexBrowser("", cPlexBrowser::pLastService);
-	return pBrowser;
+	if (cPlexBrowser::pLastService != NULL) {
+		cPlexBrowser* pBrowser = new cPlexBrowser("", cPlexBrowser::pLastService);
+		return pBrowser;
+	}
+	return NULL;
 }
 
 void cPlexBrowser::CreateMenu()
@@ -57,14 +59,13 @@ void cPlexBrowser::CreateMenu()
 
 	if(Count() < 1) {
 		Add(new cPlexOsdItem("Empty"));
-	}
-	else if (pService == pLastService) {
+	} else if (pService == pLastService) {
 		// recover last selected item
 		cOsdItem* item = Get(lastCurrentItem);
 		SetCurrent(item);
 		pLastService = NULL;
 	}
-	
+
 	Display();
 }
 
@@ -196,7 +197,7 @@ cPlayMenu::cPlayMenu(const char *title, int c0, int c1, int c2, int c3, int c4)
 		auto s1 = std::make_shared<plexclient::Plexservice>( &(*it) );
 		s1->StartUri = "/library/sections";
 		Add(new cPlexOsdItem(Poco::format("%s - Library", it->GetServerName()).c_str(),  s1));
-		
+
 		auto s2 = std::make_shared<plexclient::Plexservice>( &(*it) );
 		s2->StartUri = "/video";
 		Add(new cPlexOsdItem(Poco::format("%s - Video Channels", it->GetServerName()).c_str(), s2 ));
@@ -324,12 +325,12 @@ const char *cMyPlugin::MainMenuEntry(void)
 cOsdObject *cMyPlugin::MainMenuAction(void)
 {
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
-	
+
 	if(CalledFromCode) {
 		CalledFromCode = false;
 		return cPlexBrowser::RecoverLastState();
 	}
-	
+
 	if (ShowBrowser) {
 		return new cPlexBrowser("Browse Plex", pPlexService);
 	}

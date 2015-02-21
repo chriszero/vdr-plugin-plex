@@ -50,6 +50,7 @@ private:
 	int EstimateSegmentSize();
 	bool LoadLists(void);
 	void ResizeRingbuffer(int newsize);
+	void SkipEmptySegments(int segmentLenght);
 	
 
 protected:
