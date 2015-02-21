@@ -11,14 +11,28 @@
 static char ShowBrowser;		///< flag show browser
 static std::shared_ptr<plexclient::Plexservice> pPlexService;
 
+std::shared_ptr<plexclient::Plexservice> cPlexBrowser::pLastService;
+int cPlexBrowser::lastCurrentItem;
+
 cPlexBrowser::cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service) :cOsdMenu(title)
 {
 	dsyslog("[plex]%s:\n", __FUNCTION__);
 	pService = Service;
 	pService->Authenticate();
-	pCont = pService->GetSection(pService->StartUri);
+	if(pService == pLastService) {
+		pCont = pService->GetLastSection(true);
+	}
+	else {
+		pCont = pService->GetSection(pService->StartUri);
+	}
 	SetMenuCategory(mcRecording);
 	CreateMenu();
+}
+
+cPlexBrowser* cPlexBrowser::RecoverLastState() 
+{
+	cPlexBrowser* pBrowser = new cPlexBrowser("", cPlexBrowser::pLastService);
+	return pBrowser;
 }
 
 void cPlexBrowser::CreateMenu()
@@ -44,9 +58,15 @@ void cPlexBrowser::CreateMenu()
 	if(Count() < 1) {
 		Add(new cPlexOsdItem("Empty"));
 	}
+	else if (pService == pLastService) {
+		// recover last selected item
+		cOsdItem* item = Get(lastCurrentItem);
+		SetCurrent(item);
+		pLastService = NULL;
+	}
+	
 	Display();
 }
-
 
 eOSState cPlexBrowser::ProcessKey(eKeys key)
 {
@@ -98,6 +118,8 @@ eOSState cPlexBrowser::ProcessSelected()
 
 
 	if(item->IsVideo()) {
+		pLastService = pService;
+		lastCurrentItem = current;
 		cMyPlugin::PlayFile(*item->GetAttachedVideo());
 		return osEnd;
 	}
@@ -230,6 +252,8 @@ eOSState cPlayMenu::ProcessKey(eKeys key)
 //	cPlugin
 //////////////////////////////////////////////////////////////////////////////
 
+volatile bool cMyPlugin::CalledFromCode = false;
+
 /**
 **	Initialize any member variables here.
 **
@@ -300,7 +324,12 @@ const char *cMyPlugin::MainMenuEntry(void)
 cOsdObject *cMyPlugin::MainMenuAction(void)
 {
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
-
+	
+	if(CalledFromCode) {
+		CalledFromCode = false;
+		return cPlexBrowser::RecoverLastState();
+	}
+	
 	if (ShowBrowser) {
 		return new cPlexBrowser("Browse Plex", pPlexService);
 	}

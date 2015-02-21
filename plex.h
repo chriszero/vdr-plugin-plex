@@ -56,10 +56,15 @@ private:
 	eOSState LevelUp(void);
 	/// Handle menu item selection
 	eOSState ProcessSelected();
+	
+	static std::shared_ptr<plexclient::Plexservice> pLastService;
+	static int lastCurrentItem;
 
 public:
 	cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service);
 	virtual eOSState ProcessKey(eKeys);
+	
+	static cPlexBrowser* RecoverLastState();
 
 };
 
@@ -98,6 +103,9 @@ public:
 	virtual bool SetupParse(const char *, const char *);
 	
 	static void PlayFile(plexclient::Video Vid);
+	
+public:
+	static volatile bool CalledFromCode; 
 
 };
 

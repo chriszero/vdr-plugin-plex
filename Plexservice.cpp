@@ -145,11 +145,13 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 	}
 }
 
-std::shared_ptr<MediaContainer> Plexservice::GetLastSection()
+std::shared_ptr<MediaContainer> Plexservice::GetLastSection(bool current)
 {
 	if(m_vUriStack.size() > 1) {
-		// discard last one
-		m_vUriStack.pop();
+		if(!current) {
+			// discard last one
+			m_vUriStack.pop();
+		}
 		std::string uri = m_vUriStack.top();
 		return GetSection(uri, false);
 	}

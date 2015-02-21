@@ -44,7 +44,7 @@ public:
 
 	void DisplaySections();
 	std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);
-	std::shared_ptr<MediaContainer> GetLastSection();
+	std::shared_ptr<MediaContainer> GetLastSection(bool current = false);
 	void GetAuthDetails();
 	void Authenticate();
 	PlexServer* GetServer();

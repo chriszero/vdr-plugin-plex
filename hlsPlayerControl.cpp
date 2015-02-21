@@ -1,7 +1,9 @@
 #include "hlsPlayerControl.h"
 
 #include <vdr/status.h>
+#include <vdr/remote.h>
 
+#include "plex.h"
 #include "PlexServer.h"
 #include "Plexservice.h"
 #include "MediaContainer.h"
@@ -125,6 +127,8 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 	case kBlue:
 		Hide();
 		Stop();
+		cMyPlugin::CalledFromCode = true;
+		cRemote::CallPlugin(PLUGIN);
 		return osEnd;
 	default: {
 		DoShowMode = false;
