@@ -96,6 +96,8 @@ public:
 	virtual cOsdObject *MainMenuAction(void);
 	virtual cMenuSetupPage *SetupMenu(void);
 	virtual bool SetupParse(const char *, const char *);
+	
+	static void PlayFile(plexclient::Video Vid);
 
 };
 

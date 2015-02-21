@@ -2,19 +2,6 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 
-/**
-**	Play a file.
-**
-**	@param filename	path and file name
-*/
-static void PlayFile(plexclient::Video Vid)
-{
-	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
-	cControl* control = cHlsPlayerControl::Create(Vid);
-	if(control) {
-		cControl::Launch(control);
-	}
-}
 
 //////////////////////////////////////////////////////////////////////////////
 //	cOsdMenu
@@ -111,7 +98,7 @@ eOSState cPlexBrowser::ProcessSelected()
 
 
 	if(item->IsVideo()) {
-		PlayFile(*item->GetAttachedVideo());
+		cMyPlugin::PlayFile(*item->GetAttachedVideo());
 		return osEnd;
 	}
 
@@ -363,6 +350,27 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 	else return false;
 
 	return true;
+}
+
+/**
+**	Play a file.
+**
+**	@param filename	path and file name
+*/
+void cMyPlugin::PlayFile(plexclient::Video Vid)
+{
+	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
+	if(Vid.m_lViewoffset > 0 ) {
+		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
+		eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
+		if(response == kOk) {
+			Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
+		}
+	}
+	cControl* control = cHlsPlayerControl::Create(Vid);
+	if(control) {
+		cControl::Launch(control);
+	}
 }
 
 VDRPLUGINCREATOR(cMyPlugin);		// Don't touch this!
