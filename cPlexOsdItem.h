@@ -8,6 +8,7 @@
 #include <vdr/plugin.h>
 
 #include "PVideo.h"
+#include "Stream.h"
 #include "Directory.h"
 #include "Plexservice.h"
 
@@ -16,6 +17,7 @@ class cPlexOsdItem : public cOsdItem
 private:
 	plexclient::Video* item;
 	plexclient::Directory* dir;
+	plexclient::Stream stream;
 	std::shared_ptr<plexclient::Plexservice> pservice;
 	bool m_bVideo;	
 	bool m_bDir;
@@ -25,8 +27,15 @@ public:
 	cPlexOsdItem(const char* title, std::shared_ptr<plexclient::Plexservice> service);
 	cPlexOsdItem(const char* title, plexclient::Video* obj);
 	cPlexOsdItem(const char* title, plexclient::Directory* obj);
+/**
+ * @brief 
+ * @param title Title
+ * @param obj will be copied
+ */
+	cPlexOsdItem(const char* title, plexclient::Stream* obj);
 	plexclient::Video* GetAttachedVideo();
 	plexclient::Directory* GetAttachedDirectory();
+	plexclient::Stream& GetAttachedStream() { return stream; }
 	std::shared_ptr<plexclient::Plexservice> GetAttachedService();
 	
 	bool IsVideo() const {

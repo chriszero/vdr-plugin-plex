@@ -23,6 +23,15 @@ cPlexOsdItem::cPlexOsdItem(const char* title, plexclient::Directory* obj) :cOsdI
 	m_bVideo = false;
 }
 
+cPlexOsdItem::cPlexOsdItem(const char* title, plexclient::Stream* obj) :cOsdItem(title) {
+	stream = *obj;
+	dir = NULL;
+	item = NULL;
+	pservice = NULL;
+	m_bVideo = false;
+	m_bDir = false;
+}
+
 plexclient::Video* cPlexOsdItem::GetAttachedVideo() {
 	return item;
 }

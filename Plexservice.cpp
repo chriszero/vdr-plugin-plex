@@ -211,8 +211,9 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 	params << "&directPlay=0";
 	params << "&directStream=1";
 	params << "&maxVideoBitrate=20000";
+	//params << "&subtitles=burn";
 	//params << "&subtitleSize=90";
-	params << "&skipSubtitles=1";
+	//params << "&skipSubtitles=1";
 	//params << "&audioBoost=100";
 	params << "&videoResolution=1920x1080";
 	params << "&videoQuality=100";

@@ -3,11 +3,14 @@
 #include <vdr/status.h>
 #include <vdr/remote.h>
 
+#include <Poco/Format.h>
+
 #include "plex.h"
 #include "PlexServer.h"
 #include "Plexservice.h"
 #include "MediaContainer.h"
 #include "PVideo.h"
+#include "cPlexOsdItem.h"
 
 // static
 cControl* cHlsPlayerControl::Create(plexclient::Video Video)
@@ -41,6 +44,7 @@ cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video Video
 	lastPlay = lastForward = false;
 	lastSpeed = -2; // an invalid value
 	timeoutShow = 0;
+	menu = NULL;
 
 	cStatus::MsgReplaying(this, m_title.c_str(), m_Video.m_Media.m_sPartFile.c_str(), true);
 }
@@ -51,6 +55,7 @@ cHlsPlayerControl::~cHlsPlayerControl()
 	cStatus::MsgReplaying(this, NULL, NULL, false);
 	Hide();
 	delete player;
+	delete menu;
 	player = NULL;
 }
 
@@ -102,6 +107,23 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 		else
 			shown = ShowProgress(!shown) || shown;
 	}
+
+	// Handle menus
+	if (menu) {
+		eOSState state = menu->ProcessKey(Key);
+		if (state == osEnd) {
+			JumpRelative(0);
+			delete menu;
+			menu = NULL;
+		}
+		if (state == osBack) {
+			Hide();
+			delete menu;
+			menu = NULL;
+		}
+		return osContinue;
+	}
+
 	bool DoShowMode = true;
 	switch (int(Key)) {
 		// Positioning:
@@ -144,7 +166,7 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 				break;
 			case kBack:
 				Hide();
-				//menu = new cTitleMenu(this);
+				menu = new cStreamSelectMenu(&m_Video);
 				break;
 			default:
 				return osUnknown;
@@ -228,7 +250,7 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 	if (GetIndex(Current, Total)) {
 		if (!visible) {
 			displayReplay = Skins.Current()->DisplayReplay(modeOnly);
-			displayReplay->SetButtons(NULL,"-10m","+10m",tr("Stop"));
+			displayReplay->SetButtons(NULL,"-5m","+4m",tr("Stop"));
 			SetNeedsFastResponse(true);
 			visible = true;
 		}
@@ -272,4 +294,79 @@ void cHlsPlayerControl::ShowTimed(int Seconds)
 		timeoutShow = (shown && Seconds > 0) ? time(NULL) + Seconds : 0;
 	} else if (timeoutShow && Seconds > 0)
 		timeoutShow = time(NULL) + Seconds;
+}
+
+cStreamSelectMenu::cStreamSelectMenu(plexclient::Video* Video) : cOsdMenu("StreamSelect")
+{
+	pVideo = Video;
+	CreateMenu();
+}
+
+void cStreamSelectMenu::CreateMenu()
+{
+	SetTitle(cString::sprintf(tr("%s - Select Audio / Subtitle"), pVideo->GetTitle().c_str()));
+	pVideo->UpdateFromServer();
+	
+	if(pVideo->m_Media.m_vStreams.size() > 0) {
+		std::vector<plexclient::Stream> streams = pVideo->m_Media.m_vStreams;
+
+		Add(new cOsdItem(tr("Audiostreams"), osUnknown, false));
+		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
+			plexclient::Stream *pStream = &(*it);
+			if(pStream->m_eStreamType == plexclient::sAUDIO) {
+				// Audio
+				cString item = cString::sprintf(tr("%s%s - %s %d Channels"), pStream->m_bSelected ? "[*] ":"", pStream->m_sLanguage.c_str(), pStream->m_sCodecId.c_str(), pStream->m_iChannels);
+				Add(new cPlexOsdItem(item, pStream));
+			}
+		}
+
+		Add(new cOsdItem(tr("Subtitlestreams"), osUnknown, false));
+		plexclient::Stream stre;
+		stre.m_eStreamType = plexclient::sSUBTITLE;
+		stre.m_iID = -1;
+		Add(new cPlexOsdItem(tr("None"), &stre));
+		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
+			plexclient::Stream *pStream = &(*it);
+			if(pStream->m_eStreamType == plexclient::sSUBTITLE) {
+				// Subtitle
+				cString item = cString::sprintf("%s%s", pStream->m_bSelected ? "[*] ":"", pStream->m_sLanguage.c_str());
+				Add(new cPlexOsdItem(item, pStream));
+			}
+		}
+	}
+
+	Display();
+}
+
+bool cStreamSelectMenu::SelectStream()
+{
+	int current = Current();		// get current menu item index
+	cPlexOsdItem *item = static_cast<cPlexOsdItem*>(Get(current));
+	return pVideo->SetStream(&item->GetAttachedStream());
+}
+
+eOSState cStreamSelectMenu::ProcessKey(eKeys Keys)
+{
+	eOSState state;
+
+	// call standard function
+	state = cOsdMenu::ProcessKey(Keys);
+
+	switch (state) {
+	case osUnknown:
+		switch (Keys) {
+		case kOk:
+			return SelectStream() ? osEnd : osBack; 
+		case kBack:
+			return osBack;
+		default:
+			break;
+		}
+		break;
+	case osBack:
+		return osBack;
+	default:
+		break;
+	}
+	return state;
 }

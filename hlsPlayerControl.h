@@ -8,13 +8,26 @@
 #include "MediaContainer.h"
 #include "PVideo.h"
 
+class cStreamSelectMenu : public cOsdMenu
+{
+private:
+	plexclient::Video* pVideo;
+	void CreateMenu();
+	bool SelectStream();
+	
+public:
+	cStreamSelectMenu(plexclient::Video* Video);
+	virtual eOSState ProcessKey(eKeys Keys);
+};
+
 class cHlsPlayerControl : public cControl
 {
 private:
 	static volatile int active;
 	cHlsPlayer* player;
 	std::string m_title;
-
+	
+	cStreamSelectMenu* menu;
 	cSkinDisplayReplay *displayReplay;
 	bool visible, modeOnly, shown;
 	int lastCurrent, lastTotal;
