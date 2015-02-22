@@ -34,6 +34,9 @@ class MediaContainer;
 	
 class Video: XmlObject
 {
+private:
+	void Parse(Poco::XML::Node* pNode);
+	
 public:
 	Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent);
 	Video() {};
@@ -69,6 +72,8 @@ public:
 	int m_iParentIndex;
 	
 	std::string GetTitle();
+	bool SetStream(Stream* stream);
+	bool UpdateFromServer();
 };
 
 }

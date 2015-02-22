@@ -1,4 +1,5 @@
 #include "Stream.h"
+#include <Poco/Format.h>
 
 namespace plexclient
 {
@@ -8,7 +9,8 @@ Stream::Stream(Poco::XML::Node* pNode)
 	if(Poco::icompare(pNode->nodeName(), "Stream") == 0) {
 
 		Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
-
+		
+		m_bSelected = GetNodeValueAsBool(pAttribs->getNamedItem("selected"));
 		m_iID = GetNodeValueAsInt(pAttribs->getNamedItem("id"));
 		m_iStreamType = GetNodeValueAsInt(pAttribs->getNamedItem("streamType"));
 		m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
@@ -21,6 +23,14 @@ Stream::Stream(Poco::XML::Node* pNode)
 
 		pAttribs->release();
 	}
+}
+
+std::string Stream::GetSetStreamQuery()
+{
+	if(m_eStreamType == sAUDIO)	return Poco::format("audioStreamID=%d", m_iID);
+	else if(m_eStreamType == sSUBTITLE && m_iID >= 0)	return Poco::format("subtitleStreamID=%d", m_iID);
+	else if(m_eStreamType == sSUBTITLE && m_iID < 0)	return "subtitleStreamID=";
+	else return "";
 }
 
 } // namespace

@@ -1,5 +1,10 @@
 #include "PVideo.h"
 #include <Poco/Format.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
+
+#include <vdr/tools.h>
+#include "PlexHelper.h"
 
 namespace plexclient
 {
@@ -9,6 +14,57 @@ Video::Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent)
 	m_iMyPlayOffset = 0;
 	m_lViewoffset = 0;
 	m_Server = Server;
+	Parse(pNode);
+
+	if (m_iParentIndex < 0) {
+		m_iParentIndex = parent->m_iParentIndex;
+	}
+}
+
+bool Video::UpdateFromServer()
+{
+	try {
+		Poco::URI fileuri(Poco::format("%s/library/metadata/%d", m_Server.GetUri(), m_iRatingKey));
+		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
+		PlexHelper::AddHttpHeader(request);
+
+		Poco::Net::HTTPClientSession session(fileuri.getHost(), fileuri.getPort());
+
+		session.sendRequest(request);
+		Poco::Net::HTTPResponse response;
+		std::istream &rs = session.receiveResponse(response);
+
+		if(response.getStatus() == 200) {
+			// clear vectors
+			m_vCountry.clear();
+			m_vDirector.clear();
+			m_vGenre.clear();
+			m_vRole.clear();
+			m_vWriter.clear();
+
+			InputSource src(rs);
+			DOMParser parser;
+			Poco::XML::AutoPtr<Document> pDoc = parser.parse(&src);
+
+			NodeIterator it(pDoc, Poco::XML::NodeFilter::SHOW_ALL);
+			Poco::XML::Node* pNode = it.nextNode();
+			while(pNode) {
+				if(Poco::icompare(pNode->nodeName(), "Video") == 0) {
+					Parse(pNode);
+				}
+
+				pNode = it.nextNode();
+			}
+			return true;
+		}
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex]: %s: %s", __FUNCTION__, exc.displayText().c_str());
+	}
+	return false;
+}
+
+void Video::Parse(Poco::XML::Node* pNode)
+{
 	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
 	Poco::XML::Node* pChildNode = it.nextNode();
 
@@ -18,7 +74,6 @@ Video::Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent)
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
 			m_iRatingKey = GetNodeValueAsInt(pAttribs->getNamedItem("ratingKey"));
-			m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
 			m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 			m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
 			m_sStudio = GetNodeValue(pAttribs->getNamedItem("studio"));
@@ -55,9 +110,6 @@ Video::Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent)
 		}
 		pChildNode = it.nextNode();
 	}
-	if (m_iParentIndex < 0) {
-		m_iParentIndex = parent->m_iParentIndex;
-	}
 }
 
 std::string Video::GetTitle()
@@ -74,6 +126,29 @@ std::string Video::GetTitle()
 		break;
 	}
 	return res;
+}
+
+bool Video::SetStream(Stream* stream)
+{
+	try {
+		Poco::Net::HTTPClientSession session(m_Server.GetIpAdress(), m_Server.GetPort());
+
+		std::string uri = Poco::format("/library/parts/%d?%s", m_Media.m_iPartId, stream->GetSetStreamQuery());
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
+		session.sendRequest(req);
+
+		Poco::Net::HTTPResponse resp;
+		session.receiveResponse(resp);
+
+		if(resp.getStatus() == 200) {
+			dsyslog("[plex]: Set Stream: %s", uri.c_str());
+			return true;
+		}
+		return false;
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex]: %s: %s", __FUNCTION__, exc.displayText().c_str());
+		return false;
+	}
 }
 
 } // Namespace

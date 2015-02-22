@@ -33,8 +33,10 @@ class Stream: XmlObject
 {
 public:
 	Stream(Poco::XML::Node* pNode);
+	Stream() {};
 
 public:
+	bool m_bSelected;
 	int m_iID;
 	int m_iStreamType;
 	int m_iIndex;
@@ -44,6 +46,8 @@ public:
 	std::string m_sLanguage;
 	std::string m_sLanguageCode;
 	StreamType m_eStreamType;
+	
+	std::string GetSetStreamQuery();
 };
 
 }
