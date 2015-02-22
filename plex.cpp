@@ -390,7 +390,7 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 void cMyPlugin::PlayFile(plexclient::Video Vid)
 {
 	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
-	if(Vid.m_iMyPlayOffset != 0 && Vid.m_lViewoffset > 0 ) {
+	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
 		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
 		eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
 		if(response == kOk) {
