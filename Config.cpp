@@ -70,6 +70,7 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use custom transcoding profile"), (int*)&UseCustomTranscodeProfile, trVDR("no"), trVDR("yes")));
+	Add(new cMenuEditBoolItem(tr("Use Plex account"), (int*)&UsePlexAccount, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditStrItem(tr("Plex Username"), Username, STRING_SIZE));
 	Add(new cMenuEditStrItem(tr("Plex Password"), Password, STRING_SIZE));
 	cMenuEditStrItem* devUUID = new cMenuEditStrItem(tr("Current UUID"), Uuid, STRING_SIZE);
@@ -86,9 +87,11 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().s_password = std::string(Password);
 	Config::GetInstance().HideMainMenuEntry = HideMainMenuEntry;
 	Config::GetInstance().UseCustomTranscodeProfile = UseCustomTranscodeProfile;
+	Config::GetInstance().UsePlexAccount = UsePlexAccount;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
     SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
+	SetupStore("UsePlexAccount", Config::GetInstance().UsePlexAccount);
 	SetupStore("Username", Config::GetInstance().s_username.c_str());
 	SetupStore("Password", Config::GetInstance().s_password.c_str());
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());

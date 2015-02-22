@@ -29,6 +29,7 @@ public:
 	
 	bool HideMainMenuEntry;
 	bool UseCustomTranscodeProfile;
+	bool UsePlexAccount;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
@@ -60,6 +61,7 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	char Uuid[STRING_SIZE];
 	int HideMainMenuEntry;
 	int UseCustomTranscodeProfile;
+	int UsePlexAccount;
 
     virtual void Store(void);
 

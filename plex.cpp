@@ -373,6 +373,7 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 	//dsyslog("[plex]%s: '%s' = '%s'\n", __FUNCTION__, name, value);
 
 	if (strcasecmp(name, "HideMainMenuEntry") == 0) 	Config::GetInstance().HideMainMenuEntry = atoi(value) ? true : false;
+	else if (strcasecmp(name, "UsePlexAccount") == 0) 	Config::GetInstance().UsePlexAccount = atoi(value) ? true : false;
 	else if (strcasecmp(name, "UseCustomTranscodeProfile") == 0) 	Config::GetInstance().UseCustomTranscodeProfile = atoi(value) ? true : false;
 	else if (strcasecmp(name, "Username") == 0) 		Config::GetInstance().s_username = std::string(value);
 	else if (strcasecmp(name, "Password") == 0) 		Config::GetInstance().s_password = std::string(value);

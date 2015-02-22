@@ -39,7 +39,7 @@ std::string Plexservice::GetMyPlexToken()
 {
 	static bool done;
 	static std::string myToken;
-	
+
 	//todo: cache token in file or db
 	if(!done) {
 		std::stringstream ss;
@@ -85,6 +85,7 @@ std::string Plexservice::GetMyPlexToken()
 
 void Plexservice::Authenticate()
 {
+	if(!Config::GetInstance().UsePlexAccount) return;
 	try {
 		if(GetHttpSession(true)) {
 			std::string token = GetMyPlexToken();
@@ -122,7 +123,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		} else {
 			uri = Poco::format("%s/%s", m_vUriStack.top(), section);
 		}
-		
+
 		pRequest = CreateRequest(uri);
 		if(putOnStack) {
 			m_vUriStack.push(uri);
@@ -135,7 +136,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		dsyslog("[plex] URI: http://%s:32400%s", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
 
 		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, *pServer));
-		
+
 		delete pRequest;
 		return pAllsections;
 
@@ -164,10 +165,13 @@ Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
 	        path, Poco::Net::HTTPMessage::HTTP_1_1);
 
 	PlexHelper::AddHttpHeader(*pRequest);
-	// Add PlexToken to Header
-	std::string token = GetMyPlexToken();
-	if(!token.empty())
-		pRequest->add("X-Plex-Token", token);
+
+	if(Config::GetInstance().UsePlexAccount) {
+		// Add PlexToken to Header
+		std::string token = GetMyPlexToken();
+		if(!token.empty())
+			pRequest->add("X-Plex-Token", token);
+	}
 
 	return pRequest;
 }
