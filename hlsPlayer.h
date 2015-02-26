@@ -25,6 +25,7 @@ private:
 	int m_ringBufferSize;
 	unsigned int m_segmentsToBuffer;
 	unsigned int m_lastLoadedSegment;
+	int m_lastSegmentSize;
 	bool m_bufferFilled;
 	bool m_newList;
 	int m_streamlenght;

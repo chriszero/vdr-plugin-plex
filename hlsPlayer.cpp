@@ -4,7 +4,6 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Exception.h>
-//#include <Poco/StreamCopier.h>
 
 #include <pcrecpp.h>
 
@@ -24,6 +23,7 @@ cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
 	m_lastLoadedSegment = 0;
 	m_segmentsToBuffer = 2;
 	m_streamlenght = 0;
+	m_lastSegmentSize = 0;
 	m_pBuffer = new uchar[8192];
 
 	// Initialize members
@@ -47,7 +47,7 @@ cHlsSegmentLoader::~cHlsSegmentLoader()
 	delete m_pRingbuffer;
 }
 
-void cHlsSegmentLoader::SkipEmptySegments(int segmentDuration) 
+void cHlsSegmentLoader::SkipEmptySegments(int segmentDuration)
 {
 	pcrecpp::RE re("&offset=(\\d+)", pcrecpp::RE_Options(PCRE_CASELESS));
 	int value;
@@ -116,7 +116,6 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 {
 	bool res = false;
 	try {
-		ConnectToServer();
 		if(m_startParser.MasterPlaylist && m_startParser.vPlaylistItems.size() > 0) {
 			// Todo: make it universal, might only work for Plexmediaserver
 			ConnectToServer();
@@ -151,8 +150,9 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 			} else {
 				m_segmentsToBuffer = 3;
 			}
-			
+
 			SkipEmptySegments(m_indexParser.TargetDuration);
+			m_lastSegmentSize = 0;
 
 			// Get stream lenght
 			m_streamlenght = 0;
@@ -229,10 +229,10 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 
 	if(segmentResponse.getStatus() != 200) {
 		// error
-		esyslog("[plex]%s Loading Segment: %s failed.", __FUNCTION__, segmentUri.c_str());
+		esyslog("[plex] %s; %s failed.", __FUNCTION__, segmentUri.c_str());
 		return false;
 	}
-	dsyslog("[plex]%s Loading Segment: %s successfully.", __FUNCTION__, segmentUri.c_str());
+	dsyslog("[plex] %s: %s successfully.", __FUNCTION__, segmentUri.c_str());
 
 	// copy response
 
@@ -256,7 +256,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 int cHlsSegmentLoader::GetSegmentSize(int segmentIndex)
 {
 	//dsyslog("[plex]%s Segment %d", __FUNCTION__, segmentIndex);
-	if(m_indexParser.vPlaylistItems[segmentIndex].size > 0) {
+	if(m_indexParser.vPlaylistItems[segmentIndex].size >= TS_SIZE) {
 		return m_indexParser.vPlaylistItems[segmentIndex].size;
 	}
 	try {
@@ -299,16 +299,35 @@ bool cHlsSegmentLoader::DoLoad(void)
 {
 	LOCK_THREAD;
 	bool result = true;
+	bool recover = false;
 	if(m_lastLoadedSegment <  m_indexParser.vPlaylistItems.size()) {
 		int nextSegmentSize = GetSegmentSize(m_lastLoadedSegment);
 
 		if(m_pRingbuffer->Free() > nextSegmentSize) {
 
-			if(nextSegmentSize <= TS_SIZE) { // skip empty segments
+			if(m_lastSegmentSize <= TS_SIZE && nextSegmentSize <= TS_SIZE) { // skip empty segments
 				nextSegmentSize = GetSegmentSize(m_lastLoadedSegment++);
 			} else {
-				std::string segmentUri = GetSegmentUri(m_lastLoadedSegment++);
-				result = LoadSegment(segmentUri);
+				std::string segmentUri = GetSegmentUri(m_lastLoadedSegment);
+				if(result = LoadSegment(segmentUri)) {
+					m_lastLoadedSegment++;
+					m_lastSegmentSize = nextSegmentSize;
+				} else {
+					// transcoder may be died, plex bug, restart transcode session
+					esyslog("[plex] %s 404, Transcoder died, see logfile from PMS", __FUNCTION__);
+					recover = true;
+					std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
+					Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
+					m_pClientSession->sendRequest(req);
+					Poco::Net::HTTPResponse reqResponse;
+					m_pClientSession->receiveResponse(reqResponse);
+					int tmp = m_lastLoadedSegment;
+					int tmp2 = m_lastSegmentSize;
+					CloseConnection();
+					LoadLists();
+					m_lastLoadedSegment = tmp;
+					m_lastSegmentSize = tmp2;
+				}
 			}
 		} else {
 			if(nextSegmentSize >= m_ringBufferSize) {
@@ -319,7 +338,7 @@ bool cHlsSegmentLoader::DoLoad(void)
 	} else {
 		result = false;
 	}
-	return result;
+	return recover ? true : result;
 }
 
 bool cHlsSegmentLoader::BufferFilled(void)
