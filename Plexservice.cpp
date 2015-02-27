@@ -11,30 +11,6 @@ Plexservice::Plexservice(PlexServer *server)
 	pServer = server;
 }
 
-Plexservice::~Plexservice()
-{
-}
-
-Poco::Net::HTTPClientSession* Plexservice::GetHttpSession(bool createNew)
-{
-	try {
-		if(pServer == 0) {
-			return NULL;
-		}
-		if (m_pPlexSession == 0 || createNew) {
-			if (createNew) {
-				//delete m_pPlexSession;
-			}
-			m_pPlexSession = new Poco::Net::HTTPClientSession(pServer->GetIpAdress(), pServer->GetPort());
-			m_pPlexSession->setKeepAlive(true);
-		}
-	} catch(Poco::Exception &exc) {
-		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
-		m_pPlexSession = 0;
-	}
-	return m_pPlexSession;
-}
-
 std::string Plexservice::GetMyPlexToken()
 {
 	static bool done;
@@ -73,7 +49,7 @@ std::string Plexservice::GetMyPlexToken()
 				esyslog("[plex] plex.tv Login failed, check you creditials.");
 			}
 			done = true;
-			plexSession.detachSocket();
+			plexSession.abort();
 		} catch (Poco::Exception &exc) {
 			esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
 			done = true;
@@ -87,21 +63,17 @@ void Plexservice::Authenticate()
 {
 	if(!Config::GetInstance().UsePlexAccount) return;
 	try {
-		if(GetHttpSession(true)) {
-			std::string token = GetMyPlexToken();
-			Poco::Net::HTTPRequest *pRequest = CreateRequest("/?X-Plex-Token=" + token);
-
-			m_pPlexSession->sendRequest(*pRequest);
-			Poco::Net::HTTPResponse response;
-			/*std::istream &rs = */
-			m_pPlexSession->receiveResponse(response);
-
-			// TODO: process response
-			//Poco::StreamCopier::copyStream(rs, std::cout);
-			delete pRequest;
-		} else {
-			esyslog("[plex] %s HttpSession is NULL", __func__);
-		}
+		std::string token = GetMyPlexToken();
+		auto pRequest = CreateRequest("/?X-Plex-Token=" + token);
+		
+		Poco::Net::HTTPClientSession session(pServer->GetIpAdress(), pServer->GetPort());
+		session.sendRequest(*pRequest);
+		Poco::Net::HTTPResponse response;
+		/*std::istream &rs = */
+		session.receiveResponse(response);
+		session.abort();
+		// TODO: process response
+		//Poco::StreamCopier::copyStream(rs, std::cout);
 	} catch (Poco::Exception &exc) {
 		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
 	}
@@ -114,9 +86,7 @@ PlexServer* Plexservice::GetServer()
 
 std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, bool putOnStack)
 {
-	if(GetHttpSession()) {
-
-		Poco::Net::HTTPRequest *pRequest;
+	try {
 		std::string uri;
 		if(section[0]=='/') { // Full URI?
 			uri = section;
@@ -124,24 +94,24 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 			uri = Poco::format("%s/%s", m_vUriStack.top(), section);
 		}
 
-		pRequest = CreateRequest(uri);
+		auto pRequest = CreateRequest(uri);
 		if(putOnStack) {
 			m_vUriStack.push(uri);
 		}
 
-		m_pPlexSession->sendRequest(*pRequest);
+		Poco::Net::HTTPClientSession session(pServer->GetIpAdress(), pServer->GetPort());
+		session.sendRequest(*pRequest);
 		Poco::Net::HTTPResponse response;
-		std::istream &rs = m_pPlexSession->receiveResponse(response);
+		std::istream &rs = session.receiveResponse(response);
 
-		dsyslog("[plex] URI: http://%s:32400%s", m_pPlexSession->getHost().c_str(), pRequest->getURI().c_str());
+		dsyslog("[plex] URI: http://%s:%d%s", pServer->GetIpAdress().c_str(), pServer->GetPort(), uri.c_str());
 
 		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, *pServer));
-
-		delete pRequest;
+		
+		session.abort();
 		return pAllsections;
 
-	} else {
-		esyslog("[plex] %s HttpSession is NULL", __func__);
+	} catch (Poco::Exception &exc) {
 		return 0;
 	}
 }
@@ -159,10 +129,10 @@ std::shared_ptr<MediaContainer> Plexservice::GetLastSection(bool current)
 	return NULL;
 }
 
-Poco::Net::HTTPRequest* Plexservice::CreateRequest(std::string path)
+std::unique_ptr<Poco::Net::HTTPRequest> Plexservice::CreateRequest(std::string path)
 {
-	Poco::Net::HTTPRequest *pRequest = new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
-	        path, Poco::Net::HTTPMessage::HTTP_1_1);
+	std::unique_ptr<Poco::Net::HTTPRequest> pRequest = std::unique_ptr<Poco::Net::HTTPRequest>(new Poco::Net::HTTPRequest(Poco::Net::HTTPRequest::HTTP_GET,
+	        path, Poco::Net::HTTPMessage::HTTP_1_1));
 
 	PlexHelper::AddHttpHeader(*pRequest);
 
@@ -189,7 +159,8 @@ MediaContainer Plexservice::GetMediaContainer(std::string fullUrl)
 	std::istream &rs = session.receiveResponse(response);
 
 	MediaContainer allsections(&rs, PlexServer(fileuri.getHost(), fileuri.getPort()));
-
+	
+	session.abort();
 	return allsections;
 }
 

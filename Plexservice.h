@@ -40,7 +40,6 @@ class Plexservice
 {
 public:
 	Plexservice(PlexServer *server);
-	~Plexservice();
 
 	void DisplaySections();
 	std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);
@@ -58,13 +57,10 @@ public:
 
 private:
 	Poco::Mutex m_mutex;
-	Poco::Net::HTTPClientSession *m_pPlexSession;
 	PlexServer *pServer;
 
 	std::stack<std::string> m_vUriStack;
-
-	Poco::Net::HTTPClientSession* GetHttpSession(bool createNew = false);
-	Poco::Net::HTTPRequest* CreateRequest(std::string path);
+	std::unique_ptr<Poco::Net::HTTPRequest> CreateRequest(std::string path);
 	
 };
 
