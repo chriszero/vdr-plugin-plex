@@ -219,7 +219,7 @@ void cHlsPlayerControl::JumpRelative(int offset)
 
 void cHlsPlayerControl::ShowMode(void)
 {
-	dsyslog("[plex]: '%s'\n", __FUNCTION__);
+	//dsyslog("[plex]: '%s'\n", __FUNCTION__);
 	if (visible || Setup.ShowReplayMode && !cOsd::IsOpen()) {
 		bool Play, Forward;
 		int Speed;
