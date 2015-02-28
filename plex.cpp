@@ -108,6 +108,8 @@ eOSState cPlexBrowser::LevelUp()
 		ShowBrowser = 0;
 		return osEnd;
 	}
+	cString title = cString::sprintf(tr("Browse Plex - %s"), tr(pCont->m_sTitle1.c_str()));
+	SetTitle(title);
 	CreateMenu();
 	return osContinue;
 }
@@ -128,7 +130,8 @@ eOSState cPlexBrowser::ProcessSelected()
 	if(item->IsDir()) {
 		plexclient::Directory* pDir = item->GetAttachedDirectory();
 		pCont = pService->GetSection(pDir->m_sKey);
-		//SetTitle(pDir->m_sTitle);
+		cString title = cString::sprintf(tr("Browse Plex - %s"), tr(pDir->m_sTitle.c_str()));
+		SetTitle(title);
 		CreateMenu();
 		return osContinue;
 	}
