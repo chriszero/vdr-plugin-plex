@@ -82,8 +82,27 @@ override CFLAGS	  += $(_CFLAGS) $(DEFINES) $(INCLUDES) \
 
 ### The object files (add further files here):
 
-OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
-OBJS += $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+OBJS = $(PLUGIN).o \
+	Config.o \
+	ControlServer.o \
+	cPlexOsdItem.o \
+	m3u8Parser.o \
+	hlsPlayer.o \
+	hlsPlayerControl.o \
+	plexgdm.o \
+	PlexHelper.o \
+	Plexservice.o \
+	PlexServer.o \
+	PlexHTTPRequestHandler.o \
+	PlexReqHandlerFactory.o \
+	SubscriptionManager.o \
+	user.o \
+	XmlObject.o \
+	MediaContainer.o \
+	Directory.o \
+	PVideo.o \
+	Stream.o \
+	Media.o \
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp
 
@@ -111,7 +130,7 @@ I18Npot	  = $(PODIR)/$(PLUGIN).pot
 %.mo: %.po
 	msgfmt -c -o $@ $<
 
-$(I18Npot): $(SRCS)
+$(I18Npot): $(wildcard *.cpp)
 	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP --package-name=vdr-$(PLUGIN) --package-version=$(VERSION) --msgid-bugs-address='<see README>' -o $@ `ls $^`
 
 %.po: $(I18Npot)

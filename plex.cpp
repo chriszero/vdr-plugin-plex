@@ -46,7 +46,7 @@ void cPlexBrowser::CreateMenu()
 
 		for(std::vector<plexclient::Directory>::iterator it = pCont->m_vDirectories.begin(); it != pCont->m_vDirectories.end(); ++it) {
 			plexclient::Directory *pDir = &(*it);
-			Add(new cPlexOsdItem( pDir->GetTitle().c_str(), pDir) );
+			Add(new cPlexOsdItem( tr(pDir->GetTitle().c_str()), pDir) );
 		}
 	}
 
@@ -196,15 +196,15 @@ cPlayMenu::cPlayMenu(const char *title, int c0, int c1, int c2, int c3, int c4)
 		//&(*it)
 		auto s1 = std::make_shared<plexclient::Plexservice>( &(*it) );
 		s1->StartUri = "/library/sections";
-		Add(new cPlexOsdItem(Poco::format("%s - Library", it->GetServerName()).c_str(),  s1));
+		Add(new cPlexOsdItem(Poco::format(tr("%s - Library"), it->GetServerName()).c_str(),  s1));
 
 		auto s2 = std::make_shared<plexclient::Plexservice>( &(*it) );
 		s2->StartUri = "/video";
-		Add(new cPlexOsdItem(Poco::format("%s - Video Channels", it->GetServerName()).c_str(), s2 ));
+		Add(new cPlexOsdItem(Poco::format(tr("%s - Video Channels"), it->GetServerName()).c_str(), s2 ));
 	}
 
 	if(Count() < 1) {
-		Add(new cPlexOsdItem("No Plex Media Server found."), false);
+		Add(new cPlexOsdItem(tr("No Plex Media Server found.")), false);
 	}
 }
 
@@ -332,7 +332,7 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
 	}
 
 	if (ShowBrowser) {
-		return new cPlexBrowser("Browse Plex", pPlexService);
+		return new cPlexBrowser(tr("Browse Plex"), pPlexService);
 	}
 	return new cPlayMenu("Plex");
 }
