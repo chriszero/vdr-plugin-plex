@@ -74,6 +74,7 @@ void Video::Parse(Poco::XML::Node* pNode)
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
 			m_iRatingKey = GetNodeValueAsInt(pAttribs->getNamedItem("ratingKey"));
+			m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
 			m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 			m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
 			m_sStudio = GetNodeValue(pAttribs->getNamedItem("studio"));
@@ -117,7 +118,12 @@ std::string Video::GetTitle()
 	std::string res = m_sTitle;
 	switch(m_tType) {
 	case MOVIE:
-		res = Poco::format("%s (%d)", m_sTitle, m_iYear);
+		if(m_iYear > 0) {
+			res = Poco::format("%s (%d)", m_sTitle, m_iYear);
+		}
+		else {
+			res = m_sTitle;
+		}
 		break;
 	case EPISODE:
 		res = Poco::format("%02dx%02d - %s", m_iParentIndex, m_iIndex, m_sTitle);
