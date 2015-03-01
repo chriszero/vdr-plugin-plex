@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-02-28 14:37+0100\n"
-"PO-Revision-Date: 2015-02-28 14:39+0200\n"
+"POT-Creation-Date: 2015-03-01 17:57+0100\n"
+"PO-Revision-Date: 2015-03-01 17:59+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
@@ -35,6 +35,10 @@ msgstr "Plex Passwort"
 
 msgid "Current UUID"
 msgstr "Aktuelle UUID"
+
+#, c-format
+msgid "%s - Season %d"
+msgstr "%s - Staffel %d"
 
 msgid "Stop"
 msgstr "Stop"

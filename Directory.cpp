@@ -1,4 +1,5 @@
 #include "Directory.h"
+#include <vdr/i18n.h>
 #include <Poco/Format.h>
 
 namespace plexclient
@@ -34,7 +35,7 @@ std::string Directory::GetTitle()
 {
 	switch(m_eType) {
 	case SEASON:
-		return Poco::format("%s - Staffel %d", m_sTitle2, m_iIndex);
+		return Poco::format(tr("%s - Season %d"), m_sTitle2, m_iIndex);
 	default:
 		return m_sTitle;
 	}
