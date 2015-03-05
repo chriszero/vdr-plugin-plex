@@ -2,13 +2,9 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 
-
 //////////////////////////////////////////////////////////////////////////////
 //	cOsdMenu
 //////////////////////////////////////////////////////////////////////////////
-
-
-static char ShowBrowser;		///< flag show browser
 static std::shared_ptr<plexclient::Plexservice> pPlexService;
 
 std::shared_ptr<plexclient::Plexservice> cPlexBrowser::pLastService;
@@ -75,9 +71,16 @@ eOSState cPlexBrowser::ProcessKey(eKeys key)
 
 	// call standard function
 	state = cOsdMenu::ProcessKey(key);
-	//if (state || key != kNone) {
-	//	dsyslog("[plex]%s: state=%d key=%d\n", __FUNCTION__, state, key);
-	//}
+
+	int current = Current();		// get current menu item index
+	cPlexOsdItem *item = static_cast<cPlexOsdItem*>(Get(current));
+
+	if(item->IsVideo()) {
+		if(item->GetAttachedVideo()->m_iViewCount > 0) SetHelp(tr("Info"), tr("Unscrobble"));
+		else SetHelp(tr("Info"), tr("Scrobble"));
+	} else {
+		SetHelp(NULL);
+	}
 
 	switch (state) {
 	case osUnknown:
@@ -86,6 +89,28 @@ eOSState cPlexBrowser::ProcessKey(eKeys key)
 			return ProcessSelected();
 		case kBack:
 			return LevelUp();
+		case kRed:
+			std::cout << "RED";
+			if(item->IsVideo()) {
+				std::cout << " Video Info";
+			}
+			std::cout << std::endl;
+			break;
+		case kGreen:
+			if(item->IsVideo()) {
+				if(item->GetAttachedVideo()->m_iViewCount > 0) {
+					if(item->GetAttachedVideo()->SetUnwatched()) {
+						item->GetAttachedVideo()->UpdateFromServer();
+					}
+				} else {
+					if(item->GetAttachedVideo()->SetWatched()) {
+						item->GetAttachedVideo()->UpdateFromServer();
+					}
+				}
+			}
+			if(item->GetAttachedVideo()->m_iViewCount > 0) SetHelp(tr("Info"), tr("Unscrobble"));
+			else SetHelp(tr("Info"), tr("Scrobble"));
+			break;
 		default:
 			break;
 		}
@@ -105,7 +130,7 @@ eOSState cPlexBrowser::LevelUp()
 {
 	pCont = pService->GetLastSection();
 	if(!pCont) {
-		ShowBrowser = 0;
+		cPlayMenu::eShow = menuShow::MAIN;
 		return osEnd;
 	}
 	cString title = cString::sprintf(tr("Browse Plex - %s"), tr(pCont->m_sTitle1.c_str()));
@@ -187,6 +212,8 @@ eOSState cPlexInfo::ProcessKey(eKeys Key)
 //	cOsdMenu
 //////////////////////////////////////////////////////////////////////////////
 
+menuShow cPlayMenu::eShow = MAIN;
+
 /**
 **	Play menu constructor.
 */
@@ -241,7 +268,7 @@ eOSState cPlayMenu::ProcessKey(eKeys key)
 		switch (key) {
 		case kOk:
 			pPlexService = item->GetAttachedService();
-			ShowBrowser = 1;
+			cPlayMenu::eShow = menuShow::BROWSER;
 			return osPlugin;		// restart with OSD browser
 		default:
 			break;
@@ -334,7 +361,7 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
 		return cPlexBrowser::RecoverLastState();
 	}
 
-	if (ShowBrowser) {
+	if (cPlayMenu::eShow == menuShow::BROWSER) {
 		return new cPlexBrowser(tr("Browse Plex"), pPlexService);
 	}
 	return new cPlayMenu("Plex");
