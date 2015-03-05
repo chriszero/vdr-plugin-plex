@@ -74,6 +74,7 @@ void Video::Parse(Poco::XML::Node* pNode)
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
 			m_iRatingKey = GetNodeValueAsInt(pAttribs->getNamedItem("ratingKey"));
+			m_iViewCount = GetNodeValueAsInt(pAttribs->getNamedItem("viewCount"));
 			m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
 			m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 			m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
@@ -156,5 +157,52 @@ bool Video::SetStream(Stream* stream)
 		return false;
 	}
 }
+
+bool Video::SetUnwatched()
+{
+	try {
+		Poco::Net::HTTPClientSession session(m_Server.GetIpAdress(), m_Server.GetPort());
+
+		std::string uri = Poco::format("/:/unscrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+		session.sendRequest(req);
+
+		Poco::Net::HTTPResponse resp;
+		session.receiveResponse(resp);
+
+		if(resp.getStatus() == 200) {
+			dsyslog("[plex]: Set Unwatched: %s", uri.c_str());
+			return true;
+		}
+		return false;
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex]: %s: %s", __FUNCTION__, exc.displayText().c_str());
+		return false;
+	}
+}
+
+bool Video::SetWatched()
+{
+		try {
+		Poco::Net::HTTPClientSession session(m_Server.GetIpAdress(), m_Server.GetPort());
+
+		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+		session.sendRequest(req);
+
+		Poco::Net::HTTPResponse resp;
+		session.receiveResponse(resp);
+
+		if(resp.getStatus() == 200) {
+			dsyslog("[plex]: Set Watched: %s", uri.c_str());
+			return true;
+		}
+		return false;
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex]: %s: %s", __FUNCTION__, exc.displayText().c_str());
+		return false;
+	}
+}
+
 
 } // Namespace

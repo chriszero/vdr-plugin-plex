@@ -56,6 +56,7 @@ public:
 	std::string m_sThumb;
 	std::string m_sArt;
 	long m_iDuration;
+	int m_iViewCount;
 	Poco::Timestamp m_tAddedAt;
 	Poco::Timestamp m_tUpdatedAt;
 
@@ -74,6 +75,8 @@ public:
 	std::string GetTitle();
 	bool SetStream(Stream* stream);
 	bool UpdateFromServer();
+	bool SetWatched();
+	bool SetUnwatched();
 };
 
 }
