@@ -293,7 +293,6 @@ volatile bool cMyPlugin::CalledFromCode = false;
 */
 cMyPlugin::cMyPlugin(void)
 {
-	dsyslog("[plex]%s:\n", __FUNCTION__);
 }
 
 /**
@@ -301,7 +300,6 @@ cMyPlugin::cMyPlugin(void)
 */
 cMyPlugin::~cMyPlugin(void)
 {
-	dsyslog("[plex]%s:\n", __FUNCTION__);
 	plexclient::plexgdm::GetInstance().stopRegistration();
 	plexclient::ControlServer::GetInstance().Stop();
 }
