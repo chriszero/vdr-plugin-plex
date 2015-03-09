@@ -332,7 +332,7 @@ bool cMyPlugin::Initialize(void)
 	// First Startup? Save UUID
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
 
-	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), DESCRIPTION, "3200", "VDR", VERSION);
+	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), Config::GetInstance().GetHostname(), "3200", DESCRIPTION, VERSION);
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();
 

@@ -31,8 +31,7 @@ void PlexHTTPRequestHandler::AddHeaders(Poco::Net::HTTPServerResponse& response,
 		response.add("Access-Control-Allow-Origin", "*");
 		response.add("X-Plex-Version", VERSION);
 		response.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-		response.add("X-Plex-Product", "player");
-		response.add("X-Plex-Product", "PlexVDR");
+		response.add("X-Plex-Product", DESCRIPTION);
 		response.add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
 		response.add("X-Plex-Platform", "VDR");
 		response.add("X-Plex-Model", "Linux");
@@ -148,16 +147,14 @@ void ResourceRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 	std::ostream& ostr = response.send();
 	ostr << "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 	     "<MediaContainer>"
-	     "<Player title=\"" << Config::GetInstance().GetHostname()
-	     << "\""
+	     "<Player title=\"" << Config::GetInstance().GetHostname() << "\""
 	     " protocol=\"plex\""
 	     " protocolVersion=\"1\""
 	     " protocolCapabilities=\"navigation,playback,timeline\""
 	     " machineIdentifier=\"" << Config::GetInstance().GetUUID() << "\""
-	     " product=\"PlexVDR\""
+	     " product=\"" << DESCRIPTION << "\""
 	     " platform=\"Linux\""
-	     " platformVersion=\"" << VERSION
-	     << "\""
+	     " platformVersion=\"" << VERSION << "\""
 	     " deviceClass=\"HTPC\""
 	     "/> </MediaContainer>";
 
