@@ -16,9 +16,6 @@ LIBS += -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoXML -lPocoFoundation -lpcrecpp
 
 CONFIG := #-DDEBUG			# uncomment to build DEBUG
 
-
-_CFLAGS += $(shell pkg-config --cflags libpcrecpp)
-
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*const VERSION *=' $(PLUGIN).h | awk '{ print $$7 }' | sed -e 's/[";]//g')
@@ -41,13 +38,6 @@ export CXXFLAGS = $(call PKGCFG,cxxflags)
 
 CXXFLAGS += -std=gnu++0x
 #CXXFLAGS += -std=c++11
-
-ifeq ($(CFLAGS),)
-$(error CFLAGS not set)
-endif
-ifeq ($(CXXFLAGS),)
-$(error CXXFLAGS not set)
-endif
 
 ### The version number of VDR's plugin API:
 
@@ -73,13 +63,6 @@ INCLUDES +=
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DPLUGIN='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 	$(if $(GIT_REV), -DGIT_REV='"$(GIT_REV)"')
 
-### Make it standard
-
-override CXXFLAGS += $(_CFLAGS) $(DEFINES) $(INCLUDES) \
-    -g -W -Wall -Wextra -Winit-self -Werror=overloaded-virtual
-override CFLAGS	  += $(_CFLAGS) $(DEFINES) $(INCLUDES) \
-    -g -W -Wall -Wextra -Winit-self -Wdeclaration-after-statement
-
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o \
@@ -103,12 +86,18 @@ OBJS = $(PLUGIN).o \
 	PVideo.o \
 	Stream.o \
 	Media.o \
+	plexOsd.o \
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp
 
 ### The main target:
 
 all: $(SOFILE) i18n
+
+### Implicit rules:
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) -o $@ $<
 
 ### Dependencies:
 

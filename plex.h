@@ -24,11 +24,10 @@
 #include <algorithm>
 #include <memory>
 
-
 /// vdr-plugin version number.
 /// Makefile extracts the version number for generating the file name
 /// for the distribution archive.
-static const char *const VERSION = "0.1.0"
+static const char *const VERSION = "0.1.4"
 #ifdef GIT_REV
                                    "-GIT" GIT_REV
 #endif
@@ -36,66 +35,6 @@ static const char *const VERSION = "0.1.0"
 static const char *const DESCRIPTION = "Plex for VDR Plugin";
 static const char *const MAINMENUENTRY = "Plex for VDR";
 
-/*
- *	Plex Browser
- */
-
-class cPlexBrowser :public cOsdMenu
-{
-private:
-	std::shared_ptr<plexclient::Plexservice> pService;
-	std::shared_ptr<plexclient::MediaContainer> pCont;
-	std::vector<plexclient::Video> *v_Vid;
-	std::vector<plexclient::Directory> *v_Dir;
-	std::vector<std::string> m_vStack;
-	std::string m_sSection;
-	std::string m_sActualPos;
-	/// Create a browser menu for current directory
-	void CreateMenu();
-	/// Handle menu level up
-	eOSState LevelUp(void);
-	/// Handle menu item selection
-	eOSState ProcessSelected();
-
-	static std::shared_ptr<plexclient::Plexservice> pLastService;
-	static int lastCurrentItem;
-
-public:
-	cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service);
-	virtual eOSState ProcessKey(eKeys);
-
-	static cPlexBrowser* RecoverLastState();
-
-};
-
-class cPlexInfo : public cOsdMenu
-{
-
-public:
-	cPlexInfo(plexclient::Video* video);
-	virtual eOSState ProcessKey(eKeys Keys);
-};
-
-enum menuShow {
-    MAIN,
-    BROWSER,
-    INFO
-};
-
-/**
-**	Play plugin menu class.
-*/
-class cPlayMenu:public cOsdMenu
-{
-
-private:
-public:
-	cPlayMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
-	virtual ~ cPlayMenu();
-	virtual eOSState ProcessKey(eKeys);
-
-	static menuShow eShow;
-};
 
 class cMyPlugin:public cPlugin
 {
@@ -105,6 +44,7 @@ public:
 	virtual const char *Version(void);
 	virtual const char *Description(void);
 	virtual bool Initialize(void);
+	virtual bool Start(void);
 	virtual void MainThreadHook(void);
 	virtual const char *MainMenuEntry(void);
 	virtual cOsdObject *MainMenuAction(void);
