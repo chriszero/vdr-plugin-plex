@@ -262,14 +262,10 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 				int Index = Total;
 				if (Setup.ShowRemainingTime)
 					Index = Current - Index;
-				if(Total == 0) // Webstreams
-					Index = Current;
 				displayReplay->SetTotal(IndexToHMSF(Index, false, FramesPerSecond()));
 				if (!Initial)
 					displayReplay->Flush();
 			}
-			if(Total == 0) // Webstreams
-				Total = Current;
 			displayReplay->SetProgress(Current, Total);
 			if (!Initial)
 				displayReplay->Flush();
