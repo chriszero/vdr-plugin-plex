@@ -2,6 +2,9 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 #include "plexOsd.h"
+#include "plexSdOsd.h"
+
+#include "libskindesigner/services.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //	cPlugin
@@ -51,6 +54,27 @@ const char *cMyPlugin::Description(void)
 
 bool cMyPlugin::Start(void)
 {
+	std::string cacheDir = cPlugin::CacheDirectory(PLUGIN_NAME_I18N);
+
+	RegisterPlugin reg;
+	reg.name = "plex";
+	
+	reg.SetView(viRootView, "root.xml");
+	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgBrowser, "browser");
+	reg.SetViewElement(viRootView, verHeader, "header");
+	
+	//reg.SetViewElement(viRootView, verHeader, "header");
+	//reg.SetViewElement(viRootView, verFooter, "footer");
+	
+	//reg.SetView(eViews::viBrowserView, "browser.xml");
+	
+	
+	static cPlugin *pSkinDesigner = cPluginManager::GetPlugin("skindesigner");
+	if (pSkinDesigner) {
+		pSkinDesigner->Service("RegisterPlugin", &reg);
+	} else {
+		esyslog("[plex]: skindesigner not available");
+	}
 	return true;
 }
 
@@ -83,7 +107,13 @@ const char *cMyPlugin::MainMenuEntry(void)
 cOsdObject *cMyPlugin::MainMenuAction(void)
 {
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
-	return cPlexMenu::ProcessMenu();
+	/*bool skinDesignerAvailable = InitSkindesignerInterface("plex");
+    if (skinDesignerAvailable) {
+		//cOsdView *rootView = GetOsdView(viRootView);
+        return new cPlexSdOsd();
+    }
+	return cPlexMenu::ProcessMenu();*/
+	return new cPlexSdOsd();
 }
 
 /**

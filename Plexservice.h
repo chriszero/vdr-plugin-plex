@@ -40,6 +40,7 @@ class Plexservice
 {
 public:
 	Plexservice(PlexServer *server);
+	Plexservice(PlexServer *server, std::string startUri);
 
 	void DisplaySections();
 	std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);

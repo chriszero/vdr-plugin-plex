@@ -28,6 +28,7 @@ PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(s
 LIBDIR = $(call PKGCFG,libdir)
 LOCDIR = $(call PKGCFG,locdir)
 PLGCFG = $(call PKGCFG,plgcfg)
+PLGRESDIR = $(call PKGCFG,resdir)/plugins/skindesigner
 #
 TMPDIR ?= /tmp
 
@@ -87,6 +88,12 @@ OBJS = $(PLUGIN).o \
 	Stream.o \
 	Media.o \
 	plexOsd.o \
+	plexSdOsd.o \
+	viewGridNavigator.o \
+	browserGrid.o \
+	viewHeader.o \
+	libskindesigner/skindesignerosdbase.o \
+	libskindesigner/osdelements.o \
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp
 
@@ -143,6 +150,10 @@ $(SOFILE): $(OBJS)
 
 install-lib: $(SOFILE)
 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
+
+install-skins:
+	mkdir -p $(DESTDIR)$(PLGRESDIR)/skins
+	cp -r skins/* $(DESTDIR)$(PLGRESDIR)/skins
 
 install: install-lib install-i18n
 

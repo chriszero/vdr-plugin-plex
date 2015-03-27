@@ -19,10 +19,8 @@
 
 enum menuShow {
     MAIN,
-    BROWSER,
-    INFO
+    BROWSER
 };
-
 
 /*
  *	Plex Browser
@@ -56,13 +54,6 @@ public:
 
 };
 
-class cPlexInfo : public cOsdMenu
-{
-
-public:
-	cPlexInfo(plexclient::Video* video);
-	virtual eOSState ProcessKey(eKeys Keys);
-};
 
 /**
 **	Play plugin menu class.
@@ -71,6 +62,7 @@ class cPlexMenu:public cOsdMenu
 {
 
 private:
+	void SetRootMenu();
 public:
 	cPlexMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
 	virtual eOSState ProcessKey(eKeys);

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE displayplugin SYSTEM "../../../dtd/displayplugin.dtd">
+
+<displayplugin x="0" y="0" width="100%" height="100%" fadetime="0" scaletvx="0" scaletvy="0" scaletvwidth="100%" scaletvheight="100%">
+	<!-- Tokens available in header
+    {title}
+	{istab1active}
+	{tab1name}
+	{istab2active}
+	{tab2name}
+	{istab3active}
+	{tab3name}
+    -->
+	<viewelement name="header">
+		<area layer="1" x="0" y="0" width="100%" height="15%">
+			<drawtext x="1%" y="5%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="Plex for VDR" />
+			<drawtext condition="{istab1active}" x="1%" y="20%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="{tab1name}" />
+			<drawtext condition="{istab2active}" x="1%" y="20%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="{tab2name}" />
+			<drawtext condition="{istab3active}" x="1%" y="20%" width="98%" font="{light}" fontsize="305%" color="{clrWhite}" text="{tab3name}" />
+		</area>
+	</viewelement>
+	
+	<!-- Tokens available in browser
+	{current}					Currently active element		
+    {title}                 	Name of the element
+	{year}
+	{cover}						Image
+	
+	{isdummy}					Condition
+	
+	{isserver}					Condition
+		{serverstartpointname}	
+		{serverip}
+		{serverport}
+		{serverversion}
+		
+	{isdirectory}				Condition
+		{isshow}				Condition
+		{isseason}				Condition
+		
+	{ismovie}
+		
+	{isepisode}
+    
+	-->
+    <grid name="browser" x="0" y="15%" width="100%" height="85%">
+		<area layer="2">
+			<drawtext x="1%" y="2%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="{title}" />
+			<drawtext condition="{current}" x="1%" y="20%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="Active" />
+			<drawtext condition="{isserver}" x="1%" y="40%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="Server" />
+			<drawtext condition="{isserver}" x="1%" y="60%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="{serverstartpointname}" />
+			<drawtext condition="{isdirectory}" x="1%" y="40%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="Directory" />
+			<drawtext condition="{ismovie}" x="1%" y="40%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="Movie" />
+			<drawtext condition="{isepisode}" x="1%" y="40%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="Episode" />
+		</area>
+	</grid>
+	
+</displayplugin>

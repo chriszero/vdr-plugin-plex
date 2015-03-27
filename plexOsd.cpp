@@ -165,48 +165,6 @@ eOSState cPlexBrowser::ProcessSelected()
 }
 
 
-cPlexInfo::cPlexInfo(plexclient::Video* video) : cOsdMenu(video->GetTitle().c_str())
-{
-	cOsdMenu::Display();
-
-	Add(new cOsdItem(video->m_sSummary.c_str()));
-}
-
-eOSState cPlexInfo::ProcessKey(eKeys Key)
-{
-	switch (int(Key)) {
-	case kUp|k_Repeat:
-	case kUp:
-	case kDown|k_Repeat:
-	case kDown:
-	case kLeft|k_Repeat:
-	case kLeft:
-	case kRight|k_Repeat:
-	case kRight:
-		DisplayMenu()->Scroll(NORMALKEY(Key) == kUp || NORMALKEY(Key) == kLeft, NORMALKEY(Key) == kLeft || NORMALKEY(Key) == kRight);
-		cStatus::MsgOsdTextItem(NULL, NORMALKEY(Key) == kUp || NORMALKEY(Key) == kLeft);
-		return osContinue;
-	case kInfo:
-		return osBack;
-	default:
-		break;
-	}
-
-	eOSState state = cOsdMenu::ProcessKey(Key);
-
-	if (state == osUnknown) {
-		switch (Key) {
-		case kGreen:
-			cRemote::Put(Key, true);
-		case kOk:
-			return osBack;
-		default:
-			break;
-		}
-	}
-	return state;
-}
-
 //////////////////////////////////////////////////////////////////////////////
 //	cOsdMenu
 //////////////////////////////////////////////////////////////////////////////
@@ -214,10 +172,10 @@ eOSState cPlexInfo::ProcessKey(eKeys Key)
 menuShow cPlexMenu::eShow = MAIN;
 
 /**
-**	Play menu constructor.
+**	Plex menu constructor.
 */
 cPlexMenu::cPlexMenu(const char *title, int c0, int c1, int c2, int c3, int c4)
-	:cOsdMenu(title, c0, c1, c2, c3, c4)
+	:cOsdMenu(title)
 {
 	SetHasHotkeys();
 

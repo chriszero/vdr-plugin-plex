@@ -11,6 +11,12 @@ Plexservice::Plexservice(PlexServer *server)
 	pServer = server;
 }
 
+Plexservice::Plexservice(PlexServer *server, std::string startUri)
+{
+	pServer = server;
+	StartUri = startUri;
+}
+
 std::string Plexservice::GetMyPlexToken()
 {
 	static bool done;

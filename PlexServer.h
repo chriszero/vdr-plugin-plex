@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include <Poco/String.h>
 #include <Poco/Net/HTTPClientSession.h>
@@ -15,7 +16,7 @@
 
 namespace plexclient
 {
-
+	
 class PlexServer
 {
 public:
@@ -59,7 +60,7 @@ public:
 	}
 	
 	std::string GetUri();
-
+	
 	void DiscoverSettings();
 
 private:

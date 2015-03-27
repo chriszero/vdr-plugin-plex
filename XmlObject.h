@@ -15,9 +15,7 @@ enum MediaType {UNDEF = 0, PHOTO, MOVIE, MUSIC, SHOW, SEASON, EPISODE};
 enum StreamType {sUNDEF = 0, sVIDEO = 1, sAUDIO = 2, sSUBTITLE = 3};
 
 class XmlObject
-{
-public:
-
+{	
 protected:
 	static std::string GetNodeValue(Poco::XML::Node* pNode);
 	static int GetNodeValueAsInt(Poco::XML::Node* pNode);

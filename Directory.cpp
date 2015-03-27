@@ -41,4 +41,10 @@ std::string Directory::GetTitle()
 	}
 }
 
+void Directory::AddTokens(std::shared_ptr<cViewGrid> grid)
+{
+	grid->ClearTokens();
+	grid->AddStringToken("title", m_sTitle);
+}
+
 }

@@ -14,6 +14,9 @@
 
 #include <vector>
 #include <iostream>
+#include <memory>
+#include "libskindesigner/osdelements.h"
+#include "viewGridNavigator.h"
 
 #include "XmlObject.h"
 #include "MediaContainer.h"
@@ -32,7 +35,7 @@ namespace plexclient
 {
 class MediaContainer;
 	
-class Video: XmlObject
+class Video: private XmlObject, public cGridElement
 {
 private:
 	void Parse(Poco::XML::Node* pNode);
@@ -72,11 +75,14 @@ public:
 	int m_iIndex;
 	int m_iParentIndex;
 	
-	std::string GetTitle();
+	virtual std::string GetTitle();
 	bool SetStream(Stream* stream);
 	bool UpdateFromServer();
 	bool SetWatched();
 	bool SetUnwatched();
+	
+	// gridElement
+	virtual void AddTokens(std::shared_ptr<cViewGrid> grid);
 };
 
 }

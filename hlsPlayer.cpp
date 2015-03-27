@@ -6,6 +6,7 @@
 #include <Poco/Exception.h>
 
 #include <pcrecpp.h>
+#include <algorithm>
 
 #include "Plexservice.h"
 #include "XmlObject.h"
@@ -210,7 +211,7 @@ int cHlsSegmentLoader::EstimateSegmentSize()
 
 	int len = m_indexParser.TargetDuration;
 	double estSize = (bandw) * len;
-	estSize = max(estSize, 1.0);
+	estSize = std::max(estSize, 1.0);
 	// default
 	if(estSize <= 1) {
 		estSize = 32;

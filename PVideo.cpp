@@ -204,5 +204,11 @@ bool Video::SetWatched()
 	}
 }
 
+void Video::AddTokens(std::shared_ptr<cViewGrid>grid)
+{
+	grid->ClearTokens();
+	grid->AddStringToken("title", m_sTitle);
+}
+
 
 } // Namespace

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-03-05 20:04+0100\n"
+"POT-Creation-Date: 2015-03-15 11:38+0100\n"
 "PO-Revision-Date: 2015-03-05 20:08+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,6 +60,10 @@ msgstr "Untertitelspuren"
 msgid "None"
 msgstr "Leer"
 
+#, c-format
+msgid "To start from %ld minutes, press Ok."
+msgstr "Wiedergabe ab Minute %ld starten?"
+
 msgid "Info"
 msgstr "Info"
 
@@ -86,10 +90,6 @@ msgstr "Kein Plexmediaserver gefunden."
 
 msgid "Browse Plex"
 msgstr "Durchsuche Plex"
-
-#, c-format
-msgid "To start from %ld minutes, press Ok."
-msgstr "Wiedergabe ab Minute %ld starten?"
 
 msgid "All Movies"
 msgstr "Alle Filme"

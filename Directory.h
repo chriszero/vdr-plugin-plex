@@ -11,8 +11,12 @@
 #include <Poco/Timestamp.h>
 #include <Poco/String.h>
 
+#include <memory>
+#include "libskindesigner/osdelements.h"
+
 #include "XmlObject.h"
 #include "MediaContainer.h"
+#include "viewGridNavigator.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::Document;
@@ -26,7 +30,7 @@ namespace plexclient
 {
 class MediaContainer;
 	
-class Directory: XmlObject
+class Directory: private XmlObject, public cGridElement
 {	
 public:
 	Directory(Poco::XML::Node* pNode, MediaContainer* parent);
@@ -48,7 +52,9 @@ public:
 	std::string m_sKey;
 	MediaType m_eType;
 	
-	std::string GetTitle();
+	virtual std::string GetTitle();
+	// gridElement
+	virtual void AddTokens(std::shared_ptr<cViewGrid> grid);
 };
 
 }
