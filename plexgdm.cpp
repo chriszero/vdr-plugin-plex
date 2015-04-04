@@ -115,7 +115,7 @@ void plexgdm::Action()
 		std::string s = Poco::format("BYE %s\r\n%s", _clientHeader, _clientData);
 		update_sock.sendTo(s.c_str(), s.length(), m_clientRegisterGroup, 0);
 	} catch (Poco::IOException) {}
-	
+
 	m_clientRegistered = false;
 }
 
@@ -153,7 +153,10 @@ void plexgdm::discover()
 			bool flag = true;
 			// Check for duplicates
 			for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
-				if(s_it->GetIpAdress() == host) flag = false;
+				if(s_it->GetIpAdress() == host) {
+					flag = false;
+					s_it->ParseData(data, host);
+				}
 			}
 			if(flag) {
 				m_vServers.push_back(PlexServer(data, host));
@@ -171,4 +174,16 @@ void plexgdm::stopRegistration()
 		Cancel();
 	}
 }
+
+PlexServer* plexgdm::GetServer(std::string ip, int port)
+{
+	for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
+		if(s_it->GetIpAdress() == ip && s_it->GetPort() == port) {
+			return &(*s_it);
+		}
+	}
+	m_vServers.push_back(PlexServer(ip, port));
+	return &m_vServers[m_vServers.size()-1];
 }
+
+} // namespace

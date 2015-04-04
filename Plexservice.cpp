@@ -1,6 +1,7 @@
 #include "Plexservice.h"
 
 #include "PlexHelper.h"
+#include "plexgdm.h"
 #include <memory>
 
 namespace plexclient
@@ -112,7 +113,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 
 		dsyslog("[plex] URI: http://%s:%d%s", pServer->GetIpAdress().c_str(), pServer->GetPort(), uri.c_str());
 
-		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, *pServer));
+		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, pServer));
 		
 		session.abort();
 		return pAllsections;
@@ -133,6 +134,11 @@ std::shared_ptr<MediaContainer> Plexservice::GetLastSection(bool current)
 		return GetSection(uri, false);
 	}
 	return NULL;
+}
+
+bool Plexservice::IsRoot() 
+{
+	return m_vUriStack.size() <= 1;
 }
 
 std::unique_ptr<Poco::Net::HTTPRequest> Plexservice::CreateRequest(std::string path)
@@ -164,7 +170,7 @@ MediaContainer Plexservice::GetMediaContainer(std::string fullUrl)
 	Poco::Net::HTTPResponse response;
 	std::istream &rs = session.receiveResponse(response);
 
-	MediaContainer allsections(&rs, PlexServer(fileuri.getHost(), fileuri.getPort()));
+	MediaContainer allsections(&rs, plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort()));
 	
 	session.abort();
 	return allsections;
@@ -180,7 +186,7 @@ std::string Plexservice::encode(std::string message)
 
 std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server)
 {
-	PlexServer* pSrv = server ? server : &video->m_Server;
+	PlexServer* pSrv = server ? server : video->m_pServer;
 	std::stringstream params;
 	params << "/video/:/transcode/universal/start.m3u8?";
 	params << "path=" << encode(pSrv->GetUri() + video->m_sKey);

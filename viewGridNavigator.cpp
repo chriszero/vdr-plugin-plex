@@ -1,4 +1,7 @@
 #include "viewGridNavigator.h"
+#include <iostream>
+#include "plexSdOsd.h"
+#include "pictureCache.h"
 
 unsigned int cGridElement::AbsoluteGridIdCounter = 0;
 
@@ -19,6 +22,26 @@ cViewGridNavigator::cViewGridNavigator(cViewGrid* viewGrid)
 	m_pGrid = std::shared_ptr<cViewGrid>(viewGrid);
 }
 
+
+void cViewGridNavigator::ReDraw(cGridElement* element)
+{
+	if(element) {
+		cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
+		if (!element->IsVisible()) {
+			std::cout << "ReDraw element not visible" << std::endl;
+			return;
+		}
+		double x, y;
+		element->GetPosition(x, y);
+		element->AddTokens(m_pGrid);
+		double width = 1.0 / m_columns;
+		double height = 1.0 / m_rows;
+		m_pGrid->SetGrid(element->GridElementId(), x, y, width, height);
+		Flush();
+		m_pRootView->Display();
+	}
+//
+}
 
 void cViewGridNavigator::FilterElements(int scrollOffset)
 {
@@ -60,6 +83,9 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 			m_pGrid->Delete((*it)->GridElementId());
 			(*it)->Dirty();
 			(*it)->Position = -1;
+			(*it)->SetPosition(-1,-1);
+			// Remove Queued Downloads
+			cPictureCache::GetInstance().Remove(*it);
 		}
 	}
 
@@ -81,13 +107,15 @@ void cViewGridNavigator::SetGridElementData(cGridElement *obj)
 	y= height * row;
 
 	//std::cout << "ID: " << obj->GridElementId() << "\tPos: " << obj->Position << "\t\tx: " << x << "\t\ty: " << y << "\t\twi: " << width << "\t\thei: " <<  height << "\tCol: " << column << "\tRow: " << row << std::endl;
-
+	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 	if(obj->IsNew() || m_newDimensions) {
 		// fill data
-		obj->AddTokens(m_pGrid);
+		obj->SetPosition(x, y);
+		obj->AddTokens(m_pGrid, true, std::bind(&cViewGridNavigator::ReDraw, this, std::placeholders::_1));
 		m_pGrid->SetGrid(obj->GridElementId(), x, y, width, height);
 		obj->InitFinished();
 	} else {
+		obj->SetPosition(x, y);
 		m_pGrid->MoveGrid(obj->GridElementId(), x, y, width, height);
 	}
 }

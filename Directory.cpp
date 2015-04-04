@@ -5,8 +5,9 @@
 namespace plexclient
 {
 
-Directory::Directory(Poco::XML::Node* pNode, MediaContainer* parent)
+Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 {
+	m_pServer = Server;
 	if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
 		Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
@@ -41,9 +42,9 @@ std::string Directory::GetTitle()
 	}
 }
 
-void Directory::AddTokens(std::shared_ptr<cViewGrid> grid)
+void Directory::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
-	grid->ClearTokens();
+	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);
 }
 

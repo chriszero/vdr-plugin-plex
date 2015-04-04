@@ -33,6 +33,7 @@ public:
 	void clientDetails(std::string c_id, std::string c_name, std::string c_port, std::string c_product, std::string c_version);
 	std::string getClientDetails();
 	PlexServer* getServerList();
+	PlexServer* GetServer(std::string ip, int port);
 	void discover();
 	void checkClientRegistration();
 

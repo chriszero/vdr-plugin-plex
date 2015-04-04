@@ -3,6 +3,8 @@
 #include "XmlObject.h"
 #include "PVideo.h"
 #include "Directory.h"
+#include "plex.h"
+#include "pictureCache.h"
 
 cBrowserGrid::cBrowserGrid(cViewGrid* viewGrid) : cViewGridNavigator(viewGrid)
 {
@@ -44,9 +46,11 @@ void cBrowserGrid::ProcessData()
 			cServerElement *elem = &(*it);
 			m_vElements.push_back(elem);
 		}
-	} else {
-		m_vElements.push_back(&m_Dummy);
-		m_Dummy.Dirty();
+	} else if (m_pContainer) {
+		if (!m_pService->IsRoot()) {
+			m_vElements.push_back(&m_Dummy);
+			m_Dummy.Dirty();
+		}
 
 		if(m_pContainer->m_vVideos.size() > 0) {
 			for(std::vector<plexclient::Video>::iterator it = m_pContainer->m_vVideos.begin(); it != m_pContainer->m_vVideos.end(); ++it) {
@@ -60,9 +64,10 @@ void cBrowserGrid::ProcessData()
 				m_vElements.push_back(elem);
 			}
 		}
-
+		// Cache Images
+		//m_pContainer->PreCache();
 	}
-
+	
 	m_firstElementIter = m_vElements.begin();
 
 	m_pGrid->Clear();
@@ -85,7 +90,11 @@ eOSState cBrowserGrid::NavigateSelect()
 		m_vServerElements.clear();
 		ProcessData();
 		return eOSState::osContinue;
-	} else return eOSState::osEnd;
+	} else if(plexclient::Video* vid = dynamic_cast<plexclient::Video*>(SelectedObject())) {
+		cMyPlugin::PlayFile(*vid);
+		return eOSState::osEnd;
+	} 
+	else return eOSState::osEnd;
 }
 
 eOSState cBrowserGrid::NavigateBack()
@@ -113,9 +122,9 @@ eOSState cBrowserGrid::NavigateBack()
  * cDummyElement
  */
 
-void cDummyElement::AddTokens(std::shared_ptr<cViewGrid> grid)
+void cDummyElement::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
-	grid->ClearTokens();
+	if(clear) grid->ClearTokens();
 	grid->AddIntToken("isdummy", 1);
 	grid->AddStringToken("title", "../");
 }
@@ -136,9 +145,9 @@ cServerElement::cServerElement(plexclient::PlexServer* server, std::string start
 	m_sStartName = startName;
 }
 
-void cServerElement::AddTokens(std::shared_ptr<cViewGrid> grid)
+void cServerElement::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
-	grid->ClearTokens();
+	if(clear) grid->ClearTokens();
 	grid->AddIntToken("isserver", 1);
 	grid->AddStringToken("title", m_pServer->GetServerName());
 	grid->AddStringToken("serverstartpointname", m_sStartName);

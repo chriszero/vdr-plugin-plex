@@ -16,14 +16,12 @@
 
 namespace plexclient
 {
-	
+
 class PlexServer
 {
-public:
-	PlexServer(std::string data, std::string ip);
-	PlexServer(std::string ip, int port);
-	PlexServer() {};
+	friend class plexgdm;
 
+public:
 	int GetMaster() const {
 		return m_nMaster;
 	}
@@ -58,10 +56,17 @@ public:
 	const std::string& GetIpAdress() const {
 		return m_sIpAddress;
 	}
-	
+
 	std::string GetUri();
-	
+
 	void DiscoverSettings();
+
+protected:
+	PlexServer(std::string data, std::string ip);
+	PlexServer(std::string ip, int port);
+	PlexServer() {};
+	
+	void ParseData(std::string data, std::string ip);
 
 private:
 	std::string m_sDiscovery;

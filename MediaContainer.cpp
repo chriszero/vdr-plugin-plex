@@ -1,9 +1,11 @@
 #include "MediaContainer.h"
+#include "pictureCache.h"
 
 namespace plexclient
 {
-MediaContainer::MediaContainer(std::istream* response, PlexServer Server)
+MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 {
+	m_pServer = Server;
 	try {
 		InputSource src(*response);
 		DOMParser parser;
@@ -32,9 +34,9 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer Server)
 
 				pAttribs->release();
 			} else if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
-				m_vDirectories.push_back(Directory(pNode, this));
+				m_vDirectories.push_back(Directory(pNode, m_pServer, this));
 			} else if(Poco::icompare(pNode->nodeName(), "Video") == 0) {
-				m_vVideos.push_back(Video(pNode, Server, this));
+				m_vVideos.push_back(Video(pNode, m_pServer, this));
 			}
 
 			pNode = it.nextNode();
@@ -43,6 +45,19 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer Server)
 	} catch(Exception &exc) {
 		std::cerr << exc.displayText() << std::endl;
 	}
+}
+
+void MediaContainer::PreCache() 
+{
+	bool foo;
+	for(std::vector<plexclient::Video>::iterator it = m_vVideos.begin(); it != m_vVideos.end(); ++it) {
+		if(!it->m_sThumb.empty()) cPictureCache::GetInstance().GetPath(it->ThumbUri(), 1280, 720, foo);
+		if(!it->m_sArt.empty()) cPictureCache::GetInstance().GetPath(it->ArtUri(), 1920, 1080, foo);
+	}
+/*	for(std::vector<plexclient::Directory>::iterator it = m_vDirectories.begin(); it != m_vDirectories.end(); ++it) {
+		if(!it->m_sThumb.empty()) cPictureCache::GetInstance().GetPath(it->ThumbUri(), 1280, 720, foo);
+		if(!it->m_sArt.empty()) cPictureCache::GetInstance().GetPath(it->ArtUri(), 1920, 1080, foo);
+	}*/
 }
 
 }

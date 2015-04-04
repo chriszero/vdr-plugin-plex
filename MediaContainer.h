@@ -36,7 +36,7 @@ class Directory;
 class MediaContainer: XmlObject
 {
 public:
-	MediaContainer(std::istream *response, PlexServer Server);
+	MediaContainer(std::istream *response, PlexServer* Server);
 
 protected:
 
@@ -59,6 +59,9 @@ public:
 	int m_iSize;
 	std::string m_sSummary;
 	int m_iParentIndex;
+	PlexServer* m_pServer;
+	
+	void PreCache();
 };
 
 }

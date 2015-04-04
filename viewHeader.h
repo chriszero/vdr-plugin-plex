@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "libskindesigner/osdelements.h"
+#include "viewGridNavigator.h"
 
 enum ePlexMenuTab {
 	pmtOnDeck,
@@ -18,7 +19,7 @@ private:
 	
 public:
 	cViewHeader(cViewElement* viewElem);
-	void Draw();
+	void Draw(cGridElement* elem);
 	ePlexMenuTab NextTab();
 	ePlexMenuTab PrevTab();
 	ePlexMenuTab CurrentTab() { return m_eCurrentTab; }

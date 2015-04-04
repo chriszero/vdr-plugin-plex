@@ -17,6 +17,7 @@
 #include "XmlObject.h"
 #include "MediaContainer.h"
 #include "viewGridNavigator.h"
+#include "PlexServer.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::Document;
@@ -33,7 +34,7 @@ class MediaContainer;
 class Directory: private XmlObject, public cGridElement
 {	
 public:
-	Directory(Poco::XML::Node* pNode, MediaContainer* parent);
+	Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
 
 public:
 	bool m_bAllowSync;
@@ -51,10 +52,11 @@ public:
 	Poco::Timestamp m_tCreatedAt;
 	std::string m_sKey;
 	MediaType m_eType;
-	
+	PlexServer* m_pServer;
+		
 	virtual std::string GetTitle();
 	// gridElement
-	virtual void AddTokens(std::shared_ptr<cViewGrid> grid);
+	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };
 
 }

@@ -2,18 +2,20 @@
 #include <Poco/Format.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <functional>
 
 #include <vdr/tools.h>
 #include "PlexHelper.h"
+#include "pictureCache.h"
 
 namespace plexclient
 {
 
-Video::Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent)
+Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 {
 	m_iMyPlayOffset = 0;
 	m_lViewoffset = 0;
-	m_Server = Server;
+	m_pServer = Server;
 	Parse(pNode);
 
 	if (m_iParentIndex < 0) {
@@ -24,7 +26,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent)
 bool Video::UpdateFromServer()
 {
 	try {
-		Poco::URI fileuri(Poco::format("%s/library/metadata/%d", m_Server.GetUri(), m_iRatingKey));
+		Poco::URI fileuri(Poco::format("%s/library/metadata/%d", m_pServer->GetUri(), m_iRatingKey));
 		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
 		PlexHelper::AddHttpHeader(request);
 
@@ -138,7 +140,7 @@ std::string Video::GetTitle()
 bool Video::SetStream(Stream* stream)
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_Server.GetIpAdress(), m_Server.GetPort());
+		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/library/parts/%d?%s", m_Media.m_iPartId, stream->GetSetStreamQuery());
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
@@ -161,7 +163,7 @@ bool Video::SetStream(Stream* stream)
 bool Video::SetUnwatched()
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_Server.GetIpAdress(), m_Server.GetPort());
+		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/:/unscrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
@@ -184,7 +186,7 @@ bool Video::SetUnwatched()
 bool Video::SetWatched()
 {
 		try {
-		Poco::Net::HTTPClientSession session(m_Server.GetIpAdress(), m_Server.GetPort());
+		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
@@ -204,11 +206,26 @@ bool Video::SetWatched()
 	}
 }
 
-void Video::AddTokens(std::shared_ptr<cViewGrid>grid)
+void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
-	grid->ClearTokens();
+	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);
+	grid->AddIntToken("ismovie", 1);
+	bool cached = false;
+	cPictureCache::GetInstance().GetPath(ArtUri(), 1920, 1080, cached);
+	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), 1280, 720, cached, OnCached, this);
+	if (cached)	grid->AddStringToken("thumb", thumb);
 }
 
+std::string Video::ArtUri()
+{
+	return m_pServer->GetUri() + m_sArt;
+}
+
+std::string Video::ThumbUri()
+{
+	return m_pServer->GetUri() + m_sThumb;
+}
 
 } // Namespace
+

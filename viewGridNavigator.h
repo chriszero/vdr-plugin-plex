@@ -3,14 +3,19 @@
 
 #include <memory>
 #include <vector>
+#include <functional>
 #include "libskindesigner/osdelements.h"
 
 class cGridElement
 {
 private:
 	bool m_bInit;
-	unsigned int m_iGridId;
+	double m_posX;
+	double m_posY;
 	static unsigned int AbsoluteGridIdCounter;	
+
+protected:
+	unsigned int m_iGridId;
 
 public:
 	cGridElement();
@@ -20,13 +25,15 @@ public:
     void InitFinished() { m_bInit = false; };
 	unsigned int GridElementId() { return m_iGridId; }
 	bool IsVisible() { return Position > -1; }
-	virtual void AddTokens(std::shared_ptr<cViewGrid> grid) = 0;
+	void SetPosition(double x, double y) { m_posX = x; m_posY = y; };
+	void GetPosition(double &x, double &y) { x = m_posX; y = m_posY; };
+	virtual void AddTokens(std::shared_ptr<cOsdElement> osdElem, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL) = 0;
 	int Position;
 };
 
 class cViewGridNavigator
 {
-protected:	
+protected:
 	int m_rows;
 	int m_columns;
 	
@@ -47,6 +54,7 @@ public:
 	cViewGridNavigator(cViewGrid* viewGrid);
 	void SetGridDimensions(int rows, int columns);
 	void Flush() { m_pGrid->Display(); };
+	void Clear() { m_pGrid->Clear(); };
 	void DrawGrid() { m_pGrid->Display(); }
 	virtual void NavigateLeft();
 	virtual void NavigateRight();
@@ -55,7 +63,9 @@ public:
 	virtual eOSState NavigateSelect() = 0;
 	virtual eOSState NavigateBack() = 0;
 	cGridElement* SelectedObject() { return *m_activeElementIter; }
+	void ReDraw(cGridElement* element);
 	
+	cOsdView* m_pRootView;
 };
 
 #endif // CVIEWGRIDNAVIGATOR_H

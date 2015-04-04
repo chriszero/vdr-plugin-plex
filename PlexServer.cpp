@@ -6,6 +6,11 @@ namespace plexclient
 
 PlexServer::PlexServer(std::string data, std::string ip)
 {
+	ParseData(data, ip);
+}
+
+void PlexServer::ParseData(std::string data, std::string ip)
+{
 	m_sIpAddress = ip;
 	std::istringstream f(data);
 	std::string s;

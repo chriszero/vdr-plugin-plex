@@ -41,7 +41,7 @@ private:
 	void Parse(Poco::XML::Node* pNode);
 	
 public:
-	Video(Poco::XML::Node* pNode, PlexServer Server, MediaContainer* parent);
+	Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
 	Video() {};
 
 public:
@@ -70,7 +70,7 @@ public:
 	std::vector<std::string> m_vRole;
 	std::string m_sCollection;
 	Media m_Media;
-	PlexServer m_Server;
+	PlexServer* m_pServer;
 	int m_iMyPlayOffset;
 	int m_iIndex;
 	int m_iParentIndex;
@@ -80,9 +80,11 @@ public:
 	bool UpdateFromServer();
 	bool SetWatched();
 	bool SetUnwatched();
-	
+	std::string ThumbUri();
+	std::string ArtUri();
+		
 	// gridElement
-	virtual void AddTokens(std::shared_ptr<cViewGrid> grid);
+	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };
 
 }

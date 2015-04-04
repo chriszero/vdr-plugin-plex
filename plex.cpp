@@ -3,6 +3,7 @@
 #include "plex.h"
 #include "plexOsd.h"
 #include "plexSdOsd.h"
+#include "pictureCache.h"
 
 #include "libskindesigner/services.h"
 
@@ -62,12 +63,10 @@ bool cMyPlugin::Start(void)
 	reg.SetView(viRootView, "root.xml");
 	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgBrowser, "browser");
 	reg.SetViewElement(viRootView, verHeader, "header");
+	reg.SetViewElement(viRootView, verBackground, "background");
+	reg.SetViewElement(viRootView, verFooter, "footer");
 	
-	//reg.SetViewElement(viRootView, verHeader, "header");
-	//reg.SetViewElement(viRootView, verFooter, "footer");
-	
-	//reg.SetView(eViews::viBrowserView, "browser.xml");
-	
+	reg.SetSubView(viRootView, viDetailView, "detail.xml");
 	
 	static cPlugin *pSkinDesigner = cPluginManager::GetPlugin("skindesigner");
 	if (pSkinDesigner) {
@@ -89,6 +88,7 @@ bool cMyPlugin::Initialize(void)
 	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), Config::GetInstance().GetHostname(), "3200", DESCRIPTION, VERSION);
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();
+	cPictureCache::GetInstance().Start();
 
 	return true;
 }
