@@ -16,6 +16,7 @@
 #include "plexgdm.h"
 #include "cPlexOsdItem.h"
 #include "hlsPlayerControl.h"
+#include "plexSdOsd.h"
 
 #include <iostream>
 #include <string>
@@ -38,6 +39,9 @@ static const char *const MAINMENUENTRY = "Plex for VDR";
 
 class cMyPlugin:public cPlugin
 {
+private:
+	cPlexSdOsd* m_pSdCheck;
+	
 public:
 	cMyPlugin(void);
 	virtual ~ cMyPlugin(void);

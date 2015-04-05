@@ -21,6 +21,7 @@ volatile bool cMyPlugin::CalledFromCode = false;
 */
 cMyPlugin::cMyPlugin(void)
 {
+	m_pSdCheck = NULL;
 }
 
 /**
@@ -30,6 +31,7 @@ cMyPlugin::~cMyPlugin(void)
 {
 	plexclient::plexgdm::GetInstance().stopRegistration();
 	plexclient::ControlServer::GetInstance().Stop();
+	delete m_pSdCheck;
 }
 
 /**
@@ -55,8 +57,6 @@ const char *cMyPlugin::Description(void)
 
 bool cMyPlugin::Start(void)
 {
-	std::string cacheDir = cPlugin::CacheDirectory(PLUGIN_NAME_I18N);
-
 	RegisterPlugin reg;
 	reg.name = "plex";
 	
@@ -66,11 +66,15 @@ bool cMyPlugin::Start(void)
 	reg.SetViewElement(viRootView, verBackground, "background");
 	reg.SetViewElement(viRootView, verFooter, "footer");
 	
-	//reg.SetSubView(viRootView, viDetailView, "detail.xml");
+	reg.SetSubView(viRootView, viDetailView, "detail.xml");
+    reg.SetViewElement(viDetailView, vedBackground, "background");
+    reg.SetViewElement(viDetailView, vedHeader, "header");
+    reg.SetViewElement(viDetailView, vedFooter, "footer");
 	
 	static cPlugin *pSkinDesigner = cPluginManager::GetPlugin("skindesigner");
 	if (pSkinDesigner) {
 		pSkinDesigner->Service("RegisterPlugin", &reg);
+		m_pSdCheck = new cPlexSdOsd();
 	} else {
 		esyslog("[plex]: skindesigner not available");
 	}
@@ -107,13 +111,8 @@ const char *cMyPlugin::MainMenuEntry(void)
 cOsdObject *cMyPlugin::MainMenuAction(void)
 {
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
-	/*bool skinDesignerAvailable = InitSkindesignerInterface("plex");
-    if (skinDesignerAvailable) {
-		//cOsdView *rootView = GetOsdView(viRootView);
-        return new cPlexSdOsd();
-    }
-	return cPlexMenu::ProcessMenu();*/
-	return new cPlexSdOsd();
+	if(m_pSdCheck && m_pSdCheck->SdSupport()) return new cPlexSdOsd();
+	else return cPlexMenu::ProcessMenu();
 }
 
 /**

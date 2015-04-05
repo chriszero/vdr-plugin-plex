@@ -14,6 +14,20 @@ cPlexSdOsd::~cPlexSdOsd()
 	cPictureCache::GetInstance().RemoveAll();
 }
 
+bool cPlexSdOsd::SdSupport()
+{
+	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
+	if (skinDesignerAvailable) {
+		
+		cOsdView *rootView = GetOsdView(eViews::viRootView);
+		if (!rootView) {
+			esyslog("[plex]: used skindesigner skin does not support plex");
+			return false;
+		}
+	}
+	return skinDesignerAvailable;
+}
+
 void cPlexSdOsd::Show(void)
 {
 	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
@@ -26,7 +40,7 @@ void cPlexSdOsd::Show(void)
 		esyslog("[plex]: used skindesigner skin does not support plex");
 		return;
 	}
-	
+
 	m_pBrowserGrid = std::shared_ptr<cBrowserGrid>(new cBrowserGrid(m_pRootView));
 	Flush();
 }

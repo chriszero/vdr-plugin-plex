@@ -215,8 +215,9 @@ void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::functi
 	grid->AddStringToken("title", m_sTitle);
 
 	bool cached = false;
-	cPictureCache::GetInstance().GetPath(ArtUri(), 1920, 1080, cached);
-	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), 1280, 720, cached, OnCached, this);
+	//cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
+	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+	grid->AddIntToken("hasthumb", cached);
 	if (cached)	grid->AddStringToken("thumb", thumb);
 
 	if(m_tType == MediaType::MOVIE) {
@@ -226,13 +227,14 @@ void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::functi
 	if(m_tType == MediaType::EPISODE) {
 		grid->AddIntToken("isepisode", true);
 		cached = false;
-		std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_sGrandparentThumb, 1280, 720, cached, OnCached, this);
+		std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_sGrandparentThumb, Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+		grid->AddIntToken("hasgrandparentthumb", cached);
 		if (cached)	grid->AddStringToken("grandparentthumb", grandparentThumb);
 		grid->AddStringToken("grandparenttitle", m_sGrandparentTitle);
 
 		if(m_pParent && !m_pParent->m_sBanner.empty()) {
 			cached = false;
-			std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, 1280, 720, cached, OnCached, this);
+			std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);
 			if(cached) {
 				grid->AddIntToken("hasbanner", true);
 				grid->AddStringToken("banner", banner);
@@ -243,11 +245,13 @@ void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::functi
 
 std::string Video::ArtUri()
 {
+	if(m_sArt.find("http://") != std::string::npos) return m_sArt;
 	return m_pServer->GetUri() + m_sArt;
 }
 
 std::string Video::ThumbUri()
 {
+	if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
 	return m_pServer->GetUri() + m_sThumb;
 }
 

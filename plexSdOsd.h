@@ -35,6 +35,12 @@ enum eViewGrids {
 	vgBrowser
 };
 
+enum eViewElementsDetail {
+    vedBackground,
+    vedHeader,
+    vedFooter
+};
+
 class cPlexSdOsd : public cSkindesignerOsdObject
 {	
 private:	
@@ -53,6 +59,7 @@ public:
 	virtual void Show(void);
   	virtual eOSState ProcessKey(eKeys Key);
 	
+	bool SdSupport();
 	static cMutex RedrawMutex;
 };
 
