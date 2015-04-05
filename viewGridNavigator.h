@@ -38,6 +38,7 @@ protected:
 	int m_columns;
 	
 	std::shared_ptr<cViewGrid> m_pGrid;
+	cOsdView* m_pRootView;
 	
 	bool m_newDimensions;
 	bool m_setIterator;
@@ -51,21 +52,18 @@ protected:
 	void SetGridElementData(cGridElement *obj);
 	
 public:
-	cViewGridNavigator(cViewGrid* viewGrid);
+	cViewGridNavigator(cOsdView* rootView, cViewGrid* viewGrid);
 	void SetGridDimensions(int rows, int columns);
-	void Flush() { m_pGrid->Display(); };
-	void Clear() { m_pGrid->Clear(); };
-	void DrawGrid() { m_pGrid->Display(); }
+	virtual void Flush() { m_pGrid->Display(); };
+	virtual void Clear() { m_pGrid->Clear(); };
 	virtual void NavigateLeft();
 	virtual void NavigateRight();
 	virtual void NavigateUp();
 	virtual void NavigateDown();
 	virtual eOSState NavigateSelect() = 0;
 	virtual eOSState NavigateBack() = 0;
+	virtual void ReDraw(cGridElement* element);
 	cGridElement* SelectedObject() { return *m_activeElementIter; }
-	void ReDraw(cGridElement* element);
-	
-	cOsdView* m_pRootView;
 };
 
 #endif // CVIEWGRIDNAVIGATOR_H

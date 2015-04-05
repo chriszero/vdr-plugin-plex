@@ -1,5 +1,6 @@
 #include <vdr/tools.h>
 #include "plexgdm.h"
+#include "Config.h"
 #include <ctime>
 
 namespace plexclient
@@ -57,7 +58,11 @@ std::string plexgdm::getClientDetails()
 
 void plexgdm::Action()
 {
-
+	if(Config::GetInstance().UseConfiguredServer) {
+		// Adds a Server to vector
+		GetServer(Config::GetInstance().s_serverHost, Config::GetInstance().ServerPort);
+	}
+	
 	char buffer[1024];
 	m_registrationIsRunning = true;
 	m_discoveryIsRunning = true;
@@ -184,6 +189,12 @@ PlexServer* plexgdm::GetServer(std::string ip, int port)
 	}
 	m_vServers.push_back(PlexServer(ip, port));
 	return &m_vServers[m_vServers.size()-1];
+}
+
+PlexServer* plexgdm::GetFirstServer()
+{
+	if(m_vServers.size() > 0) return &m_vServers[0];
+	else return NULL;
 }
 
 } // namespace

@@ -8,6 +8,7 @@
 #include "plexgdm.h"
 #include "PlexServer.h"
 #include "viewGridNavigator.h"
+#include "viewHeader.h"
 #include "libskindesigner/osdelements.h"
 
 class cDummyElement : public cGridElement
@@ -34,6 +35,11 @@ public:
 class cBrowserGrid : public cViewGridNavigator
 {
 private:
+	std::shared_ptr<cViewHeader> m_pViewHeader;
+	std::shared_ptr<cViewElement> m_pBackground;
+	std::shared_ptr<cViewElement> m_pfooter;
+	std::shared_ptr<cViewElement> m_pScrollbar;
+
 	bool m_bServersAreRoot;
 	std::vector<cServerElement> m_vServerElements;
 	std::shared_ptr<plexclient::MediaContainer> m_pContainer;
@@ -42,14 +48,19 @@ private:
 
 	void ProcessData();
 	void SetServerElements();
+	void DrawFooter();
+	void DrawBackground();
 	
 public:
-	cBrowserGrid(cViewGrid* viewGrid);
-	cBrowserGrid(cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
+	cBrowserGrid(cOsdView* rootView);
+	//cBrowserGrid(cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
 	std::shared_ptr<plexclient::MediaContainer> MediaContainer() { return m_pContainer; }
 		
+	void DrawGrid();
+	void SwitchGrid(ePlexMenuTab currentTab);
 	virtual eOSState NavigateSelect();
 	virtual eOSState NavigateBack();
+	virtual void Flush();
 };
 
 #endif // CBROWSERGRID_H

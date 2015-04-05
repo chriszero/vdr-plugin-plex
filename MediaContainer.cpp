@@ -22,6 +22,7 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 				m_sTitle2 = GetNodeValue(pAttribs->getNamedItem("title2"));
 				m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 				m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
+				m_sBanner = GetNodeValue(pAttribs->getNamedItem("banner"));
 				m_sViewGroup = GetNodeValue(pAttribs->getNamedItem("viewGroup"));
 				m_sLibrarySectionTitle = GetNodeValue(pAttribs->getNamedItem("librarySectionTitle"));
 				m_sLibrarySectionUUID = GetNodeValue(pAttribs->getNamedItem("librarySectionUUID"));

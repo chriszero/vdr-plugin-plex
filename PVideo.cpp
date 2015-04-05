@@ -18,6 +18,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 	m_pServer = Server;
 	Parse(pNode);
 
+	m_pParent = parent;
 	if (m_iParentIndex < 0) {
 		m_iParentIndex = parent->m_iParentIndex;
 	}
@@ -84,6 +85,7 @@ void Video::Parse(Poco::XML::Node* pNode)
 			m_tType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
 			m_sTitle = GetNodeValue(pAttribs->getNamedItem("title"));
 			m_sOriginalTitle = GetNodeValue(pAttribs->getNamedItem("originalTitle"));
+			m_sGrandparentTitle = GetNodeValue(pAttribs->getNamedItem("grandparentTitle"));
 			m_sContentRating = GetNodeValue(pAttribs->getNamedItem("contentRating"));
 			m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
 			m_lViewoffset = GetNodeValueAsLong(pAttribs->getNamedItem("viewOffset"));
@@ -91,6 +93,8 @@ void Video::Parse(Poco::XML::Node* pNode)
 			m_iYear = GetNodeValueAsInt(pAttribs->getNamedItem("year"));
 			m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
 			m_sArt = GetNodeValue(pAttribs->getNamedItem("art"));
+			m_sGrandparentThumb = GetNodeValue(pAttribs->getNamedItem("grandparentThumb"));
+			m_sGrandparentArt = GetNodeValue(pAttribs->getNamedItem("grandparentArt"));
 			m_iDuration = GetNodeValueAsLong(pAttribs->getNamedItem("duration"));
 			m_tAddedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("addedAt"));
 			m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
@@ -123,8 +127,7 @@ std::string Video::GetTitle()
 	case MOVIE:
 		if(m_iYear > 0) {
 			res = Poco::format("%s (%d)", m_sTitle, m_iYear);
-		}
-		else {
+		} else {
 			res = m_sTitle;
 		}
 		break;
@@ -185,7 +188,7 @@ bool Video::SetUnwatched()
 
 bool Video::SetWatched()
 {
-		try {
+	try {
 		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
@@ -210,11 +213,32 @@ void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::functi
 {
 	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);
-	grid->AddIntToken("ismovie", 1);
+
 	bool cached = false;
 	cPictureCache::GetInstance().GetPath(ArtUri(), 1920, 1080, cached);
 	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), 1280, 720, cached, OnCached, this);
 	if (cached)	grid->AddStringToken("thumb", thumb);
+
+	if(m_tType == MediaType::MOVIE) {
+		grid->AddIntToken("ismovie", true);
+	}
+
+	if(m_tType == MediaType::EPISODE) {
+		grid->AddIntToken("isepisode", true);
+		cached = false;
+		std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_sGrandparentThumb, 1280, 720, cached, OnCached, this);
+		if (cached)	grid->AddStringToken("grandparentthumb", grandparentThumb);
+		grid->AddStringToken("grandparenttitle", m_sGrandparentTitle);
+
+		if(m_pParent && !m_pParent->m_sBanner.empty()) {
+			cached = false;
+			std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, 1280, 720, cached, OnCached, this);
+			if(cached) {
+				grid->AddIntToken("hasbanner", true);
+				grid->AddStringToken("banner", banner);
+			}
+		}
+	}
 }
 
 std::string Video::ArtUri()
@@ -228,4 +252,3 @@ std::string Video::ThumbUri()
 }
 
 } // Namespace
-

@@ -65,6 +65,9 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
     strn0cpy(Username, Config::GetInstance().s_username.c_str(), STRING_SIZE);
 	strn0cpy(Password, Config::GetInstance().s_password.c_str(), STRING_SIZE);
 	strn0cpy(Uuid, Config::GetInstance().GetUUID().c_str(), STRING_SIZE);
+	strn0cpy(ServerHost, Config::GetInstance().s_serverHost.c_str(), STRING_SIZE);
+	ServerPort = Config::GetInstance().ServerPort;
+	UseConfiguredServer = Config::GetInstance().UseConfiguredServer;
 	HideMainMenuEntry = Config::GetInstance().HideMainMenuEntry;
 	UseCustomTranscodeProfile = Config::GetInstance().UseCustomTranscodeProfile;
 	
@@ -73,6 +76,11 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	Add(new cMenuEditBoolItem(tr("Use Plex account"), (int*)&UsePlexAccount, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditStrItem(tr("Plex Username"), Username, STRING_SIZE));
 	Add(new cMenuEditStrItem(tr("Plex Password"), Password, STRING_SIZE));
+	
+	Add(new cMenuEditBoolItem(tr("Use Custom Server"), (int*)&UseConfiguredServer, trVDR("no"), trVDR("yes")));
+	Add(new cMenuEditStrItem(tr("Server Host"), ServerHost, STRING_SIZE));
+	Add(new cMenuEditIntItem(tr("Server Port"), &ServerPort));
+	
 	cMenuEditStrItem* devUUID = new cMenuEditStrItem(tr("Current UUID"), Uuid, STRING_SIZE);
 	devUUID->SetSelectable(false);
 	Add(devUUID);
@@ -88,6 +96,9 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().HideMainMenuEntry = HideMainMenuEntry;
 	Config::GetInstance().UseCustomTranscodeProfile = UseCustomTranscodeProfile;
 	Config::GetInstance().UsePlexAccount = UsePlexAccount;
+	Config::GetInstance().UseConfiguredServer = UseConfiguredServer;
+	Config::GetInstance().s_serverHost = std::string(ServerHost);
+	Config::GetInstance().ServerPort = ServerPort;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
     SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
@@ -95,4 +106,7 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("Username", Config::GetInstance().s_username.c_str());
 	SetupStore("Password", Config::GetInstance().s_password.c_str());
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
+	SetupStore("UseConfiguredServer", Config::GetInstance().UseConfiguredServer);
+	SetupStore("ServerHost", Config::GetInstance().s_serverHost.c_str());
+	SetupStore("ServerPort", Config::GetInstance().ServerPort);
 }

@@ -6,25 +6,49 @@
 #include "plex.h"
 #include "pictureCache.h"
 
-cBrowserGrid::cBrowserGrid(cViewGrid* viewGrid) : cViewGridNavigator(viewGrid)
+cBrowserGrid::cBrowserGrid(cOsdView* rootView) : cViewGridNavigator(rootView, rootView->GetViewGrid(eViewGrids::vgBrowser) )
 {
+	m_pBackground = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
+	m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
+	m_pfooter = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
+
 	m_rows = 2;
 	m_columns = 5;
 	m_pService = NULL;
 	m_pContainer = NULL;
-	m_bServersAreRoot = true;
-	SetServerElements();
-	ProcessData();
+	//SwitchGrid(m_pViewHeader->CurrentTab());
 }
 
-cBrowserGrid::cBrowserGrid(cViewGrid* viewGrid,  std::shared_ptr<plexclient::Plexservice> service) : cViewGridNavigator(viewGrid)
+void cBrowserGrid::Flush() 
+{ 
+	//cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
+	m_pGrid->Display();
+	m_pRootView->Display();
+}
+
+void cBrowserGrid::SwitchGrid(ePlexMenuTab currentTab)
 {
-	m_rows = 2;
-	m_columns = 5;
-	m_bServersAreRoot = false;
-	m_pService = service;
-	m_pContainer = m_pService->GetSection(m_pService->StartUri);
-	ProcessData();
+	if(currentTab == ePlexMenuTab::pmtOnDeck) {
+		std::cout << "OnDeck" << std::endl;
+		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), "/library/onDeck" ) );
+		m_pContainer = m_pService->GetSection(m_pService->StartUri);
+		ProcessData();
+
+	} else if(currentTab == ePlexMenuTab::pmtRecentlyAdded) {
+		std::cout << "Recently Added" << std::endl;
+		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), "/library/recentlyAdded" ) );
+		m_pContainer = m_pService->GetSection(m_pService->StartUri);
+		ProcessData();
+
+	} else if(currentTab == ePlexMenuTab::pmtLibrary) {
+		std::cout << "Lib" << std::endl;
+		//Server View
+		m_pService = NULL;
+		m_pContainer = NULL;
+		m_bServersAreRoot = true;
+		SetServerElements();
+		ProcessData();
+	}
 }
 
 void cBrowserGrid::SetServerElements()
@@ -67,7 +91,7 @@ void cBrowserGrid::ProcessData()
 		// Cache Images
 		//m_pContainer->PreCache();
 	}
-	
+
 	m_firstElementIter = m_vElements.begin();
 
 	m_pGrid->Clear();
@@ -93,8 +117,7 @@ eOSState cBrowserGrid::NavigateSelect()
 	} else if(plexclient::Video* vid = dynamic_cast<plexclient::Video*>(SelectedObject())) {
 		cMyPlugin::PlayFile(*vid);
 		return eOSState::osEnd;
-	} 
-	else return eOSState::osEnd;
+	} else return eOSState::osEnd;
 }
 
 eOSState cBrowserGrid::NavigateBack()
@@ -116,6 +139,87 @@ eOSState cBrowserGrid::NavigateBack()
 		ProcessData();
 	}
 	return eOSState::osEnd;
+}
+
+void cBrowserGrid::DrawGrid()
+{
+	DrawBackground();
+	DrawFooter();
+}
+
+void cBrowserGrid::DrawBackground()
+{
+	m_pBackground->ClearTokens();
+
+	if(auto video = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
+		bool cached = false;
+		std::string path = cPictureCache::GetInstance().GetPath(video->ArtUri(), 1920, 1080, cached);
+		m_pBackground->AddStringToken("selecteditembackground", path);
+	}
+
+	m_pBackground->AddIntToken("isdirectory", 1);
+	m_pBackground->AddStringToken("currentdirectorybackground", "/path");
+}
+
+void cBrowserGrid::DrawFooter()
+{
+	//if (!active)
+	//   return;
+
+	string textGreen = tr("Prev. Tab");
+	string textYellow = tr("Next Tab");
+	string textRed = "";
+	string textBlue = "";
+
+	if(auto vid = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
+		if(vid->m_iViewCount > 0) textRed = tr("Unscrobble");
+		else textRed = tr("Scrobble");
+		textBlue = tr("Info");
+	}
+
+
+	int colorKeys[4] = { Setup.ColorKey0, Setup.ColorKey1, Setup.ColorKey2, Setup.ColorKey3 };
+
+	m_pfooter->Clear();
+	m_pfooter->ClearTokens();
+
+	m_pfooter->AddStringToken("red", textRed);
+	m_pfooter->AddStringToken("green", textGreen);
+	m_pfooter->AddStringToken("yellow", textYellow);
+	m_pfooter->AddStringToken("blue", textBlue);
+
+	for (int button = 1; button < 5; button++) {
+		string red = *cString::sprintf("red%d", button);
+		string green = *cString::sprintf("green%d", button);
+		string yellow = *cString::sprintf("yellow%d", button);
+		string blue = *cString::sprintf("blue%d", button);
+		bool isRed = false;
+		bool isGreen = false;
+		bool isYellow = false;
+		bool isBlue = false;
+		switch (colorKeys[button-1]) {
+		case 0:
+			isRed = true;
+			break;
+		case 1:
+			isGreen = true;
+			break;
+		case 2:
+			isYellow = true;
+			break;
+		case 3:
+			isBlue = true;
+			break;
+		default:
+			break;
+		}
+		m_pfooter->AddIntToken(red, isRed);
+		m_pfooter->AddIntToken(green, isGreen);
+		m_pfooter->AddIntToken(yellow, isYellow);
+		m_pfooter->AddIntToken(blue, isBlue);
+	}
+
+	m_pfooter->Display();
 }
 
 /*

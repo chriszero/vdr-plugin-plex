@@ -17,7 +17,6 @@
 #include "hlsPlayerControl.h"
 
 #include "browserGrid.h"
-#include "viewHeader.h"
 #include "libskindesigner/osdelements.h"
 #include "libskindesigner/skindesignerosdbase.h"
 
@@ -40,9 +39,7 @@ class cPlexSdOsd : public cSkindesignerOsdObject
 {	
 private:	
 	std::shared_ptr<cBrowserGrid> m_pBrowserGrid;
-	std::shared_ptr<cViewHeader> m_pViewHeader;
-	std::shared_ptr<cViewElement> m_pBackground;
-	std::shared_ptr<cViewElement> m_pfooter;
+
 	cOsdView* m_pRootView;
 	
 	void Flush();

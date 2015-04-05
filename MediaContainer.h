@@ -48,6 +48,7 @@ public:
 	bool m_bAllowSync;
 	std::string m_sArt;
 	std::string m_sThumb;
+	std::string m_sBanner;
 	std::string m_sTitle;
 	std::string m_sTitle1;
 	std::string m_sTitle2;

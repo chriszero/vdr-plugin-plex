@@ -12,7 +12,7 @@ cGridElement::cGridElement()
 	m_bInit = true;
 }
 
-cViewGridNavigator::cViewGridNavigator(cViewGrid* viewGrid)
+cViewGridNavigator::cViewGridNavigator(cOsdView* rootView, cViewGrid* viewGrid)
 {
 	m_columns = 2;
 	m_rows = 2;
@@ -20,6 +20,7 @@ cViewGridNavigator::cViewGridNavigator(cViewGrid* viewGrid)
 	m_setIterator = true;
 
 	m_pGrid = std::shared_ptr<cViewGrid>(viewGrid);
+	m_pRootView = rootView;
 }
 
 
@@ -38,9 +39,7 @@ void cViewGridNavigator::ReDraw(cGridElement* element)
 		double height = 1.0 / m_rows;
 		m_pGrid->SetGrid(element->GridElementId(), x, y, width, height);
 		Flush();
-		m_pRootView->Display();
 	}
-//
 }
 
 void cViewGridNavigator::FilterElements(int scrollOffset)

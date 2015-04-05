@@ -34,6 +34,7 @@ public:
 	std::string getClientDetails();
 	PlexServer* getServerList();
 	PlexServer* GetServer(std::string ip, int port);
+	PlexServer* GetFirstServer();
 	void discover();
 	void checkClientRegistration();
 

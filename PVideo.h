@@ -34,12 +34,13 @@ using Poco::Exception;
 namespace plexclient
 {
 class MediaContainer;
-	
+
 class Video: private XmlObject, public cGridElement
 {
 private:
+	MediaContainer* m_pParent;
 	void Parse(Poco::XML::Node* pNode);
-	
+
 public:
 	Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
 	Video() {};
@@ -51,13 +52,16 @@ public:
 	MediaType m_tType;
 	std::string m_sTitle;
 	std::string m_sOriginalTitle;
+	std::string m_sGrandparentTitle;
 	std::string m_sContentRating;
 	std::string m_sSummary;
 	long m_lViewoffset;
 	Poco::Timestamp m_tLastViewedAt;
 	int m_iYear;
 	std::string m_sThumb;
+	std::string m_sGrandparentThumb;
 	std::string m_sArt;
+	std::string m_sGrandparentArt;
 	long m_iDuration;
 	int m_iViewCount;
 	Poco::Timestamp m_tAddedAt;
@@ -74,7 +78,7 @@ public:
 	int m_iMyPlayOffset;
 	int m_iIndex;
 	int m_iParentIndex;
-	
+
 	virtual std::string GetTitle();
 	bool SetStream(Stream* stream);
 	bool UpdateFromServer();
@@ -82,7 +86,7 @@ public:
 	bool SetUnwatched();
 	std::string ThumbUri();
 	std::string ArtUri();
-		
+
 	// gridElement
 	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };

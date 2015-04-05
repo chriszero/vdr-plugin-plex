@@ -66,7 +66,7 @@ bool cMyPlugin::Start(void)
 	reg.SetViewElement(viRootView, verBackground, "background");
 	reg.SetViewElement(viRootView, verFooter, "footer");
 	
-	reg.SetSubView(viRootView, viDetailView, "detail.xml");
+	//reg.SetSubView(viRootView, viDetailView, "detail.xml");
 	
 	static cPlugin *pSkinDesigner = cPluginManager::GetPlugin("skindesigner");
 	if (pSkinDesigner) {
@@ -157,6 +157,9 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 	else if (strcasecmp(name, "Username") == 0) 		Config::GetInstance().s_username = std::string(value);
 	else if (strcasecmp(name, "Password") == 0) 		Config::GetInstance().s_password = std::string(value);
 	else if (strcasecmp(name, "UUID") == 0) 			Config::GetInstance().SetUUID(value);
+	else if (strcasecmp(name, "UseConfiguredServer") == 0) 	Config::GetInstance().UseConfiguredServer = atoi(value) ? true : false;
+	else if (strcasecmp(name, "ServerHost") == 0) 		Config::GetInstance().s_serverHost = std::string(value);
+	else if (strcasecmp(name, "ServerPort") == 0) 	Config::GetInstance().ServerPort = atoi(value);
 	else return false;
 
 	return true;

@@ -26,10 +26,13 @@ public:
 
 	std::string s_username;
 	std::string s_password;
+	std::string s_serverHost;
+	int ServerPort;
 	
 	bool HideMainMenuEntry;
 	bool UseCustomTranscodeProfile;
 	bool UsePlexAccount;
+	bool UseConfiguredServer;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
@@ -59,6 +62,9 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	char Username[STRING_SIZE];
 	char Password[STRING_SIZE];
 	char Uuid[STRING_SIZE];
+	char ServerHost[STRING_SIZE];
+	int ServerPort;
+	int UseConfiguredServer;
 	int HideMainMenuEntry;
 	int UseCustomTranscodeProfile;
 	int UsePlexAccount;
