@@ -12,36 +12,39 @@ cBrowserGrid::cBrowserGrid(cOsdView* rootView) : cViewGridNavigator(rootView, ro
 	m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
 	m_pfooter = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
 
-	m_rows = 2;
-	m_columns = 5;
+	m_rows = Config::GetInstance().GridRows;
+	m_columns = Config::GetInstance().GridColumns;
 	m_pService = NULL;
 	m_pContainer = NULL;
-	//SwitchGrid(m_pViewHeader->CurrentTab());
+	SwitchGrid(m_pViewHeader->CurrentTab());
 }
 
 void cBrowserGrid::Flush() 
 { 
-	//cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
+	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
+	m_pBackground->Display();
 	m_pGrid->Display();
 	m_pRootView->Display();
 }
 
 void cBrowserGrid::SwitchGrid(ePlexMenuTab currentTab)
 {
+	cPictureCache::GetInstance().RemoveAll();
 	if(currentTab == ePlexMenuTab::pmtOnDeck) {
-		std::cout << "OnDeck" << std::endl;
 		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), "/library/onDeck" ) );
 		m_pContainer = m_pService->GetSection(m_pService->StartUri);
+		m_bServersAreRoot = false;
+		m_vServerElements.clear();
 		ProcessData();
 
 	} else if(currentTab == ePlexMenuTab::pmtRecentlyAdded) {
-		std::cout << "Recently Added" << std::endl;
 		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), "/library/recentlyAdded" ) );
 		m_pContainer = m_pService->GetSection(m_pService->StartUri);
+		m_bServersAreRoot = false;
+		m_vServerElements.clear();
 		ProcessData();
 
 	} else if(currentTab == ePlexMenuTab::pmtLibrary) {
-		std::cout << "Lib" << std::endl;
 		//Server View
 		m_pService = NULL;
 		m_pContainer = NULL;
@@ -88,8 +91,6 @@ void cBrowserGrid::ProcessData()
 				m_vElements.push_back(elem);
 			}
 		}
-		// Cache Images
-		//m_pContainer->PreCache();
 	}
 
 	m_firstElementIter = m_vElements.begin();
@@ -144,6 +145,7 @@ eOSState cBrowserGrid::NavigateBack()
 void cBrowserGrid::DrawGrid()
 {
 	DrawBackground();
+	m_pViewHeader->Draw(SelectedObject());
 	DrawFooter();
 }
 
@@ -220,6 +222,16 @@ void cBrowserGrid::DrawFooter()
 	}
 
 	m_pfooter->Display();
+}
+
+void cBrowserGrid::NextTab()
+{
+	SwitchGrid(m_pViewHeader->NextTab());
+}
+
+void cBrowserGrid::PrevTab()
+{
+	SwitchGrid(m_pViewHeader->PrevTab());
 }
 
 /*

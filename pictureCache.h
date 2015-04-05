@@ -38,7 +38,7 @@ private:
 	};
 	cPictureCache();
 	std::deque<CacheInfo> m_qImagesToLoad;
-
+	volatile bool m_bAllInvalidated;
 
 	std::string FileName(std::string uri, int width);
 
@@ -62,6 +62,7 @@ public:
 	std::string GetPath(std::string uri, int width, int height, bool& cached, std::function<void(cGridElement*)> OnCached = NULL, cGridElement* calle = NULL);
 	void Remove(cGridElement* element);
 	void Remove(std::string uri);
+	void RemoveAll();
 };
 
 #endif // CPICTURECACHE_H

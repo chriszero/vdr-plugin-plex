@@ -4,6 +4,8 @@
 Config::Config() {
 	s_username = "username";
 	s_password = "password";
+	GridColumns = 5;
+	GridRows = 2;
 }
 
 std::string Config::GetUUID() {
@@ -70,6 +72,8 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	UseConfiguredServer = Config::GetInstance().UseConfiguredServer;
 	HideMainMenuEntry = Config::GetInstance().HideMainMenuEntry;
 	UseCustomTranscodeProfile = Config::GetInstance().UseCustomTranscodeProfile;
+	GridColumns = Config::GetInstance().GridColumns;
+	GridRows = Config::GetInstance().GridRows;
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use custom transcoding profile"), (int*)&UseCustomTranscodeProfile, trVDR("no"), trVDR("yes")));
@@ -80,6 +84,9 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	Add(new cMenuEditBoolItem(tr("Use Custom Server"), (int*)&UseConfiguredServer, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditStrItem(tr("Server Host"), ServerHost, STRING_SIZE));
 	Add(new cMenuEditIntItem(tr("Server Port"), &ServerPort));
+	
+	Add(new cMenuEditIntItem(tr("Grid Columns"), &GridColumns));
+	Add(new cMenuEditIntItem(tr("Grid Rows"), &GridRows));
 	
 	cMenuEditStrItem* devUUID = new cMenuEditStrItem(tr("Current UUID"), Uuid, STRING_SIZE);
 	devUUID->SetSelectable(false);
@@ -99,6 +106,8 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().UseConfiguredServer = UseConfiguredServer;
 	Config::GetInstance().s_serverHost = std::string(ServerHost);
 	Config::GetInstance().ServerPort = ServerPort;
+	Config::GetInstance().GridColumns = GridColumns;
+	Config::GetInstance().GridRows = GridRows;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
     SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
@@ -109,4 +118,6 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("UseConfiguredServer", Config::GetInstance().UseConfiguredServer);
 	SetupStore("ServerHost", Config::GetInstance().s_serverHost.c_str());
 	SetupStore("ServerPort", Config::GetInstance().ServerPort);
+	SetupStore("GridColumns", Config::GetInstance().GridColumns);
+	SetupStore("GridRows", Config::GetInstance().GridRows);
 }

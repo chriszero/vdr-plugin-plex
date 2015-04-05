@@ -160,8 +160,10 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 	else if (strcasecmp(name, "UseConfiguredServer") == 0) 	Config::GetInstance().UseConfiguredServer = atoi(value) ? true : false;
 	else if (strcasecmp(name, "ServerHost") == 0) 		Config::GetInstance().s_serverHost = std::string(value);
 	else if (strcasecmp(name, "ServerPort") == 0) 	Config::GetInstance().ServerPort = atoi(value);
+	else if (strcasecmp(name, "GridColumns") == 0) 	Config::GetInstance().GridColumns = atoi(value);
+	else if (strcasecmp(name, "GridRows") == 0) 	Config::GetInstance().GridRows = atoi(value);
 	else return false;
-
+	
 	return true;
 }
 

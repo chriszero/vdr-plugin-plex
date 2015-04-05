@@ -9,6 +9,11 @@ cPlexSdOsd::cPlexSdOsd()
 {
 }
 
+cPlexSdOsd::~cPlexSdOsd()
+{
+	cPictureCache::GetInstance().RemoveAll();
+}
+
 void cPlexSdOsd::Show(void)
 {
 	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
@@ -23,7 +28,6 @@ void cPlexSdOsd::Show(void)
 	}
 	
 	m_pBrowserGrid = std::shared_ptr<cBrowserGrid>(new cBrowserGrid(m_pRootView));
-	m_pBrowserGrid->SwitchGrid(ePlexMenuTab::pmtOnDeck);
 	Flush();
 }
 
@@ -65,12 +69,12 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		break;
 	case kRed:
 		// Prev Tab
-		//SwitchGrid(m_pViewHeader->NextTab());
+		m_pBrowserGrid->NextTab();
 		Flush();
 		break;
 	case kGreen:
 		// Next Tab
-		//SwitchGrid(m_pViewHeader->PrevTab());
+		m_pBrowserGrid->PrevTab();
 		Flush();
 		break;
 	default:

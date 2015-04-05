@@ -60,6 +60,8 @@ public:
 	void SwitchGrid(ePlexMenuTab currentTab);
 	virtual eOSState NavigateSelect();
 	virtual eOSState NavigateBack();
+	void NextTab();
+	void PrevTab();
 	virtual void Flush();
 };
 

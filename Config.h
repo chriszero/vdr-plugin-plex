@@ -33,6 +33,8 @@ public:
 	bool UseCustomTranscodeProfile;
 	bool UsePlexAccount;
 	bool UseConfiguredServer;
+	int GridColumns;
+	int GridRows;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
@@ -40,6 +42,12 @@ public:
 	std::string GetLanguage();
 	std::string GetUsername();
 	std::string GetPassword();
+	int ThumbHeight() { return 1080 / GridRows; };
+	int ThumbWidth() { return 1920 / GridColumns; };
+	int ArtHeight() { return 1080; };
+	int ArtWidth() { return 1920; };
+	int BannerHeight() { return 1080 / 2; };
+	int BannerWidth() { return 1920 / 2; };
 	
 
 private:
@@ -68,6 +76,8 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int HideMainMenuEntry;
 	int UseCustomTranscodeProfile;
 	int UsePlexAccount;
+	int GridColumns;
+	int GridRows;
 
     virtual void Store(void);
 

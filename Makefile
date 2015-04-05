@@ -92,6 +92,7 @@ OBJS = $(PLUGIN).o \
 	viewGridNavigator.o \
 	browserGrid.o \
 	viewHeader.o \
+	detailView.o \
 	pictureCache.o \
 	libskindesigner/skindesignerosdbase.o \
 	libskindesigner/osdelements.o \

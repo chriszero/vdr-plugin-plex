@@ -26,13 +26,13 @@ cPictureCache::cPictureCache()
 	Poco::File f(path.toString());
 	f.createDirectories();
 	HTTPStreamFactory::registerFactory();
+	m_bAllInvalidated = false;
 }
 
 void cPictureCache::Action()
 {
 	while(Running()) {
 		while (m_qImagesToLoad.size() > 0) {
-			//LOCK_THREAD;
 			CacheInfo info = m_qImagesToLoad.front();
 			m_qImagesToLoad.pop_front();
 
@@ -42,8 +42,8 @@ void cPictureCache::Action()
 				auto stream = DownloadFile(transcodeUri);
 				if(stream) {
 					SaveFileToDisk(stream, file);
-					cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
-					if (info.onCached && info.calle && info.calle->IsVisible()) { 
+					LOCK_THREAD;
+					if (!m_bAllInvalidated && info.onCached && info.calle && info.calle->IsVisible()) { 
 						info.onCached(info.calle);
 					}
 				}
@@ -83,7 +83,7 @@ void cPictureCache::SaveFileToDisk(std::shared_ptr<std::istream> file, std::stri
 std::string cPictureCache::FileName(std::string uri, int width)
 {
 	Poco::URI u(uri);
-	std::string file = Poco::format("%s_%d", u.getPath(), width);
+	std::string file = Poco::format("%s_%d", u.getPathAndQuery(), width);
 
 	Poco::Path path(m_cacheDir);
 	path.append(file);
@@ -108,12 +108,12 @@ bool cPictureCache::Cached(std::string uri, int width)
 
 std::string cPictureCache::GetPath(std::string uri, int width, int height, bool& cached, std::function<void(cGridElement*)> OnCached, cGridElement* calle)
 {
+	m_bAllInvalidated = false;
 	cached = Cached(uri, width);
 	std::string file = FileName(uri, width);
 	if(cached) {
 		return file;
 	} else {
-		//LOCK_THREAD;
 		CacheInfo info(uri, width, height, OnCached, calle);
 		m_qImagesToLoad.push_back(info);
 	}
@@ -137,10 +137,18 @@ void cPictureCache::Remove(cGridElement* element)
 
 void cPictureCache::Remove(std::string uri)
 {
+	LOCK_THREAD;
 	for(std::deque<CacheInfo>::iterator it = m_qImagesToLoad.begin() ; it != m_qImagesToLoad.end(); ++it) {
 		if(it->uri == uri) {
 			m_qImagesToLoad.erase(it);
 			return;
 		}
 	}
+}
+
+void cPictureCache::RemoveAll()
+{
+	LOCK_THREAD;
+	m_bAllInvalidated = true;
+	m_qImagesToLoad.clear();
 }

@@ -18,6 +18,7 @@
 #include "Directory.h"
 #include "PVideo.h"
 #include "PlexServer.h"
+#include "Config.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::InputSource;

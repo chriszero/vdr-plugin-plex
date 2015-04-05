@@ -49,6 +49,7 @@ private:
 	
 public:
 	cPlexSdOsd();
+	~cPlexSdOsd();
 	virtual void Show(void);
   	virtual eOSState ProcessKey(eKeys Key);
 	
