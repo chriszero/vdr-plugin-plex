@@ -18,7 +18,7 @@ bool cPlexSdOsd::SdSupport()
 {
 	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
 	if (skinDesignerAvailable) {
-		
+
 		cOsdView *rootView = GetOsdView(eViews::viRootView);
 		if (!rootView) {
 			esyslog("[plex]: used skindesigner skin does not support plex");
@@ -54,6 +54,7 @@ void cPlexSdOsd::Flush()
 eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
+	plexclient::Video* vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
 	switch (Key & ~k_Repeat) {
 	case kUp:
 		m_pBrowserGrid->NavigateUp();
@@ -82,13 +83,19 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		Flush();
 		break;
 	case kRed:
-		// Prev Tab
-		m_pBrowserGrid->NextTab();
-		Flush();
+		if(vid) {
+			if(vid->m_iViewCount > 0) vid->SetUnwatched();
+			else vid->SetWatched();
+			vid->UpdateFromServer();
+			Flush();
+		}
 		break;
 	case kGreen:
-		// Next Tab
 		m_pBrowserGrid->PrevTab();
+		Flush();
+		break;
+	case kYellow:
+		m_pBrowserGrid->NextTab();
 		Flush();
 		break;
 	default:

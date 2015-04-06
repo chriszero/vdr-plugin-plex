@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 volatile bool cMyPlugin::CalledFromCode = false;
+bool cMyPlugin::bSkindesigner = false;
 
 /**
 **	Initialize any member variables here.
@@ -59,22 +60,24 @@ bool cMyPlugin::Start(void)
 {
 	RegisterPlugin reg;
 	reg.name = "plex";
-	
+
 	reg.SetView(viRootView, "root.xml");
 	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgBrowser, "browser");
 	reg.SetViewElement(viRootView, verHeader, "header");
 	reg.SetViewElement(viRootView, verBackground, "background");
+	reg.SetViewElement(viRootView, verInfopane, "infopane");
 	reg.SetViewElement(viRootView, verFooter, "footer");
-	
+
 	reg.SetSubView(viRootView, viDetailView, "detail.xml");
-    reg.SetViewElement(viDetailView, vedBackground, "background");
-    reg.SetViewElement(viDetailView, vedHeader, "header");
-    reg.SetViewElement(viDetailView, vedFooter, "footer");
-	
+	reg.SetViewElement(viDetailView, vedBackground, "background");
+	reg.SetViewElement(viDetailView, vedHeader, "header");
+	reg.SetViewElement(viDetailView, vedFooter, "footer");
+
 	static cPlugin *pSkinDesigner = cPluginManager::GetPlugin("skindesigner");
 	if (pSkinDesigner) {
 		pSkinDesigner->Service("RegisterPlugin", &reg);
 		m_pSdCheck = new cPlexSdOsd();
+		cMyPlugin::bSkindesigner = m_pSdCheck->SdSupport();
 	} else {
 		esyslog("[plex]: skindesigner not available");
 	}
@@ -162,7 +165,7 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 	else if (strcasecmp(name, "GridColumns") == 0) 	Config::GetInstance().GridColumns = atoi(value);
 	else if (strcasecmp(name, "GridRows") == 0) 	Config::GetInstance().GridRows = atoi(value);
 	else return false;
-	
+
 	return true;
 }
 
@@ -175,10 +178,15 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 {
 	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
 	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
-		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
-		eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
-		if(response == kOk) {
-			Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
+		if(cMyPlugin::bSkindesigner) {
+			// we have skindesigner
+			
+		} else {
+			cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
+			eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
+			if(response == kOk) {
+				Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
+			}
 		}
 	}
 	cControl* control = cHlsPlayerControl::Create(Vid);

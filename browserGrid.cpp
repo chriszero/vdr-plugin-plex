@@ -11,6 +11,7 @@ cBrowserGrid::cBrowserGrid(cOsdView* rootView) : cViewGridNavigator(rootView, ro
 	m_pBackground = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
 	m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
 	m_pfooter = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
+	m_pInfopane = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verInfopane));
 
 	m_rows = Config::GetInstance().GridRows;
 	m_columns = Config::GetInstance().GridColumns;
@@ -19,10 +20,17 @@ cBrowserGrid::cBrowserGrid(cOsdView* rootView) : cViewGridNavigator(rootView, ro
 	SwitchGrid(m_pViewHeader->CurrentTab());
 }
 
+cBrowserGrid::~cBrowserGrid()
+{
+	m_vServerElements.clear();
+	m_vElements.clear();
+}
+
 void cBrowserGrid::Flush() 
 { 
 	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 	m_pBackground->Display();
+	m_pInfopane->Display();
 	m_pGrid->Display();
 	m_pRootView->Display();
 }
@@ -131,13 +139,14 @@ eOSState cBrowserGrid::NavigateBack()
 	if(pCont) {
 		m_pContainer = pCont;
 		ProcessData();
-		return eOSState::osBack;
+		return eOSState::osContinue;
 
 	} else if(m_bServersAreRoot) {
 		m_pContainer = NULL;
 		m_pService = NULL;
 		SetServerElements();
 		ProcessData();
+		return eOSState::osContinue;
 	}
 	return eOSState::osEnd;
 }
@@ -146,6 +155,7 @@ void cBrowserGrid::DrawGrid()
 {
 	DrawBackground();
 	m_pViewHeader->Draw(SelectedObject());
+	DrawInfopane();
 	DrawFooter();
 }
 
@@ -163,6 +173,12 @@ void cBrowserGrid::DrawBackground()
 	m_pBackground->AddStringToken("currentdirectorybackground", "/path");
 }
 
+void cBrowserGrid::DrawInfopane()
+{
+	m_pInfopane->Clear();
+	SelectedObject()->AddTokens(m_pInfopane, true);
+}
+
 void cBrowserGrid::DrawFooter()
 {
 	//if (!active)
@@ -176,7 +192,6 @@ void cBrowserGrid::DrawFooter()
 	if(auto vid = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
 		if(vid->m_iViewCount > 0) textRed = tr("Unscrobble");
 		else textRed = tr("Scrobble");
-		textBlue = tr("Info");
 	}
 
 

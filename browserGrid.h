@@ -38,6 +38,7 @@ private:
 	std::shared_ptr<cViewHeader> m_pViewHeader;
 	std::shared_ptr<cViewElement> m_pBackground;
 	std::shared_ptr<cViewElement> m_pfooter;
+	std::shared_ptr<cViewElement> m_pInfopane;
 	std::shared_ptr<cViewElement> m_pScrollbar;
 
 	bool m_bServersAreRoot;
@@ -50,9 +51,11 @@ private:
 	void SetServerElements();
 	void DrawFooter();
 	void DrawBackground();
+	void DrawInfopane();
 	
 public:
 	cBrowserGrid(cOsdView* rootView);
+	~cBrowserGrid();
 	//cBrowserGrid(cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
 	std::shared_ptr<plexclient::MediaContainer> MediaContainer() { return m_pContainer; }
 		

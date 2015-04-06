@@ -213,12 +213,25 @@ void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::functi
 {
 	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);
-
+	grid->AddStringToken("orginaltitle", m_sOriginalTitle);
+	grid->AddStringToken("summary", m_sSummary);
+	grid->AddStringToken("contentrating", m_sContentRating);
+	grid->AddStringToken("studio", m_sStudio);
+	grid->AddIntToken("viewoffset", m_lViewoffset/1000);
+	grid->AddIntToken("duration", m_iDuration);
+	grid->AddIntToken("year", m_iYear);
+	
+	// Thumb, Cover, Episodepicture
 	bool cached = false;
-	//cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
 	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
 	grid->AddIntToken("hasthumb", cached);
 	if (cached)	grid->AddStringToken("thumb", thumb);
+	
+	// Fanart
+	cached = false;
+	std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
+	grid->AddIntToken("hasart", cached);
+	if (cached)	grid->AddStringToken("art", art);
 
 	if(m_tType == MediaType::MOVIE) {
 		grid->AddIntToken("ismovie", true);
@@ -226,12 +239,19 @@ void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::functi
 
 	if(m_tType == MediaType::EPISODE) {
 		grid->AddIntToken("isepisode", true);
+		std::string seriesTitle = m_sGrandparentTitle;
+		if(seriesTitle.empty() && m_pParent) seriesTitle = m_pParent->m_sGrandparentTitle;
+		grid->AddStringToken("seriestitle", seriesTitle);
+		grid->AddIntToken("season", m_iParentIndex);
+		grid->AddIntToken("episode", m_iIndex);
+		
+		// Seriescover, Seasoncover
 		cached = false;
 		std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_sGrandparentThumb, Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
-		grid->AddIntToken("hasgrandparentthumb", cached);
-		if (cached)	grid->AddStringToken("grandparentthumb", grandparentThumb);
-		grid->AddStringToken("grandparenttitle", m_sGrandparentTitle);
+		grid->AddIntToken("hasseriesthumb", cached);
+		if (cached)	grid->AddStringToken("seriesthumb", grandparentThumb);
 
+		// Banner, Seriesbanner
 		if(m_pParent && !m_pParent->m_sBanner.empty()) {
 			cached = false;
 			std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);

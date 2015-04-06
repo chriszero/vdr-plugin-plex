@@ -51,6 +51,14 @@
 		</area>
 	</viewelement>
 	
+	<viewelement name="infopane">
+		<area layer="2" x="75%" y="15%" width="25%" height="75%">
+			<drawtext x="1%" y="2%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="{title}" />
+			<drawimage condition="{hasart}" imagetype="image" path="{art}" x="0" y="8%" width="100%" height="35%" />
+			<drawtextbox x="1%" y="40%" width="96%" float="topright" font="{light}" fontsize="3%" color="{clrWhite}" text="{summary}" />
+		</area>
+	</viewelement>
+	
 	<!-- Tokens available in browser
 	{current}					Currently active element		
     {title}                 	Name of the element
@@ -79,7 +87,7 @@
 			{banner}
     
 	-->
-    <grid name="browser" x="0" y="15%" width="100%" height="75%">
+    <grid name="browser" x="0" y="15%" width="75%" height="75%">
 		<area layer="3">
 			<drawtext x="1%" y="2%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="{title}" />
 			<drawtext condition="{current}" x="1%" y="20%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="Active" />

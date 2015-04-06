@@ -28,7 +28,8 @@ enum eViews {
 enum eViewElementsRoot {
 	verBackground,
 	verHeader,
-	verFooter
+	verFooter,
+	verInfopane
 };
 
 enum eViewGrids {

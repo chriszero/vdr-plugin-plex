@@ -41,6 +41,7 @@ class cMyPlugin:public cPlugin
 {
 private:
 	cPlexSdOsd* m_pSdCheck;
+	static bool bSkindesigner;
 	
 public:
 	cMyPlugin(void);

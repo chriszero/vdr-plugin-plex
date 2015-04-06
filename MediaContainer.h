@@ -53,6 +53,7 @@ public:
 	std::string m_sTitle;
 	std::string m_sTitle1;
 	std::string m_sTitle2;
+	std::string m_sGrandparentTitle;
 	std::string m_sViewGroup;
 	int m_iLibrarySectionID;
 	std::string m_sLibrarySectionTitle;

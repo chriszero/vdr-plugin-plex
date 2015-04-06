@@ -1,12 +1,14 @@
 #include "Directory.h"
 #include <vdr/i18n.h>
 #include <Poco/Format.h>
+#include "pictureCache.h"
 
 namespace plexclient
 {
 
 Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 {
+	m_pParent = parent;
 	m_pServer = Server;
 	if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
 		Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
@@ -46,6 +48,48 @@ void Directory::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::fu
 {
 	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);
+
+	// Thumb, Cover, Episodepicture
+	bool cached = false;
+	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+	grid->AddIntToken("hasthumb", cached);
+	if (cached)	grid->AddStringToken("thumb", thumb);
+
+	// Fanart
+	cached = false;
+	std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
+	grid->AddIntToken("hasart", cached);
+	if (cached)	grid->AddStringToken("art", art);
+
+	if(m_eType == MediaType::SHOW) {
+		grid->AddIntToken("isshow", true);
+	}
+
+	if(m_eType == MediaType::SEASON) {
+		grid->AddIntToken("isseason", true);
+	}
+	
+	// Banner, Seriesbanner
+	if(m_pParent && !m_pParent->m_sBanner.empty()) {
+		cached = false;
+		std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);
+		if(cached) {
+			grid->AddIntToken("hasbanner", true);
+			grid->AddStringToken("banner", banner);
+		}
+	}
+}
+
+std::string Directory::ArtUri()
+{
+	if(m_sArt.find("http://") != std::string::npos) return m_sArt;
+	return m_pServer->GetUri() + m_sArt;
+}
+
+std::string Directory::ThumbUri()
+{
+	if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
+	return m_pServer->GetUri() + m_sThumb;
 }
 
 }

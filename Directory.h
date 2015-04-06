@@ -53,8 +53,11 @@ public:
 	std::string m_sKey;
 	MediaType m_eType;
 	PlexServer* m_pServer;
+	MediaContainer* m_pParent;
 		
 	virtual std::string GetTitle();
+	std::string ArtUri();
+	std::string ThumbUri();
 	// gridElement
 	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };
