@@ -62,8 +62,13 @@ public:
 	int m_iSize;
 	std::string m_sSummary;
 	int m_iParentIndex;
+	std::string m_sParentTitle;
+	int m_iParentYear;
+	
 	PlexServer* m_pServer;
 	
+	std::string ThumbUri();
+	std::string ArtUri();
 	void PreCache();
 };
 

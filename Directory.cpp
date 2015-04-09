@@ -15,6 +15,10 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 
 		m_bAllowSync = GetNodeValueAsBool(pAttribs->getNamedItem("allowSync"));
 		m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
+		m_iLeafCount = GetNodeValueAsInt(pAttribs->getNamedItem("leafCount"));
+		m_iViewedLeafCount = GetNodeValueAsInt(pAttribs->getNamedItem("viewedLeafCount"));
+		m_iChildCount = GetNodeValueAsInt(pAttribs->getNamedItem("childCount"));
+		m_fRating = GetNodeValueAsDouble(pAttribs->getNamedItem("rating"));
 		m_iYear = GetNodeValueAsInt(pAttribs->getNamedItem("year"));
 		m_sArt = GetNodeValue(pAttribs->getNamedItem("art"));
 		m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
@@ -28,6 +32,7 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 		m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
 		m_tCreatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("createdAt"));
 		m_eType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
+		m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
 
 		pAttribs->release();
 	}
@@ -51,24 +56,30 @@ void Directory::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::fu
 
 	// Thumb, Cover, Episodepicture
 	bool cached = false;
-	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+	if(!ThumbUri().empty()) {
+		std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+		if (cached)	grid->AddStringToken("thumb", thumb);
+	}
 	grid->AddIntToken("hasthumb", cached);
-	if (cached)	grid->AddStringToken("thumb", thumb);
 
 	// Fanart
 	cached = false;
-	std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
+	if(!ArtUri().empty()) {
+		std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
+		if (cached)	grid->AddStringToken("art", art);
+	}
 	grid->AddIntToken("hasart", cached);
-	if (cached)	grid->AddStringToken("art", art);
 
 	if(m_eType == MediaType::SHOW) {
 		grid->AddIntToken("isshow", true);
+		grid->AddStringToken("summary", m_sSummary);
 	}
 
 	if(m_eType == MediaType::SEASON) {
 		grid->AddIntToken("isseason", true);
+		if(m_pParent) grid->AddStringToken("summary", m_pParent->m_sSummary);
 	}
-	
+
 	// Banner, Seriesbanner
 	if(m_pParent && !m_pParent->m_sBanner.empty()) {
 		cached = false;
@@ -82,14 +93,22 @@ void Directory::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::fu
 
 std::string Directory::ArtUri()
 {
-	if(m_sArt.find("http://") != std::string::npos) return m_sArt;
-	return m_pServer->GetUri() + m_sArt;
+	if(!m_sArt.empty()) {
+		if(m_sArt.find("http://") != std::string::npos) return m_sArt;
+		return m_pServer->GetUri() + m_sArt;
+	}
+	if(m_pParent) return m_pParent->ArtUri();
+	return "";
 }
 
 std::string Directory::ThumbUri()
 {
-	if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
-	return m_pServer->GetUri() + m_sThumb;
+	if(!m_sThumb.empty()) {
+		if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
+		return m_pServer->GetUri() + m_sThumb;
+	}
+	if(m_pParent) return m_pParent->ThumbUri();
+	return "";
 }
 
 }

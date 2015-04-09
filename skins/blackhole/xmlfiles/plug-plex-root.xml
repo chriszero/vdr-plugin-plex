@@ -60,28 +60,40 @@
 	</viewelement>
 	
 	<!-- Tokens available in browser
-	{current}					Currently active element		
-    {title}                 	Name of the element
-	{year}
-	{hasthumb}
-		{thumb}						Image/Cover
-	{hasart}
-		{art}						Fanart
+	{current}					bool, currently active element
+    {title}                 	string, Name of the element
 	
-	{isdummy}					Condition
+	A dummy actually only marks a "level up"
+	{isdummy}					bool
 	
-	{isserver}					Condition
-		{serverstartpointname}	
-		{serverip}
-		{serverport}
-		{serverversion}
+	If the item is a server: {isserver}
+	{isserver}					bool
+		{serverstartpointname}	string
+		{serverip}				string
+		{serverport}			int
+		{serverversion}			string
 		
-	{isdirectory}				Condition
-		{isshow}				Condition
-		{isseason}				Condition
-		
+	
+	Following tokens are avaliable if the item is a directory or video
+	{hasthumb}						bool
+		{thumb}						string, Image/Cover
+	{hasart}						bool
+		{art}						string, Fanart	
+	
+	If the Item is Directory following tokens are avaliable
+	The item is a directory if one of the following tokens are set: {isdirectory}, {isshow}, {isseason}
+	
+	{isdirectory}			Condition
+	{isshow}				Condition
+	{isseason}				Condition
+	
+	If the item is a video following tokens are avaliable
+	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 
+	{contentrating}		string, star-rating
+	{viewoffset}		int, seconds, last viewed position
+	{duration}			int, seconds, total duration
+	
 	{ismovie}
-		
 	{isepisode}
 		{hasbanner}
 			{banner}

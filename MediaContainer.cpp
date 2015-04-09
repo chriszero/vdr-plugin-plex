@@ -33,6 +33,8 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 				m_bAllowSync = GetNodeValueAsBool(pAttribs->getNamedItem("allowSync"));
 				m_sArt = GetNodeValue(pAttribs->getNamedItem("art"));
 				m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
+				m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
+				m_iParentYear = GetNodeValueAsInt(pAttribs->getNamedItem("parentYear"));
 
 				pAttribs->release();
 			} else if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
@@ -47,6 +49,18 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 	} catch(Exception &exc) {
 		std::cerr << exc.displayText() << std::endl;
 	}
+}
+
+std::string MediaContainer::ArtUri()
+{
+	if(m_sArt.find("http://") != std::string::npos) return m_sArt;
+	return m_pServer->GetUri() + m_sArt;
+}
+
+std::string MediaContainer::ThumbUri()
+{
+	if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
+	return m_pServer->GetUri() + m_sThumb;
 }
 
 void MediaContainer::PreCache() 

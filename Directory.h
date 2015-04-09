@@ -38,8 +38,13 @@ public:
 
 public:
 	bool m_bAllowSync;
-	int m_iIndex;
+	int m_iIndex; // Season, Episode number
 	int m_iYear;
+	int m_iLeafCount; // Total number of Episodes
+	int m_iViewedLeafCount; // Watched Episodes
+	int m_iChildCount; // Number of Seasons
+	double m_fRating;
+	std::string m_sSummary;
 	std::string m_sTitle;
 	std::string m_sTitle1;
 	std::string m_sTitle2;
