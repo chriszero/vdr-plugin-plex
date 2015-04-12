@@ -124,8 +124,7 @@ eOSState cBrowserGrid::NavigateSelect()
 		ProcessData();
 		return eOSState::osContinue;
 	} else if(plexclient::Video* vid = dynamic_cast<plexclient::Video*>(SelectedObject())) {
-		cMyPlugin::PlayFile(*vid);
-		return eOSState::osEnd;
+		return eOSState::osUser1;
 	} else return eOSState::osEnd;
 }
 

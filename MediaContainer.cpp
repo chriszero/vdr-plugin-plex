@@ -6,6 +6,7 @@ namespace plexclient
 MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 {
 	m_pServer = Server;
+	m_eViewGroup = MediaType::UNDEF;
 	try {
 		InputSource src(*response);
 		DOMParser parser;
@@ -24,7 +25,7 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 				m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 				m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
 				m_sBanner = GetNodeValue(pAttribs->getNamedItem("banner"));
-				m_sViewGroup = GetNodeValue(pAttribs->getNamedItem("viewGroup"));
+				m_eViewGroup = GetNodeValueAsMediaType(pAttribs->getNamedItem("viewGroup"));
 				m_sLibrarySectionTitle = GetNodeValue(pAttribs->getNamedItem("librarySectionTitle"));
 				m_sLibrarySectionUUID = GetNodeValue(pAttribs->getNamedItem("librarySectionUUID"));
 				m_iLibrarySectionID = GetNodeValueAsInt(pAttribs->getNamedItem("librarySectionID"));

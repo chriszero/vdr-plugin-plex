@@ -11,7 +11,7 @@
 namespace plexclient
 {
 
-enum MediaType {UNDEF = 0, PHOTO, MOVIE, MUSIC, SHOW, SEASON, EPISODE};
+enum MediaType {UNDEF = 0, MOVIE, SHOW, SEASON, EPISODE, MUSIC, PHOTO};
 enum StreamType {sUNDEF = 0, sVIDEO = 1, sAUDIO = 2, sSUBTITLE = 3};
 
 class XmlObject

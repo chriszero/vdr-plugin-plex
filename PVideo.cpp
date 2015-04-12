@@ -217,16 +217,17 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken("summary", m_sSummary);
 	grid->AddStringToken("contentrating", m_sContentRating);
 	grid->AddStringToken("studio", m_sStudio);
-	grid->AddIntToken("viewoffset", m_lViewoffset/1000);
-	grid->AddIntToken("duration", m_iDuration);
+	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
+	grid->AddIntToken("duration", m_iDuration/1000/60);
 	grid->AddIntToken("year", m_iYear);
-	
+	grid->AddIntToken("viewgroup", m_pParent->m_eViewGroup);
+
 	// Thumb, Cover, Episodepicture
 	bool cached = false;
 	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
 	grid->AddIntToken("hasthumb", cached);
 	if (cached)	grid->AddStringToken("thumb", thumb);
-	
+
 	// Fanart
 	cached = false;
 	std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
@@ -244,19 +245,25 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 		grid->AddStringToken("seriestitle", seriesTitle);
 		grid->AddIntToken("season", m_iParentIndex);
 		grid->AddIntToken("episode", m_iIndex);
-		
+
 		// Seriescover, Seasoncover
 		cached = false;
-		std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_sGrandparentThumb, Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+		std::string grandparentthumbUri = m_sGrandparentThumb;
+		if(grandparentthumbUri.empty() && m_pParent) {
+			grandparentthumbUri = m_sThumb;
+		}
+		if(!grandparentthumbUri.empty()) {
+			std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + grandparentthumbUri, Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
+			if (cached)	grid->AddStringToken("seriesthumb", grandparentThumb);
+		}
 		grid->AddIntToken("hasseriesthumb", cached);
-		if (cached)	grid->AddStringToken("seriesthumb", grandparentThumb);
 
 		// Banner, Seriesbanner
 		if(m_pParent && !m_pParent->m_sBanner.empty()) {
 			cached = false;
 			std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);
 			if(cached) {
-				grid->AddIntToken("hasbanner", true);
+				grid->AddIntToken("hasbanner", cached);
 				grid->AddStringToken("banner", banner);
 			}
 		}

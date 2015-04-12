@@ -54,7 +54,7 @@ public:
 	std::string m_sTitle1;
 	std::string m_sTitle2;
 	std::string m_sGrandparentTitle;
-	std::string m_sViewGroup;
+	MediaType m_eViewGroup;
 	int m_iLibrarySectionID;
 	std::string m_sLibrarySectionTitle;
 	std::string m_sLibrarySectionUUID;

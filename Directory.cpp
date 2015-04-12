@@ -53,6 +53,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 {
 	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);
+	grid->AddIntToken("viewgroup", m_pParent->m_eViewGroup);
 
 	// Thumb, Cover, Episodepicture
 	bool cached = false;
@@ -70,6 +71,10 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 	}
 	grid->AddIntToken("hasart", cached);
 
+	if(m_eType == MediaType::UNDEF || m_eType == MediaType::MOVIE || m_eType == MediaType::PHOTO) {
+		grid->AddIntToken("isdirectory", true);
+	}
+
 	if(m_eType == MediaType::SHOW) {
 		grid->AddIntToken("isshow", true);
 		grid->AddStringToken("summary", m_sSummary);
@@ -78,6 +83,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 	if(m_eType == MediaType::SEASON) {
 		grid->AddIntToken("isseason", true);
 		if(m_pParent) grid->AddStringToken("summary", m_pParent->m_sSummary);
+		grid->AddIntToken("season", m_iIndex);
 	}
 
 	// Banner, Seriesbanner
@@ -85,7 +91,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 		cached = false;
 		std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);
 		if(cached) {
-			grid->AddIntToken("hasbanner", true);
+			grid->AddIntToken("hasbanner", cached);
 			grid->AddStringToken("banner", banner);
 		}
 	}

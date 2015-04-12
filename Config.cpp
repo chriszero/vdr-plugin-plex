@@ -4,7 +4,7 @@
 Config::Config() {
 	s_username = "username";
 	s_password = "password";
-	GridColumns = 5;
+	GridColumns = 7;
 	GridRows = 2;
 }
 

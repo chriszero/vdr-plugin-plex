@@ -2,6 +2,8 @@
 #include "viewGridNavigator.h"
 #include "pictureCache.h"
 #include <vdr/thread.h>
+#include "SubscriptionManager.h"
+#include "plex.h"
 
 cMutex cPlexSdOsd::RedrawMutex;
 
@@ -100,6 +102,12 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		break;
 	default:
 		break;
+	}
+
+	if(state == eOSState::osUser1) {
+		//plexclient::ActionManager::GetInstance().AddAction(*vid);
+		cMyPlugin::PlayFile(*vid);
+		state = eOSState::osEnd;
 	}
 	return state;
 }
