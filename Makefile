@@ -11,6 +11,7 @@ PLUGIN = plex
 VERSION := $(shell git describe --tags master)
 
 LIBS += -lPocoUtil -lPocoNet -lPocoNetSSL -lPocoXML -lPocoFoundation -lpcrecpp
+LIBS += $(shell pkg-config --libs libskindesignerapi)
 
 ### Configuration (edit this for your needs)
 
@@ -59,8 +60,9 @@ SOFILE = libvdr-$(PLUGIN).so
 
 ### Includes and Defines (add further entries here):
 
-INCLUDES +=
+INCLUDES += $(shell pkg-config --cflags libskindesignerapi)
 
+DEFINES += -DLIBSKINDESIGNERAPIVERSION='"$(shell pkg-config --modversion libskindesignerapi)"'
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DPLUGIN='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 	$(if $(GIT_REV), -DGIT_REV='"$(GIT_REV)"')
 
@@ -93,9 +95,7 @@ OBJS = $(PLUGIN).o \
 	browserGrid.o \
 	viewHeader.o \
 	detailView.o \
-	pictureCache.o \
-	libskindesigner/skindesignerosdbase.o \
-	libskindesigner/osdelements.o \
+	pictureCache.o
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp
 

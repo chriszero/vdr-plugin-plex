@@ -6,12 +6,12 @@
 #include "plex.h"
 #include "pictureCache.h"
 
-cBrowserGrid::cBrowserGrid(cOsdView* rootView) : cViewGridNavigator(rootView, rootView->GetViewGrid(eViewGrids::vgBrowser) )
+cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavigator(rootView, rootView->GetViewGrid(eViewGrids::vgBrowser) )
 {
-	m_pBackground = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
+	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
 	m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
-	m_pfooter = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
-	m_pInfopane = std::shared_ptr<cViewElement>(rootView->GetViewElement(eViewElementsRoot::verInfopane));
+	m_pfooter = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
+	m_pInfopane = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verInfopane));
 
 	m_rows = Config::GetInstance().GridRows;
 	m_columns = Config::GetInstance().GridColumns;
@@ -253,7 +253,7 @@ void cBrowserGrid::PrevTab()
  * cDummyElement
  */
 
-void cDummyElement::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
+void cDummyElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
 	grid->AddIntToken("isdummy", 1);
@@ -276,7 +276,7 @@ cServerElement::cServerElement(plexclient::PlexServer* server, std::string start
 	m_sStartName = startName;
 }
 
-void cServerElement::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
+void cServerElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
 	grid->AddIntToken("isserver", 1);

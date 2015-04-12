@@ -15,7 +15,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
-#include "libskindesigner/osdelements.h"
+#include <libskindesignerapi/osdelements.h>
 #include "viewGridNavigator.h"
 
 #include "XmlObject.h"
@@ -88,7 +88,7 @@ public:
 	std::string ArtUri();
 
 	// gridElement
-	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };
 
 }

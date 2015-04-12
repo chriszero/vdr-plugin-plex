@@ -19,7 +19,7 @@ bool cPlexSdOsd::SdSupport()
 	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
 	if (skinDesignerAvailable) {
 
-		cOsdView *rootView = GetOsdView(eViews::viRootView);
+		skindesignerapi::cOsdView *rootView = GetOsdView(eViews::viRootView);
 		if (!rootView) {
 			esyslog("[plex]: used skindesigner skin does not support plex");
 			return false;

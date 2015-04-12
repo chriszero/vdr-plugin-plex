@@ -209,7 +209,7 @@ bool Video::SetWatched()
 	}
 }
 
-void Video::AddTokens(std::shared_ptr<cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
+void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
 	grid->AddStringToken("title", m_sTitle);

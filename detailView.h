@@ -6,7 +6,7 @@
 class cDetailView
 {
 public:
-	cDetailView(cOsdView *detailView, const cGridElement *element);
+	cDetailView(skindesignerapi::cOsdView *detailView, const cGridElement *element);
 	~cDetailView();
 
 };

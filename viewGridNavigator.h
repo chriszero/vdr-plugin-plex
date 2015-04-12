@@ -1,10 +1,10 @@
-#ifndef CVIEWGRIDNAVIGATOR_H
-#define CVIEWGRIDNAVIGATOR_H
+#ifndef cViewGridNAVIGATOR_H
+#define cViewGridNAVIGATOR_H
 
 #include <memory>
 #include <vector>
 #include <functional>
-#include "libskindesigner/osdelements.h"
+#include  <libskindesignerapi/osdelements.h>
 
 class cGridElement
 {
@@ -27,7 +27,7 @@ public:
 	bool IsVisible() { return Position > -1; }
 	void SetPosition(double x, double y) { m_posX = x; m_posY = y; };
 	void GetPosition(double &x, double &y) { x = m_posX; y = m_posY; };
-	virtual void AddTokens(std::shared_ptr<cOsdElement> osdElem, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL) = 0;
+	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> osdElem, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL) = 0;
 	int Position;
 };
 
@@ -37,8 +37,8 @@ protected:
 	int m_rows;
 	int m_columns;
 	
-	std::shared_ptr<cViewGrid> m_pGrid;
-	cOsdView* m_pRootView;
+	std::shared_ptr<skindesignerapi::cViewGrid> m_pGrid;
+	skindesignerapi::cOsdView* m_pRootView;
 	
 	bool m_newDimensions;
 	bool m_setIterator;
@@ -52,7 +52,7 @@ protected:
 	void SetGridElementData(cGridElement *obj);
 	
 public:
-	cViewGridNavigator(cOsdView* rootView, cViewGrid* viewGrid);
+	cViewGridNavigator(skindesignerapi::cOsdView* rootView, skindesignerapi::cViewGrid* viewGrid);
 	void SetGridDimensions(int rows, int columns);
 	virtual void Flush() { m_pGrid->Display(); };
 	virtual void Clear() { m_pGrid->Clear(); };
@@ -66,4 +66,4 @@ public:
 	cGridElement* SelectedObject() { return *m_activeElementIter; }
 };
 
-#endif // CVIEWGRIDNAVIGATOR_H
+#endif // cViewGridNAVIGATOR_H

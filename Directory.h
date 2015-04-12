@@ -12,7 +12,7 @@
 #include <Poco/String.h>
 
 #include <memory>
-#include "libskindesigner/osdelements.h"
+#include <libskindesignerapi/osdelements.h>
 
 #include "XmlObject.h"
 #include "MediaContainer.h"
@@ -64,7 +64,7 @@ public:
 	std::string ArtUri();
 	std::string ThumbUri();
 	// gridElement
-	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };
 
 }

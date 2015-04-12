@@ -2,7 +2,7 @@
 #define CVIEWHEADER_H
 
 #include <memory>
-#include "libskindesigner/osdelements.h"
+#include  <libskindesignerapi/osdelements.h>
 #include "viewGridNavigator.h"
 
 enum ePlexMenuTab {
@@ -15,10 +15,10 @@ class cViewHeader
 {
 private:
 	ePlexMenuTab m_eCurrentTab;
-	std::shared_ptr<cViewElement> m_pViewElem;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pViewElem;
 	
 public:
-	cViewHeader(cViewElement* viewElem);
+	cViewHeader(skindesignerapi::cViewElement* viewElem);
 	void Draw(cGridElement* elem);
 	ePlexMenuTab NextTab();
 	ePlexMenuTab PrevTab();

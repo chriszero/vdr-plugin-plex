@@ -17,8 +17,8 @@
 #include "hlsPlayerControl.h"
 
 #include "browserGrid.h"
-#include "libskindesigner/osdelements.h"
-#include "libskindesigner/skindesignerosdbase.h"
+#include  <libskindesignerapi/osdelements.h>
+#include  <libskindesignerapi/skindesignerosdbase.h>
 
 enum eViews {
 	viRootView,
@@ -42,12 +42,12 @@ enum eViewElementsDetail {
     vedFooter
 };
 
-class cPlexSdOsd : public cSkindesignerOsdObject
+class cPlexSdOsd : public skindesignerapi::cSkindesignerOsdObject
 {	
 private:	
 	std::shared_ptr<cBrowserGrid> m_pBrowserGrid;
 
-	cOsdView* m_pRootView;
+	skindesignerapi::cOsdView* m_pRootView;
 	
 	void Flush();
 	void SwitchGrid(ePlexMenuTab currentTab);

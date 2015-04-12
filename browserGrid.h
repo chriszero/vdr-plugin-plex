@@ -9,13 +9,13 @@
 #include "PlexServer.h"
 #include "viewGridNavigator.h"
 #include "viewHeader.h"
-#include "libskindesigner/osdelements.h"
+#include <libskindesignerapi/osdelements.h>
 
 class cDummyElement : public cGridElement
 {
 public:
 	virtual std::string GetTitle();
-	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };
 
 class cServerElement : public cGridElement
@@ -27,7 +27,7 @@ private:
 public:
 	cServerElement(plexclient::PlexServer* server, std::string startPath, std::string startName);
 	virtual std::string GetTitle();
-	virtual void AddTokens(std::shared_ptr<cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 	std::string StartPath() { return m_sStartPath; }
 	plexclient::PlexServer* Server() { return m_pServer; }
 };
@@ -36,10 +36,10 @@ class cBrowserGrid : public cViewGridNavigator
 {
 private:
 	std::shared_ptr<cViewHeader> m_pViewHeader;
-	std::shared_ptr<cViewElement> m_pBackground;
-	std::shared_ptr<cViewElement> m_pfooter;
-	std::shared_ptr<cViewElement> m_pInfopane;
-	std::shared_ptr<cViewElement> m_pScrollbar;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pBackground;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pfooter;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pInfopane;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar;
 
 	bool m_bServersAreRoot;
 	std::vector<cServerElement> m_vServerElements;
@@ -54,9 +54,9 @@ private:
 	void DrawInfopane();
 	
 public:
-	cBrowserGrid(cOsdView* rootView);
+	cBrowserGrid(skindesignerapi::cOsdView* rootView);
 	~cBrowserGrid();
-	//cBrowserGrid(cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
+	//cBrowserGrid(skindesignerapi::cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
 	std::shared_ptr<plexclient::MediaContainer> MediaContainer() { return m_pContainer; }
 		
 	void DrawGrid();

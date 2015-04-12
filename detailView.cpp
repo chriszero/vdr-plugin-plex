@@ -1,6 +1,6 @@
 #include "detailView.h"
 
-cDetailView::cDetailView(cOsdView *detailView, const cGridElement *element)
+cDetailView::cDetailView(skindesignerapi::cOsdView *detailView, const cGridElement *element)
 {
 }
 

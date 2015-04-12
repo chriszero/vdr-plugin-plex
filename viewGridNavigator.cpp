@@ -12,14 +12,14 @@ cGridElement::cGridElement()
 	m_bInit = true;
 }
 
-cViewGridNavigator::cViewGridNavigator(cOsdView* rootView, cViewGrid* viewGrid)
+cViewGridNavigator::cViewGridNavigator(skindesignerapi::cOsdView* rootView, skindesignerapi::cViewGrid* viewGrid)
 {
 	m_columns = 2;
 	m_rows = 2;
 	m_newDimensions = true;
 	m_setIterator = true;
 
-	m_pGrid = std::shared_ptr<cViewGrid>(viewGrid);
+	m_pGrid = std::shared_ptr<skindesignerapi::cViewGrid>(viewGrid);
 	m_pRootView = rootView;
 }
 

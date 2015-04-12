@@ -5,7 +5,7 @@
 #include "plexSdOsd.h"
 #include "pictureCache.h"
 
-#include "libskindesigner/services.h"
+#include <libskindesignerapi/skindesignerapi.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //	cPlugin
@@ -58,8 +58,9 @@ const char *cMyPlugin::Description(void)
 
 bool cMyPlugin::Start(void)
 {
-	RegisterPlugin reg;
+	skindesignerapi::cPluginStructure reg;
 	reg.name = "plex";
+	reg.libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
 
 	reg.SetView(viRootView, "root.xml");
 	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgBrowser, "browser");
@@ -67,19 +68,17 @@ bool cMyPlugin::Start(void)
 	reg.SetViewElement(viRootView, verBackground, "background");
 	reg.SetViewElement(viRootView, verInfopane, "infopane");
 	reg.SetViewElement(viRootView, verFooter, "footer");
-
+/*
 	reg.SetSubView(viRootView, viDetailView, "detail.xml");
 	reg.SetViewElement(viDetailView, vedBackground, "background");
 	reg.SetViewElement(viDetailView, vedHeader, "header");
 	reg.SetViewElement(viDetailView, vedFooter, "footer");
-
-	static cPlugin *pSkinDesigner = cPluginManager::GetPlugin("skindesigner");
-	if (pSkinDesigner) {
-		pSkinDesigner->Service("RegisterPlugin", &reg);
+*/
+	if (skindesignerapi::SkindesignerAPI::RegisterPlugin(&reg)) {
 		m_pSdCheck = new cPlexSdOsd();
 		cMyPlugin::bSkindesigner = m_pSdCheck->SdSupport();
 	} else {
-		esyslog("[plex]: skindesigner not available");
+		esyslog("[plex]: %s skindesigner not available", __FUNCTION__);
 	}
 	return true;
 }

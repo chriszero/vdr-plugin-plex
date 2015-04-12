@@ -1,8 +1,8 @@
 #include "viewHeader.h"
 
-cViewHeader::cViewHeader(cViewElement* viewElem)
+cViewHeader::cViewHeader(skindesignerapi::cViewElement* viewElem)
 {
-	m_pViewElem = std::shared_ptr<cViewElement>(viewElem);
+	m_pViewElem = std::shared_ptr<skindesignerapi::cViewElement>(viewElem);
 	m_eCurrentTab = ePlexMenuTab::pmtOnDeck;
 }
 
