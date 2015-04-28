@@ -40,6 +40,8 @@ private:
 	std::shared_ptr<skindesignerapi::cViewElement> m_pfooter;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pInfopane;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pWatch;
+	int m_lastsecond;
 
 	bool m_bServersAreRoot;
 	std::vector<cServerElement> m_vServerElements;
@@ -65,6 +67,7 @@ public:
 	virtual eOSState NavigateBack();
 	void NextTab();
 	void PrevTab();
+	bool DrawTime();
 	virtual void Flush();
 };
 

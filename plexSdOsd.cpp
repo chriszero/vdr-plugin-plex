@@ -57,6 +57,10 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
 	plexclient::Video* vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+	
+	if (m_pBrowserGrid->DrawTime())
+            m_pBrowserGrid->Flush();
+	
 	switch (Key & ~k_Repeat) {
 	case kUp:
 		m_pBrowserGrid->NavigateUp();

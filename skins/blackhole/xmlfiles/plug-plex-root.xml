@@ -2,6 +2,25 @@
 <!DOCTYPE displayplugin SYSTEM "../../../dtd/displayplugin.dtd">
 
 <displayplugin x="0" y="0" width="100%" height="100%" fadetime="0" scaletvx="0" scaletvy="0" scaletvwidth="100%" scaletvheight="100%">
+    <!-- Available Variables time:
+    {time}                   timestring in hh:mm
+    {sec}                    current seconds
+    {min}                    current minutes
+    {hour}                   current hours
+    {hmins}                  current "hourminutes" to display an hour hand
+    {day}                    day in digits
+    {dayleadingzero}         day in digits with leading 0
+    {dayname}                Full name of the day
+    {daynameshort}           Short 3 char name of the day
+    {month}                  month in digits with leading 0
+    {monthname}              Full name of the month
+    {monthnameshort}         3 letter abbrivation of month name
+    {year}                   year in yyyy
+    -->
+	<viewelement name="time">
+
+    </viewelement>
+	
 	<!-- Tokens available in background
     {selecteditembackground}		image
 	
@@ -53,28 +72,41 @@
 		
 	
 	Following tokens are avaliable if the item is a directory or video
-	{hasthumb}						bool
-		{thumb}						string, Image/Cover
-	{hasart}						bool
-		{art}						string, Fanart	
-	
+	{hasthumb}					bool
+		{thumb}					string, Image/Cover
+	{hasart}					bool
+		{art}					string, Fanart
+		
 	If the Item is Directory following tokens are avaliable
 	The item is a directory if one of the following tokens are set: {isdirectory}, {isshow}, {isseason}
 	
 	{isdirectory}			Condition
-	{isshow}				Condition
+	
+	{isshow}				Condition, Show/Series
+			{summary}			Description, plot, summary
+	
 	{isseason}				Condition
+			{summary}			Description, plot, summary
 	
 	If the item is a video following tokens are avaliable
 	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 
 	{contentrating}		string, star-rating
 	{viewoffset}		int, minutes, last viewed position
 	{duration}			int, minutes, total duration
+	{orginaltitle}		original title
+	{summary}			Description, plot, summary
+	{studio}			Studio
+	{year}				Year of production
 	
 	{ismovie}
 	{isepisode}
-		{hasbanner}
-			{banner}
+		{seriestitle}		Title of the series/show
+		{season}			int, Season
+		{episode}			int, Episode, season based
+		{hasbanner}			bool, Bannerstyle?
+			{banner}		Image path
+		{hasseriesthumb}	bool, seriesthumb (seasoncover, seriescover)
+			{seriesthumb}	Image path
     
 	-->
 	

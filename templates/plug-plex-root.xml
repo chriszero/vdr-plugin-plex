@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE displayplugin SYSTEM "../../../dtd/displayplugin.dtd">
+
+<displayplugin x="0" y="0" width="100%" height="100%" fadetime="0" scaletvx="0" scaletvy="0" scaletvwidth="100%" scaletvheight="100%">
+    <!-- Available Variables time:
+    {time}                   timestring in hh:mm
+    {sec}                    current seconds
+    {min}                    current minutes
+    {hour}                   current hours
+    {hmins}                  current "hourminutes" to display an hour hand
+    {day}                    day in digits
+    {dayleadingzero}         day in digits with leading 0
+    {dayname}                Full name of the day
+    {daynameshort}           Short 3 char name of the day
+    {month}                  month in digits with leading 0
+    {monthname}              Full name of the month
+    {monthnameshort}         3 letter abbrivation of month name
+    {year}                   year in yyyy
+    -->
+	<viewelement name="time">
+    </viewelement>
+	
+	<!-- Tokens available in background
+    {selecteditembackground}		image
+	
+	{isdirectory}
+	{currentdirectorybackground}	image
+    -->
+	<viewelement name="background">
+    </viewelement>
+	
+	<!-- Tokens available in header and infopane
+		Same as in browser
+    -->
+	<viewelement name="header">
+	</viewelement>
+	
+	<viewelement name="infopane">
+	</viewelement>
+	
+	<!-- Tokens available in browser
+	{current}					bool, currently active element
+    {title}                 	string, Name of the element
+    {viewgroup}					int: {UNDEF = 0, MOVIE = 1, SHOW = 2, SEASON = 3, EPISODE = 4, MUSIC, PHOTO};
+	
+	A dummy actually only marks a "level up"
+	{isdummy}					bool
+	
+	If the item is a server: {isserver}
+	{isserver}					bool
+		{serverstartpointname}	string
+		{serverip}				string
+		{serverport}			int
+		{serverversion}			string
+		
+	
+	Following tokens are avaliable if the item is a directory or video
+	{hasthumb}					bool
+		{thumb}					string, Image/Cover
+	{hasart}					bool
+		{art}					string, Fanart
+		
+	If the Item is Directory following tokens are avaliable
+	The item is a directory if one of the following tokens are set: {isdirectory}, {isshow}, {isseason}
+	
+	{isdirectory}			Condition
+	
+	{isshow}				Condition, Show/Series
+			{summary}			Description, plot, summary
+	
+	{isseason}				Condition
+			{summary}			Description, plot, summary
+	
+	If the item is a video following tokens are avaliable
+	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 
+	{contentrating}		string, star-rating
+	{viewoffset}		int, minutes, last viewed position
+	{duration}			int, minutes, total duration
+	{orginaltitle}		original title
+	{summary}			Description, plot, summary
+	{studio}			Studio
+	{year}				Year of production
+	
+	{ismovie}
+	{isepisode}
+		{seriestitle}		Title of the series/show
+		{season}			int, Season
+		{episode}			int, Episode, season based
+		{hasbanner}			bool, Bannerstyle?
+			{banner}		Image path
+		{hasseriesthumb}	bool, seriesthumb (seasoncover, seriescover)
+			{seriesthumb}	Image path
+    
+	-->
+	
+    <grid name="browser">
+	</grid>
+	
+	
+	<!-- Available Variables Footer:
+    {red1}                    true if red button is button 1
+    {red2}                    true if red button is button 2
+    {red3}                    true if red button is button 3
+    {red4}                    true if red button is button 4
+    {green1}                  true if green button is button 1
+    {green2}                  true if green button is button 2
+    {green3}                  true if green button is button 3
+    {green4}                  true if green button is button 4
+    {yellow1}                 true if yellow button is button 1
+    {yellow2}                 true if yellow button is button 2
+    {yellow3}                 true if yellow button is button 3
+    {yellow4}                 true if yellow button is button 4
+    {blue1}                   true if blue button is button 1
+    {blue2}                   true if blue button is button 2
+    {blue3}                   true if blue button is button 3
+    {blue4}                   true if blue button is button 4
+    {red}                     label of red button
+    {green}                   label of green button
+    {yellow}                  label of yellow button
+    {blue}                    label of blue button
+    -->
+    <viewelement name="footer">
+    </viewelement>
+	
+</displayplugin>

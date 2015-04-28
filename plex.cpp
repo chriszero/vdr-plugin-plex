@@ -68,6 +68,7 @@ bool cMyPlugin::Start(void)
 	reg.SetViewElement(viRootView, verBackground, "background");
 	reg.SetViewElement(viRootView, verInfopane, "infopane");
 	reg.SetViewElement(viRootView, verFooter, "footer");
+	reg.SetViewElement(viRootView, verWatch, "time");
 /*
 	reg.SetSubView(viRootView, viDetailView, "detail.xml");
 	reg.SetViewElement(viDetailView, vedBackground, "background");
