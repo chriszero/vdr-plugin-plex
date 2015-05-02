@@ -28,6 +28,15 @@ cBrowserGrid::~cBrowserGrid()
 	m_vElements.clear();
 }
 
+void cBrowserGrid::Clear()
+{
+	m_pBackground->Clear();
+	m_pfooter->Clear();
+	m_pInfopane->Clear();
+	m_pWatch->Clear();
+	m_pGrid->Clear();
+}
+
 void cBrowserGrid::Flush() 
 { 
 	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);

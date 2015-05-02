@@ -6,6 +6,10 @@ cViewHeader::cViewHeader(skindesignerapi::cViewElement* viewElem)
 	m_eCurrentTab = ePlexMenuTab::pmtOnDeck;
 }
 
+cViewHeader::~cViewHeader()
+{
+}
+
 void cViewHeader::Draw(cGridElement* elem)
 {
 	m_pViewElem->Clear();

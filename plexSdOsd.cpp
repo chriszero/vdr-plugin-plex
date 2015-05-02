@@ -13,7 +13,9 @@ cPlexSdOsd::cPlexSdOsd()
 
 cPlexSdOsd::~cPlexSdOsd()
 {
+	m_pBrowserGrid->Clear();
 	cPictureCache::GetInstance().RemoveAll();
+	delete m_pRootView;
 }
 
 bool cPlexSdOsd::SdSupport()
@@ -84,8 +86,7 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		Flush();
 		break;
 	case kBack:
-		//state =
-		m_pBrowserGrid->NavigateBack();
+		state = m_pBrowserGrid->NavigateBack();
 		Flush();
 		break;
 	case kRed:

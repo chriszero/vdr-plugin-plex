@@ -69,6 +69,7 @@ public:
 	void PrevTab();
 	bool DrawTime();
 	virtual void Flush();
+	virtual void Clear();
 };
 
 #endif // CBROWSERGRID_H

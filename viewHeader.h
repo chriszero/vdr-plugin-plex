@@ -19,6 +19,7 @@ private:
 	
 public:
 	cViewHeader(skindesignerapi::cViewElement* viewElem);
+	~cViewHeader();
 	void Draw(cGridElement* elem);
 	ePlexMenuTab NextTab();
 	ePlexMenuTab PrevTab();
