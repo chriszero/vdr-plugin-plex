@@ -50,23 +50,6 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 		endOffset = (m_rows * m_columns) + scrollOffset;
 	}
 
-	std::vector<cGridElement*>::iterator begin = m_firstElementIter + startOffset;
-	std::vector<cGridElement*>::iterator end = m_firstElementIter + endOffset;
-	if(end > m_vElements.end()) end = m_vElements.end();
-
-	int pos = 0;
-	for(std::vector<cGridElement*>::iterator it = begin; it != end; ++it) {
-		cGridElement *elem = *it;
-		elem->Position = pos++;
-		SetGridElementData(elem);
-	}
-
-	if(m_setIterator) {
-		m_activeElementIter = begin;
-		m_pGrid->SetCurrent((*m_activeElementIter)->GridElementId(), true);
-		m_setIterator = false;
-	}
-
 	//remove non visible elements from grid
 	if(scrollOffset !=0 ) {
 		auto startIt = m_firstElementIter;
@@ -86,6 +69,23 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 			// Remove Queued Downloads
 			cPictureCache::GetInstance().Remove(*it);
 		}
+	}
+
+	std::vector<cGridElement*>::iterator begin = m_firstElementIter + startOffset;
+	std::vector<cGridElement*>::iterator end = m_firstElementIter + endOffset;
+	if(end > m_vElements.end()) end = m_vElements.end();
+
+	int pos = 0;
+	for(std::vector<cGridElement*>::iterator it = begin; it != end; ++it) {
+		cGridElement *elem = *it;
+		elem->Position = pos++;
+		SetGridElementData(elem);
+	}
+
+	if(m_setIterator) {
+		m_activeElementIter = begin;
+		m_pGrid->SetCurrent((*m_activeElementIter)->GridElementId(), true);
+		m_setIterator = false;
 	}
 
 	m_firstElementIter = begin;
