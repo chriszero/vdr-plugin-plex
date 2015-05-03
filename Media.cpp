@@ -23,7 +23,7 @@ Media::Media(Poco::XML::Node* pNode)
 			m_sAudioCodec = GetNodeValue(pAttribs->getNamedItem("audioCodec"));
 			m_sVideoCodec = GetNodeValue(pAttribs->getNamedItem("videoCodec"));
 			m_sContainer = GetNodeValue(pAttribs->getNamedItem("container"));
-			m_VideoFrameRate = GetNodeValueAsDouble(pAttribs->getNamedItem("videoFrameRate"));
+			m_VideoFrameRate = GetNodeValue(pAttribs->getNamedItem("videoFrameRate"));
 
 
 			pAttribs->release();
@@ -45,6 +45,20 @@ Media::Media(Poco::XML::Node* pNode)
 		}
 		pChildNode = it.nextNode();
 	}
+}
+
+void Media::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid)
+{
+	grid->AddStringToken("videoResolution", m_sVideoResolution);
+	grid->AddIntToken("bitrate", m_iBitrate);
+	grid->AddIntToken("width", m_iWidth);
+	grid->AddIntToken("height", m_iHeight);
+	grid->AddIntToken("audioChannels", m_iAudioChannels);
+	grid->AddStringToken("aspectRatio", m_sAspectRatio);
+	grid->AddStringToken("audioCodec", m_sAudioCodec);
+	grid->AddStringToken("videoCodec", m_sVideoCodec);
+	grid->AddStringToken("container", m_sContainer);
+	grid->AddStringToken("videoFrameRate", m_VideoFrameRate);
 }
 
 }

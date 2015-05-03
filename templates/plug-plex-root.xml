@@ -20,6 +20,13 @@
 	<viewelement name="time">
     </viewelement>
 	
+	<!-- Available Variables message:
+	{displaymessage}			bool: message displayed?
+    {message}                   string: message to display
+    -->
+	<viewelement name="message">
+    </viewelement>
+	
 	<!-- Tokens available in background
     {selecteditembackground}		image
 	
@@ -80,6 +87,18 @@
 	{summary}			Description, plot, summary
 	{studio}			Studio
 	{year}				Year of production
+	{viewCount}			Unseen if less than 1
+	
+	{videoResolution}	string (sd, 720, 1080)
+	{bitrate}			int
+	{width}				int
+	{height}			int
+	{audioChannels}		int
+	{aspectRatio}		string (1.33, 1.78, 1.85, 2.35)
+	{audioCodec}		string (aac, mp3, mp2, ac3, dca) hint: dca==DTS
+	{videoCodec}		string (mpeg4, msmpeg4, h264)
+	{container}			string (avi, mp4, mkv)
+	{videoFrameRate}	string (PAL, NTSC, 24p)
 	
 	{ismovie}
 	{isepisode}

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-04-06 19:45+0200\n"
-"PO-Revision-Date: 2015-03-05 20:08+0200\n"
+"POT-Creation-Date: 2015-05-03 17:16+0200\n"
+"PO-Revision-Date: 2015-05-03 17:17+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
@@ -19,10 +19,10 @@ msgstr ""
 "X-Generator: Virtaal 0.7.1\n"
 
 msgid "Prev. Tab"
-msgstr ""
+msgstr "Letzter Tab"
 
 msgid "Next Tab"
-msgstr ""
+msgstr "Nächster Tab"
 
 msgid "Unscrobble"
 msgstr "Ungesehen"
@@ -46,19 +46,19 @@ msgid "Plex Password"
 msgstr "Plex Passwort"
 
 msgid "Use Custom Server"
-msgstr ""
+msgstr "Nutze eigenen Server"
 
 msgid "Server Host"
-msgstr ""
+msgstr "Server Hostname/IP"
 
 msgid "Server Port"
-msgstr ""
+msgstr "Server Port"
 
 msgid "Grid Columns"
-msgstr ""
+msgstr "Raster Spalten"
 
 msgid "Grid Rows"
-msgstr ""
+msgstr "Raster Reihen"
 
 msgid "Current UUID"
 msgstr "Aktuelle UUID"
@@ -111,6 +111,11 @@ msgstr "Kein Plexmediaserver gefunden."
 
 msgid "Browse Plex"
 msgstr "Durchsuche Plex"
+
+#, c-format
+msgid "'Ok' to start from %ld minutes, 'Back' to start from beginning."
+msgstr ""
+"'Ok' um von %ld weiter zu schauen, 'Zurück' um von Beginn an zu starten."
 
 msgid "All Movies"
 msgstr "Alle Filme"
@@ -186,3 +191,6 @@ msgstr "Kürzlich angesehene Folgen"
 
 msgid "Recently Viewed Shows"
 msgstr "Kürzlich angesehene Serien"
+
+msgid "Library"
+msgstr "Bibliothek"

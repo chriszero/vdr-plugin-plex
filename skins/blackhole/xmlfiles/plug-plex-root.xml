@@ -21,6 +21,19 @@
 
     </viewelement>
 	
+	<!-- Available Variables message:
+	{displaymessage}			bool: message displayed?
+    {message}                   string: message to display
+    -->
+	<viewelement name="message">
+		<area condition="{displaymessage}" x="5%" y="80%" width="90%" height="15%" layer="98">
+            <drawimage imagetype="skinpart" path="messageblue" x="0" y="0" width="100%" height="100%" />
+        </area>
+        <area condition="{displaymessage}" x="5%" y="80%" width="90%" height="15%" layer="99">
+            <drawtext align="center" valign="center" font="{regular}" fontsize="40%" color="{clrWhite}" text="{message}" />
+        </area>
+    </viewelement>
+	
 	<!-- Tokens available in background
     {selecteditembackground}		image
 	
@@ -47,12 +60,14 @@
 	</viewelement>
 	
 	<viewelement name="infopane">
-		<area layer="2" x="75%" y="15%" width="25%" height="75%">
+		<area layer="2" x="75%" y="15%" width="25%" height="70%">
 			<drawtext x="1%" y="2%" width="98%" font="{light}" fontsize="5%" color="{clrWhite}" text="{title}" />
 			<drawimage condition="{hasart}++not{isepisode}" imagetype="image" path="{art}" x="0" y="8%" width="100%" height="35%" />
 			<drawimage condition="{hasthumb}++{isepisode}" imagetype="image" path="{thumb}" x="0" y="8%" width="100%" height="35%" />
-			<drawtextbox condition="isset{summary}" x="1%" y="40%" width="96%" float="topright" font="{light}" fontsize="4%" color="{clrWhite}" text="{summary}" />
 		</area>
+		<areascroll orientation="vertical" mode="forthandback" delay="1000" scrollspeed="medium" x="75%" y="50%" width="25%" height="40%" layer="3">
+			<drawtextbox condition="isset{summary}" x="0%" y="0%" width="100%" font="{light}" fontsize="8%" color="{clrWhite}" text="{summary}" />
+		</areascroll>
 	</viewelement>
 	
 	<!-- Tokens available in browser
@@ -97,6 +112,18 @@
 	{summary}			Description, plot, summary
 	{studio}			Studio
 	{year}				Year of production
+	{viewCount}			Unseen if less than 1
+	
+	{videoResolution}	string (sd, 720, 1080)
+	{bitrate}			int
+	{width}				int
+	{height}			int
+	{audioChannels}		int
+	{aspectRatio}		string (1.33, 1.78, 1.85, 2.35)
+	{audioCodec}		string (mp3, mp2, ac3, dca) hint: dca==DTS
+	{videoCodec}		string (mpeg4, msmpeg4, h264)
+	{container}			string (avi, mp4, mkv)
+	{videoFrameRate}	string (PAL, NTSC, 24p)
 	
 	{ismovie}
 	{isepisode}
@@ -128,7 +155,7 @@
 			<drawrectangle x="0" y="{height(thumb)}" width="{viewoffset}/{duration}*{areawidth}" height="2%" color="{clrBlue}" />
 			<drawtext condition="eq({viewgroup}, 4)" name="title" x="0" y="{height(thumb)}*1.1" width="100%" font="{bold}" fontsize="6%" color="{clrWhite}" text="{title}" />
 			<drawtext condition="lt({viewgroup}, 4)" name="title" x="0" y="{height(thumb)}*1.1" width="100%" font="{bold}" fontsize="6%" color="{clrWhite}" text="{seriestitle}" />
-			<drawtext name="season" x="0" y="{posy(title)} + {height(title)}" width="50%" font="{light}" fontsize="6%" color="{clrWhite}" text="{printf('S%02d E%d02', season, episode)}" />
+			<drawtext name="season" x="0" y="{posy(title)} + {height(title)}" width="50%" font="{light}" fontsize="6%" color="{clrWhite}" text="{printf('S%02d E%02d', season, episode)}" />
 		</area>
 		<area layer="3" condition="{isdirectory}" >
 			<drawimage name="thumb" condition="not{hasthumb}" imagetype="skinpart" path="plexplaceholder" x="0" y="0" width="100%" height="76%" />

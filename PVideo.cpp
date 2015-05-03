@@ -217,6 +217,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken("summary", m_sSummary);
 	grid->AddStringToken("contentrating", m_sContentRating);
 	grid->AddStringToken("studio", m_sStudio);
+	grid->AddIntToken("viewCount", m_iViewCount);
 	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
 	grid->AddIntToken("duration", m_iDuration/1000/60);
 	grid->AddIntToken("year", m_iYear);
@@ -268,6 +269,8 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 			}
 		}
 	}
+	
+	m_Media.AddTokens(grid);
 }
 
 std::string Video::ArtUri()

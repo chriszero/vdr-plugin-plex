@@ -69,12 +69,13 @@ bool cMyPlugin::Start(void)
 	reg.SetViewElement(viRootView, verInfopane, "infopane");
 	reg.SetViewElement(viRootView, verFooter, "footer");
 	reg.SetViewElement(viRootView, verWatch, "time");
-/*
-	reg.SetSubView(viRootView, viDetailView, "detail.xml");
-	reg.SetViewElement(viDetailView, vedBackground, "background");
-	reg.SetViewElement(viDetailView, vedHeader, "header");
-	reg.SetViewElement(viDetailView, vedFooter, "footer");
-*/
+	reg.SetViewElement(viRootView, verMessage, "message");
+	/*
+		reg.SetSubView(viRootView, viDetailView, "detail.xml");
+		reg.SetViewElement(viDetailView, vedBackground, "background");
+		reg.SetViewElement(viDetailView, vedHeader, "header");
+		reg.SetViewElement(viDetailView, vedFooter, "footer");
+	*/
 	if (skindesignerapi::SkindesignerAPI::RegisterPlugin(&reg)) {
 		m_pSdCheck = new cPlexSdOsd();
 		cMyPlugin::bSkindesigner = m_pSdCheck->SdSupport();
@@ -178,15 +179,10 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 {
 	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
 	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
-		if(cMyPlugin::bSkindesigner) {
-			// we have skindesigner
-			
-		} else {
-			cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
-			eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
-			if(response == kOk) {
-				Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
-			}
+		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
+		eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
+		if(response == kOk) {
+			Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
 		}
 	}
 	cControl* control = cHlsPlayerControl::Create(Vid);

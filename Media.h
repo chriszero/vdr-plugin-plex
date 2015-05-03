@@ -14,9 +14,13 @@
 
 #include <vector>
 #include <iostream>
+#include <libskindesignerapi/osdelements.h>
+#include <memory>
 
 #include "XmlObject.h" // Base class: model::XmlObject
 #include "Stream.h"
+
+
 
 using Poco::XML::DOMParser;
 using Poco::XML::Document;
@@ -47,7 +51,7 @@ public:
 	std::string m_sAudioCodec;
 	std::string m_sVideoCodec;
 	std::string m_sContainer;
-	double m_VideoFrameRate;
+	std::string m_VideoFrameRate;
 
 	std::string m_sPartKey;
 	int m_iPartId;
@@ -57,6 +61,8 @@ public:
 	std::string m_sPartContainer;
 	
 	std::vector<Stream> m_vStreams;
+	
+	void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid);
 };
 
 }

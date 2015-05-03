@@ -609,7 +609,7 @@ void cHlsPlayer::Stop(void)
 
 double cHlsPlayer::FramesPerSecond(void)
 {
-	return m_Video.m_Media.m_VideoFrameRate > 0 ? m_Video.m_Media.m_VideoFrameRate : DEFAULTFRAMESPERSECOND;
+	return m_Video.m_Media.m_VideoFrameRate == "24p" ? 24 : DEFAULTFRAMESPERSECOND;
 }
 
 void cHlsPlayer::JumpRelative(int seconds)

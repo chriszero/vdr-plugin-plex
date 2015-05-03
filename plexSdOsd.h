@@ -30,7 +30,8 @@ enum eViewElementsRoot {
 	verHeader,
 	verFooter,
 	verInfopane,
-	verWatch
+	verWatch,
+	verMessage
 };
 
 enum eViewGrids {
@@ -47,6 +48,8 @@ class cPlexSdOsd : public skindesignerapi::cSkindesignerOsdObject
 {	
 private:	
 	std::shared_ptr<cBrowserGrid> m_pBrowserGrid;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pMessage;
+	bool m_messageDisplayed;
 
 	skindesignerapi::cOsdView* m_pRootView;
 	
@@ -54,6 +57,7 @@ private:
 	void SwitchGrid(ePlexMenuTab currentTab);
 	void DrawBackground();
 	void DrawFooter();
+	void DrawMessage(std::string message);
 	
 public:
 	cPlexSdOsd();
