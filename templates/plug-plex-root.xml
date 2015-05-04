@@ -80,7 +80,8 @@
 	
 	If the item is a video following tokens are avaliable
 	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 
-	{contentrating}		string, star-rating
+	{contentrating}		string, FSK, PEGI
+	{rating}			int, starrating 0.0 - 10.0 multiplied by 10 -> 0 - 100, use sprintf and divide by 10
 	{viewoffset}		int, minutes, last viewed position
 	{duration}			int, minutes, total duration
 	{orginaltitle}		original title

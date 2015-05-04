@@ -64,6 +64,7 @@ public:
 	std::string m_sGrandparentArt;
 	long m_iDuration;
 	int m_iViewCount;
+	double m_dRating;
 	Poco::Timestamp m_tAddedAt;
 	Poco::Timestamp m_tUpdatedAt;
 

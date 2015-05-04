@@ -15,6 +15,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 {
 	m_iMyPlayOffset = 0;
 	m_lViewoffset = 0;
+	m_dRating = 0;
 	m_pServer = Server;
 	Parse(pNode);
 
@@ -96,6 +97,7 @@ void Video::Parse(Poco::XML::Node* pNode)
 			m_sGrandparentThumb = GetNodeValue(pAttribs->getNamedItem("grandparentThumb"));
 			m_sGrandparentArt = GetNodeValue(pAttribs->getNamedItem("grandparentArt"));
 			m_iDuration = GetNodeValueAsLong(pAttribs->getNamedItem("duration"));
+			m_dRating = GetNodeValueAsDouble(pAttribs->getNamedItem("rating"));
 			m_tAddedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("addedAt"));
 			m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
 
@@ -216,6 +218,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken("orginaltitle", m_sOriginalTitle);
 	grid->AddStringToken("summary", m_sSummary);
 	grid->AddStringToken("contentrating", m_sContentRating);
+	grid->AddIntToken("rating", m_dRating*10);
 	grid->AddStringToken("studio", m_sStudio);
 	grid->AddIntToken("viewCount", m_iViewCount);
 	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
