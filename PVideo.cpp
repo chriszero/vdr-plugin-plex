@@ -219,6 +219,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken("summary", m_sSummary);
 	grid->AddStringToken("contentrating", m_sContentRating);
 	grid->AddIntToken("rating", m_dRating*10);
+	grid->AddStringToken("ratingstring", Poco::format("%.1f", m_dRating));
 	grid->AddStringToken("studio", m_sStudio);
 	grid->AddIntToken("viewCount", m_iViewCount);
 	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
