@@ -86,20 +86,16 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 
 		switch (Key & ~k_Repeat) {
 		case kUp:
-			m_pBrowserGrid->NavigateUp();
-			Flush();
+			if(m_pBrowserGrid->NavigateUp()) Flush();
 			break;
 		case kDown:
-			m_pBrowserGrid->NavigateDown();
-			Flush();
+			if(m_pBrowserGrid->NavigateDown()) Flush();
 			break;
 		case kLeft:
-			m_pBrowserGrid->NavigateLeft();
-			Flush();
+			if(m_pBrowserGrid->NavigateLeft()) Flush();
 			break;
 		case kRight:
-			m_pBrowserGrid->NavigateRight();
-			Flush();
+			if(m_pBrowserGrid->NavigateRight()) Flush();
 			break;
 		case kOk:
 			// Play movie or change dir
@@ -108,6 +104,10 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 			break;
 		case kBack:
 			state = m_pBrowserGrid->NavigateBack();
+			Flush();
+			break;
+		case kBlue:
+			m_pBrowserGrid->NextViewMode();
 			Flush();
 			break;
 		case kRed:

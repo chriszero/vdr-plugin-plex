@@ -52,6 +52,7 @@ std::string Directory::GetTitle()
 void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
+	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
 	grid->AddStringToken("title", m_sTitle);
 	grid->AddIntToken("viewgroup", m_pParent->m_eViewGroup);
 
@@ -101,7 +102,8 @@ std::string Directory::ArtUri()
 {
 	if(!m_sArt.empty()) {
 		if(m_sArt.find("http://") != std::string::npos) return m_sArt;
-		return m_pServer->GetUri() + m_sArt;
+		if(m_sArt[0] == '/') return m_pServer->GetUri() + m_sArt;
+		return m_pServer->GetUri() + '/' + m_sArt;
 	}
 	if(m_pParent) return m_pParent->ArtUri();
 	return "";
@@ -111,7 +113,8 @@ std::string Directory::ThumbUri()
 {
 	if(!m_sThumb.empty()) {
 		if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
-		return m_pServer->GetUri() + m_sThumb;
+		if(m_sThumb[0] == '/') return m_pServer->GetUri() + m_sThumb;
+		return m_pServer->GetUri() + '/' + m_sThumb;
 	}
 	if(m_pParent) return m_pParent->ThumbUri();
 	return "";

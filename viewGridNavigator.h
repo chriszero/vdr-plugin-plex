@@ -29,6 +29,7 @@ public:
 	void GetPosition(double &x, double &y) { x = m_posX; y = m_posY; };
 	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> osdElem, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL) = 0;
 	int Position;
+	int AbsolutePosition;
 };
 
 class cViewGridNavigator
@@ -56,10 +57,10 @@ public:
 	void SetGridDimensions(int rows, int columns);
 	virtual void Flush() { m_pGrid->Display(); };
 	virtual void Clear() { m_pGrid->Clear(); };
-	virtual void NavigateLeft();
-	virtual void NavigateRight();
-	virtual void NavigateUp();
-	virtual void NavigateDown();
+	virtual bool NavigateLeft();
+	virtual bool NavigateRight();
+	virtual bool NavigateUp();
+	virtual bool NavigateDown();
 	virtual eOSState NavigateSelect() = 0;
 	virtual eOSState NavigateBack() = 0;
 	virtual void ReDraw(cGridElement* element);

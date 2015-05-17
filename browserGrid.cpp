@@ -9,17 +9,18 @@
 cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavigator(rootView, rootView->GetViewGrid(eViewGrids::vgBrowser) )
 {
 	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
-	m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
+	//m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
+	m_pHeader = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verHeader));
 	m_pfooter = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
 	m_pInfopane = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verInfopane));
 	m_pWatch = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verWatch));
 	m_lastsecond = 0;
 
-	m_rows = Config::GetInstance().GridRows;
-	m_columns = Config::GetInstance().GridColumns;
 	m_pService = NULL;
 	m_pContainer = NULL;
-	SwitchGrid(m_pViewHeader->CurrentTab());
+	m_viewEntryIndex = 0;
+	SwitchGrid(m_viewEntryIndex);
+	SwitchView();
 }
 
 cBrowserGrid::~cBrowserGrid()
@@ -37,8 +38,8 @@ void cBrowserGrid::Clear()
 	m_pGrid->Clear();
 }
 
-void cBrowserGrid::Flush() 
-{ 
+void cBrowserGrid::Flush()
+{
 	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 	m_pBackground->Display();
 	m_pInfopane->Display();
@@ -46,31 +47,73 @@ void cBrowserGrid::Flush()
 	m_pRootView->Display();
 }
 
-void cBrowserGrid::SwitchGrid(ePlexMenuTab currentTab)
+void cBrowserGrid::SwitchView(ViewMode mode)
+{
+	Config *conf = &Config::GetInstance();
+	conf->DefaultViewMode = mode;
+	if(conf->DefaultViewMode == ViewMode::Cover) {
+		SetGridDimensions(conf->CoverGridRows, conf->CoverGridColumns);
+	} else if(conf->DefaultViewMode == ViewMode::Detail) {
+		SetGridDimensions(conf->DetailGridRows, conf->DetailGridColumns);
+	} else if(conf->DefaultViewMode == ViewMode::List) {
+		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
+	}
+
+	int activePos = SelectedObject()->AbsolutePosition;
+	//ProcessData();
+	
+	for(std::vector<cGridElement*>::iterator it = m_vElements.begin(); it != m_vElements.end(); ++it) {
+		cGridElement *elem = *it;
+		elem->Position = -1;
+		elem->Dirty();
+		elem->SetPosition(-1,-1);
+	}
+	
+	m_pGrid->Clear();
+	m_firstElementIter = m_vElements.begin() + activePos;
+	m_setIterator = true;
+	FilterElements(0);
+}
+
+void cBrowserGrid::NextViewMode()
+{
+	ViewMode mode = Config::GetInstance().DefaultViewMode;
+	if(mode == ViewMode::Cover) {
+		mode = ViewMode::Detail;
+	} else if(mode == ViewMode::Detail) {
+		mode = ViewMode::List;
+	} else if(mode == ViewMode::List) {
+		mode = ViewMode::Cover;
+	}
+	SwitchView(mode);
+}
+
+void cBrowserGrid::SwitchGrid(int index)
 {
 	cPictureCache::GetInstance().RemoveAll();
-	if(currentTab == ePlexMenuTab::pmtOnDeck) {
-		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), "/library/onDeck" ) );
+
+	m_pHeader->Clear();
+	m_pHeader->ClearTokens();
+
+	if(m_viewEntryIndex < Config::GetInstance().m_viewentries.size()) {
+		ViewEntry entry = Config::GetInstance().m_viewentries[index];
+		m_pHeader->AddStringToken("tabname", tr(entry.Name.c_str()));
+		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), entry.PlexPath ) );
 		m_pContainer = m_pService->GetSection(m_pService->StartUri);
 		m_bServersAreRoot = false;
 		m_vServerElements.clear();
-		ProcessData();
-
-	} else if(currentTab == ePlexMenuTab::pmtRecentlyAdded) {
-		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), "/library/recentlyAdded" ) );
-		m_pContainer = m_pService->GetSection(m_pService->StartUri);
-		m_bServersAreRoot = false;
-		m_vServerElements.clear();
-		ProcessData();
-
-	} else if(currentTab == ePlexMenuTab::pmtLibrary) {
+	} else {
 		//Server View
+		m_pHeader->AddStringToken("tabname", tr("Library"));
 		m_pService = NULL;
 		m_pContainer = NULL;
 		m_bServersAreRoot = true;
 		SetServerElements();
-		ProcessData();
 	}
+
+	ProcessData();
+
+	SelectedObject()->AddTokens(m_pHeader, false);
 }
 
 void cBrowserGrid::SetServerElements()
@@ -78,8 +121,9 @@ void cBrowserGrid::SetServerElements()
 	m_vServerElements.clear();
 
 	for(std::vector<plexclient::PlexServer>::iterator it = plexclient::plexgdm::GetInstance().GetPlexservers().begin(); it != plexclient::plexgdm::GetInstance().GetPlexservers().end(); ++it) {
-		m_vServerElements.push_back(cServerElement(&(*it), "/library/sections", "Bibliothek"));
-		m_vServerElements.push_back(cServerElement(&(*it), "/video", "Video Channels"));
+		for(std::vector<ViewEntry>::iterator vEntry = Config::GetInstance().m_serverViewentries.begin(); vEntry != Config::GetInstance().m_serverViewentries.end(); ++vEntry) {
+			m_vServerElements.push_back(cServerElement(&(*it), vEntry->PlexPath, vEntry->Name));
+		}
 	}
 }
 
@@ -111,7 +155,13 @@ void cBrowserGrid::ProcessData()
 			}
 		}
 	}
-
+	
+	int pos = 0;
+	for(std::vector<cGridElement*>::iterator it = m_vElements.begin(); it != m_vElements.end(); ++it) {
+		cGridElement *elem = *it;
+		elem->AbsolutePosition = pos++;
+	}
+	
 	m_firstElementIter = m_vElements.begin();
 
 	m_pGrid->Clear();
@@ -164,7 +214,7 @@ eOSState cBrowserGrid::NavigateBack()
 void cBrowserGrid::DrawGrid()
 {
 	DrawBackground();
-	m_pViewHeader->Draw(SelectedObject());
+	m_pHeader->Display();
 	DrawInfopane();
 	DrawFooter();
 }
@@ -172,8 +222,9 @@ void cBrowserGrid::DrawGrid()
 void cBrowserGrid::DrawBackground()
 {
 	m_pBackground->ClearTokens();
-
-	if(auto video = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
+	
+	auto video = dynamic_cast<plexclient::Video*>(SelectedObject());
+	if(video) {
 		bool cached = false;
 		std::string path = cPictureCache::GetInstance().GetPath(video->ArtUri(), 1920, 1080, cached);
 		m_pBackground->AddStringToken("selecteditembackground", path);
@@ -181,6 +232,7 @@ void cBrowserGrid::DrawBackground()
 
 	m_pBackground->AddIntToken("isdirectory", 1);
 	m_pBackground->AddStringToken("currentdirectorybackground", "/path");
+	m_pBackground->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
 }
 
 void cBrowserGrid::DrawInfopane()
@@ -193,11 +245,21 @@ void cBrowserGrid::DrawFooter()
 {
 	//if (!active)
 	//   return;
+	cString nextTab = "Library";
+	if(m_viewEntryIndex + 1 < Config::GetInstance().m_viewentries.size()) {
+		nextTab = Config::GetInstance().m_viewentries[m_viewEntryIndex + 1].Name.c_str();
+	} else if(m_viewEntryIndex + 1 == Config::GetInstance().m_viewentries.size() + 1) {
+		nextTab = Config::GetInstance().m_viewentries[0].Name.c_str();
+	}
+	cString prevTab = "Library";
+	if(m_viewEntryIndex - 1 >= 0) {
+		prevTab = Config::GetInstance().m_viewentries[m_viewEntryIndex - 1].Name.c_str();
+	}
 
-	string textGreen = tr("Prev. Tab");
-	string textYellow = tr("Next Tab");
+	string textGreen = tr(prevTab);
+	string textYellow = tr(nextTab);
 	string textRed = "";
-	string textBlue = "";
+	string textBlue = tr("Switch View");
 
 	if(auto vid = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
 		if(vid->m_iViewCount > 0) textRed = tr("Unscrobble");
@@ -251,49 +313,58 @@ void cBrowserGrid::DrawFooter()
 
 void cBrowserGrid::NextTab()
 {
-	SwitchGrid(m_pViewHeader->NextTab());
+	m_viewEntryIndex++;
+	if(m_viewEntryIndex > Config::GetInstance().m_viewentries.size()) {
+		m_viewEntryIndex = 0;
+	}
+	SwitchGrid(m_viewEntryIndex);
 }
 
 void cBrowserGrid::PrevTab()
 {
-	SwitchGrid(m_pViewHeader->PrevTab());
+	m_viewEntryIndex--;
+	if(m_viewEntryIndex < 0) {
+		m_viewEntryIndex = Config::GetInstance().m_viewentries.size();
+	}
+	SwitchGrid(m_viewEntryIndex);
 }
 
-bool cBrowserGrid::DrawTime() {
-    time_t t = time(0);   // get time now
-    struct tm * now = localtime(&t);
-    int sec = now->tm_sec;
-    if (sec == m_lastsecond)
-        return false;
+bool cBrowserGrid::DrawTime()
+{
+	time_t t = time(0);   // get time now
+	struct tm * now = localtime(&t);
+	int sec = now->tm_sec;
+	if (sec == m_lastsecond)
+		return false;
 
-    int min = now->tm_min;
-    int hour = now->tm_hour;
-    int hourMinutes = hour%12 * 5 + min / 12;
+	int min = now->tm_min;
+	int hour = now->tm_hour;
+	int hourMinutes = hour%12 * 5 + min / 12;
 
-    char monthname[20];
-    char monthshort[10];
-    strftime(monthshort, sizeof(monthshort), "%b", now);
-    strftime(monthname, sizeof(monthname), "%B", now);
+	char monthname[20];
+	char monthshort[10];
+	strftime(monthshort, sizeof(monthshort), "%b", now);
+	strftime(monthname, sizeof(monthname), "%B", now);
 
-    m_pWatch->Clear();
-    m_pWatch->ClearTokens();
-    m_pWatch->AddIntToken("sec", sec);
-    m_pWatch->AddIntToken("min", min);
-    m_pWatch->AddIntToken("hour", hour);
-    m_pWatch->AddIntToken("hmins", hourMinutes);
-    m_pWatch->AddIntToken("year", now->tm_year + 1900);
-    m_pWatch->AddIntToken("day", now->tm_mday);
-    m_pWatch->AddStringToken("time", *TimeString(t));
-    m_pWatch->AddStringToken("monthname", monthname);
-    m_pWatch->AddStringToken("monthnameshort", monthshort);
-    m_pWatch->AddStringToken("month", *cString::sprintf("%02d", now->tm_mon + 1));
-    m_pWatch->AddStringToken("dayleadingzero", *cString::sprintf("%02d", now->tm_mday));
-    m_pWatch->AddStringToken("dayname", *WeekDayNameFull(now->tm_wday));
-    m_pWatch->AddStringToken("daynameshort", *WeekDayName(now->tm_wday));
-    m_pWatch->Display();
+	m_pWatch->Clear();
+	m_pWatch->ClearTokens();
+	m_pWatch->AddIntToken("sec", sec);
+	m_pWatch->AddIntToken("min", min);
+	m_pWatch->AddIntToken("hour", hour);
+	m_pWatch->AddIntToken("hmins", hourMinutes);
+	m_pWatch->AddIntToken("year", now->tm_year + 1900);
+	m_pWatch->AddIntToken("day", now->tm_mday);
+	m_pWatch->AddStringToken("time", *TimeString(t));
+	m_pWatch->AddStringToken("monthname", monthname);
+	m_pWatch->AddStringToken("monthnameshort", monthshort);
+	m_pWatch->AddStringToken("month", *cString::sprintf("%02d", now->tm_mon + 1));
+	m_pWatch->AddStringToken("dayleadingzero", *cString::sprintf("%02d", now->tm_mday));
+	m_pWatch->AddStringToken("dayname", *WeekDayNameFull(now->tm_wday));
+	m_pWatch->AddStringToken("daynameshort", *WeekDayName(now->tm_wday));
+	m_pWatch->Display();
 
-    m_lastsecond = sec;
-    return true;
+	m_lastsecond = sec;
+	return true;
 }
 
 /*
@@ -305,6 +376,7 @@ void cDummyElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid
 	if(clear) grid->ClearTokens();
 	grid->AddIntToken("isdummy", 1);
 	grid->AddStringToken("title", "../");
+	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
 }
 
 std::string cDummyElement::GetTitle()
@@ -332,6 +404,7 @@ void cServerElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> gri
 	grid->AddStringToken("serverip", m_pServer->GetIpAdress());
 	grid->AddIntToken("serverport", m_pServer->GetPort());
 	grid->AddStringToken("serverversion", m_pServer->GetVersion());
+	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
 }
 
 std::string cServerElement::GetTitle()

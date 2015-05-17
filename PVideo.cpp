@@ -214,6 +214,7 @@ bool Video::SetWatched()
 void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
+	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
 	grid->AddStringToken("title", m_sTitle);
 	grid->AddStringToken("orginaltitle", m_sOriginalTitle);
 	grid->AddStringToken("summary", m_sSummary);
@@ -273,20 +274,22 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 			}
 		}
 	}
-	
+
 	m_Media.AddTokens(grid);
 }
 
 std::string Video::ArtUri()
 {
 	if(m_sArt.find("http://") != std::string::npos) return m_sArt;
-	return m_pServer->GetUri() + m_sArt;
+	if(m_sArt[0] == '/') return m_pServer->GetUri() + m_sArt;
+	return m_pServer->GetUri() + '/' + m_sArt;
 }
 
 std::string Video::ThumbUri()
 {
 	if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
-	return m_pServer->GetUri() + m_sThumb;
+	if(m_sThumb[0] == '/') return m_pServer->GetUri() + m_sThumb;
+	return m_pServer->GetUri() + '/' + m_sThumb;
 }
 
 } // Namespace

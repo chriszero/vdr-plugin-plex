@@ -35,6 +35,7 @@
     </viewelement>
 	
 	<!-- Tokens available in background
+	{viewmode}					int: enum Cover = 0, List = 1, Detail = 2
     {selecteditembackground}		image
 	
 	{isdirectory}
@@ -52,9 +53,7 @@
 	<viewelement name="header">
 		<area layer="2" x="0" y="0" width="100%" height="15%">
 			<drawtext x="1%" y="5%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="Plex for VDR" />
-			<drawtext condition="{istab1active}" x="1%" y="20%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="{tab1name}" />
-			<drawtext condition="{istab2active}" x="1%" y="20%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="{tab2name}" />
-			<drawtext condition="{istab3active}" x="1%" y="20%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="{tab3name}" />
+			<drawtext x="1%" y="20%" width="98%" font="{light}" fontsize="30%" color="{clrWhite}" text="{tabname}" />
 			<drawimage condition="{hasbanner}" imagetype="image" path="{banner}" x="50%" y="5%" width="50%" height="90%" />
 		</area>
 	</viewelement>
@@ -71,6 +70,7 @@
 	</viewelement>
 	
 	<!-- Tokens available in browser
+	{viewmode}					int: enum Cover = 0, List = 1, Detail = 2
 	{current}					bool, currently active element
     {title}                 	string, Name of the element
     {viewgroup}					int: {UNDEF = 0, MOVIE = 1, SHOW = 2, SEASON = 3, EPISODE = 4, MUSIC, PHOTO};

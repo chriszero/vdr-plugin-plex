@@ -4,6 +4,7 @@
 #include <Poco/UUID.h>
 #include <Poco/UUIDGenerator.h>
 #include <string>
+#include <vector>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,17 @@
 
 #define STRING_SIZE 256
 
+struct ViewEntry {
+	std::string Name;
+	std::string PlexPath;
+};
+
+enum ViewMode {
+	Cover = 0,
+	List = 1,
+	Detail = 2
+};
+
 class Config
 {
 	
@@ -23,6 +35,7 @@ public:
 		static Config instance;
 		return instance;
 	}
+	static const char* viewModeNames[];
 
 	std::string s_username;
 	std::string s_password;
@@ -33,8 +46,20 @@ public:
 	bool UseCustomTranscodeProfile;
 	bool UsePlexAccount;
 	bool UseConfiguredServer;
-	int GridColumns;
-	int GridRows;
+	
+	int CoverGridColumns;
+	int CoverGridRows;
+	
+	int ListGridColumns;
+	int ListGridRows;
+	
+	int DetailGridColumns;
+	int DetailGridRows;
+	
+	ViewMode DefaultViewMode;
+	
+	std::vector<ViewEntry> m_viewentries;
+	std::vector<ViewEntry> m_serverViewentries;
 	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
@@ -42,12 +67,14 @@ public:
 	std::string GetLanguage();
 	std::string GetUsername();
 	std::string GetPassword();
-	int ThumbHeight() { return 1080 / GridRows; };
-	int ThumbWidth() { return 1920 / GridColumns; };
+	int ThumbHeight() { return 1080 / CoverGridRows; };
+	int ThumbWidth() { return 1920 / CoverGridColumns; };
 	int ArtHeight() { return 1080; };
 	int ArtWidth() { return 1920; };
 	int BannerHeight() { return 1080 / 2; };
 	int BannerWidth() { return 1920 / 2; };
+	
+	bool Parse(const char *name, const char *value);
 	
 
 private:
@@ -76,8 +103,13 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int HideMainMenuEntry;
 	int UseCustomTranscodeProfile;
 	int UsePlexAccount;
-	int GridColumns;
-	int GridRows;
+	int CoverGridColumns;
+	int CoverGridRows;
+	int DetailGridColumns;
+	int DetailGridRows;
+	int ListGridColumns;
+	int ListGridRows;
+	int DefaultViewMode;
 
     virtual void Store(void);
 

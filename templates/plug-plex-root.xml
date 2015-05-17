@@ -28,6 +28,7 @@
     </viewelement>
 	
 	<!-- Tokens available in background
+	{viewmode}					int: enum Cover = 0, List = 1, Detail = 2
     {selecteditembackground}		image
 	
 	{isdirectory}
@@ -38,6 +39,7 @@
 	
 	<!-- Tokens available in header and infopane
 		Same as in browser
+		{tabname}		Name of active Tab
     -->
 	<viewelement name="header">
 	</viewelement>
@@ -46,6 +48,7 @@
 	</viewelement>
 	
 	<!-- Tokens available in browser
+	{viewmode}					int: enum Cover = 0, List = 1, Detail = 2
 	{current}					bool, currently active element
     {title}                 	string, Name of the element
     {viewgroup}					int: {UNDEF = 0, MOVIE = 1, SHOW = 2, SEASON = 3, EPISODE = 4, MUSIC, PHOTO};

@@ -73,6 +73,7 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 
 	std::vector<cGridElement*>::iterator begin = m_firstElementIter + startOffset;
 	std::vector<cGridElement*>::iterator end = m_firstElementIter + endOffset;
+	if(begin < m_vElements.begin()) begin = m_vElements.begin();
 	if(end > m_vElements.end()) end = m_vElements.end();
 
 	int pos = 0;
@@ -113,6 +114,9 @@ void cViewGridNavigator::SetGridElementData(cGridElement *obj)
 		obj->AddTokens(m_pGrid, true, std::bind(&cViewGridNavigator::ReDraw, this, std::placeholders::_1));
 		m_pGrid->SetGrid(obj->GridElementId(), x, y, width, height);
 		obj->InitFinished();
+		// set GridDimensions
+		m_pGrid->AddIntToken("columns", m_columns);
+		m_pGrid->AddIntToken("rows", m_rows);
 	} else {
 		obj->SetPosition(x, y);
 		m_pGrid->MoveGrid(obj->GridElementId(), x, y, width, height);
@@ -126,10 +130,12 @@ void cViewGridNavigator::SetGridDimensions(int rows, int columns)
 	m_newDimensions = true;
 }
 
-void cViewGridNavigator::NavigateDown()
+bool cViewGridNavigator::NavigateDown()
 {
-	if(m_activeElementIter + m_columns >= m_vElements.end()) return;
+	if (m_activeElementIter == m_vElements.end() - 1) return false;
 	auto next = m_activeElementIter + m_columns;
+	if(next >= m_vElements.end()) next = m_vElements.end()-1;
+	
 	// scroll down?
 	if(!(*next)->IsVisible()) {
 		FilterElements(m_columns);
@@ -138,12 +144,15 @@ void cViewGridNavigator::NavigateDown()
 	m_pGrid->SetCurrent((*m_activeElementIter)->GridElementId(), false);
 	m_pGrid->SetCurrent((*next)->GridElementId(), true);
 	m_activeElementIter = next;
+	return true;
 }
 
-void cViewGridNavigator::NavigateUp()
+bool cViewGridNavigator::NavigateUp()
 {
-	if(m_activeElementIter - m_columns < m_vElements.begin()) return;
+	if (m_activeElementIter == m_vElements.begin()) return false;
 	auto next = m_activeElementIter - m_columns;
+	if(next < m_vElements.begin()) next = m_vElements.begin();
+	
 	//scroll up?
 	if(!(*next)->IsVisible()) {
 		FilterElements(-m_columns);
@@ -152,10 +161,12 @@ void cViewGridNavigator::NavigateUp()
 	m_pGrid->SetCurrent((*m_activeElementIter)->GridElementId(), false);
 	m_pGrid->SetCurrent((*next)->GridElementId(), true);
 	m_activeElementIter = next;
+	return true;
 }
 
-void cViewGridNavigator::NavigateLeft()
+bool cViewGridNavigator::NavigateLeft()
 {
+	if (m_activeElementIter == m_vElements.begin()) return false;
 	auto next = m_activeElementIter - 1;
 	if(next < m_vElements.begin()) next = m_vElements.begin();
 
@@ -168,10 +179,12 @@ void cViewGridNavigator::NavigateLeft()
 	m_pGrid->SetCurrent((*m_activeElementIter)->GridElementId(), false);
 	m_pGrid->SetCurrent((*next)->GridElementId(), true);
 	m_activeElementIter = next;
+	return true;
 }
 
-void cViewGridNavigator::NavigateRight()
+bool cViewGridNavigator::NavigateRight()
 {
+	if (m_activeElementIter == m_vElements.end() - 1) return false;
 	auto next = m_activeElementIter + 1;
 	if(next >= m_vElements.end()) next = m_vElements.end()-1;
 
@@ -182,4 +195,5 @@ void cViewGridNavigator::NavigateRight()
 	m_pGrid->SetCurrent((*m_activeElementIter)->GridElementId(), false);
 	m_pGrid->SetCurrent((*next)->GridElementId(), true);
 	m_activeElementIter = next;
+	return true;
 }

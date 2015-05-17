@@ -8,7 +8,7 @@
 #include "plexgdm.h"
 #include "PlexServer.h"
 #include "viewGridNavigator.h"
-#include "viewHeader.h"
+//#include "viewHeader.h"
 #include <libskindesignerapi/osdelements.h>
 
 class cDummyElement : public cGridElement
@@ -35,13 +35,15 @@ public:
 class cBrowserGrid : public cViewGridNavigator
 {
 private:
-	std::shared_ptr<cViewHeader> m_pViewHeader;
+	//std::shared_ptr<cViewHeader> m_pViewHeader;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pHeader;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pBackground;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pfooter;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pInfopane;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pWatch;
 	int m_lastsecond;
+	int m_viewEntryIndex;
 
 	bool m_bServersAreRoot;
 	std::vector<cServerElement> m_vServerElements;
@@ -62,7 +64,9 @@ public:
 	std::shared_ptr<plexclient::MediaContainer> MediaContainer() { return m_pContainer; }
 		
 	void DrawGrid();
-	void SwitchGrid(ePlexMenuTab currentTab);
+	void SwitchGrid(int index);
+	void SwitchView(ViewMode mode = Config::GetInstance().DefaultViewMode);
+	void NextViewMode();
 	virtual eOSState NavigateSelect();
 	virtual eOSState NavigateBack();
 	void NextTab();

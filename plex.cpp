@@ -154,20 +154,7 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 {
 	//dsyslog("[plex]%s: '%s' = '%s'\n", __FUNCTION__, name, value);
 
-	if (strcasecmp(name, "HideMainMenuEntry") == 0) 	Config::GetInstance().HideMainMenuEntry = atoi(value) ? true : false;
-	else if (strcasecmp(name, "UsePlexAccount") == 0) 	Config::GetInstance().UsePlexAccount = atoi(value) ? true : false;
-	else if (strcasecmp(name, "UseCustomTranscodeProfile") == 0) 	Config::GetInstance().UseCustomTranscodeProfile = atoi(value) ? true : false;
-	else if (strcasecmp(name, "Username") == 0) 		Config::GetInstance().s_username = std::string(value);
-	else if (strcasecmp(name, "Password") == 0) 		Config::GetInstance().s_password = std::string(value);
-	else if (strcasecmp(name, "UUID") == 0) 			Config::GetInstance().SetUUID(value);
-	else if (strcasecmp(name, "UseConfiguredServer") == 0) 	Config::GetInstance().UseConfiguredServer = atoi(value) ? true : false;
-	else if (strcasecmp(name, "ServerHost") == 0) 		Config::GetInstance().s_serverHost = std::string(value);
-	else if (strcasecmp(name, "ServerPort") == 0) 	Config::GetInstance().ServerPort = atoi(value);
-	else if (strcasecmp(name, "GridColumns") == 0) 	Config::GetInstance().GridColumns = atoi(value);
-	else if (strcasecmp(name, "GridRows") == 0) 	Config::GetInstance().GridRows = atoi(value);
-	else return false;
-
-	return true;
+	return Config::GetInstance().Parse(name, value);
 }
 
 /**

@@ -54,7 +54,7 @@ private:
 	skindesignerapi::cOsdView* m_pRootView;
 	
 	void Flush();
-	void SwitchGrid(ePlexMenuTab currentTab);
+	//void SwitchGrid(ePlexMenuTab currentTab);
 	void DrawBackground();
 	void DrawFooter();
 	void DrawMessage(std::string message);
