@@ -48,6 +48,8 @@
 	</viewelement>
 	
 	<!-- Tokens available in browser
+	{totalcount}				int: total number of grid elements
+	{position}					int: absolute position of grid element
 	{viewmode}					int: enum Cover = 0, List = 1, Detail = 2
 	{current}					bool, currently active element
     {title}                 	string, Name of the element
@@ -117,7 +119,13 @@
     
 	-->
 	
-    <grid name="browser">
+    <grid name="coverbrowser">
+	</grid>
+	
+	<grid name="detailbrowser">
+	</grid>
+	
+	<grid name="listbrowser">
 	</grid>
 	
 	

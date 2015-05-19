@@ -56,6 +56,7 @@ private:
 	void DrawFooter();
 	void DrawBackground();
 	void DrawInfopane();
+	void DrawScrollbar();
 	
 public:
 	cBrowserGrid(skindesignerapi::cOsdView* rootView);

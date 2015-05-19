@@ -12,17 +12,24 @@ cGridElement::cGridElement()
 	m_bInit = true;
 }
 
-cViewGridNavigator::cViewGridNavigator(skindesignerapi::cOsdView* rootView, skindesignerapi::cViewGrid* viewGrid)
+cViewGridNavigator::cViewGridNavigator(skindesignerapi::cOsdView* rootView)
 {
 	m_columns = 2;
 	m_rows = 2;
 	m_newDimensions = true;
 	m_setIterator = true;
 
-	m_pGrid = std::shared_ptr<skindesignerapi::cViewGrid>(viewGrid);
+	m_pGrid = NULL;
 	m_pRootView = rootView;
 }
 
+void cViewGridNavigator::SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid> grid)
+{
+	if (grid) {
+		if(m_pGrid) m_pGrid->Clear();
+		m_pGrid = std::shared_ptr<skindesignerapi::cViewGrid>(grid);
+	}
+}
 
 void cViewGridNavigator::ReDraw(cGridElement* element)
 {
@@ -117,6 +124,8 @@ void cViewGridNavigator::SetGridElementData(cGridElement *obj)
 		// set GridDimensions
 		m_pGrid->AddIntToken("columns", m_columns);
 		m_pGrid->AddIntToken("rows", m_rows);
+		m_pGrid->AddIntToken("position", obj->AbsolutePosition);
+		m_pGrid->AddIntToken("totalcount", m_vElements.size());
 	} else {
 		obj->SetPosition(x, y);
 		m_pGrid->MoveGrid(obj->GridElementId(), x, y, width, height);
@@ -135,7 +144,7 @@ bool cViewGridNavigator::NavigateDown()
 	if (m_activeElementIter == m_vElements.end() - 1) return false;
 	auto next = m_activeElementIter + m_columns;
 	if(next >= m_vElements.end()) next = m_vElements.end()-1;
-	
+
 	// scroll down?
 	if(!(*next)->IsVisible()) {
 		FilterElements(m_columns);
@@ -152,7 +161,7 @@ bool cViewGridNavigator::NavigateUp()
 	if (m_activeElementIter == m_vElements.begin()) return false;
 	auto next = m_activeElementIter - m_columns;
 	if(next < m_vElements.begin()) next = m_vElements.begin();
-	
+
 	//scroll up?
 	if(!(*next)->IsVisible()) {
 		FilterElements(-m_columns);

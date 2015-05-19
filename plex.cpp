@@ -63,13 +63,16 @@ bool cMyPlugin::Start(void)
 	reg.libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
 
 	reg.SetView(viRootView, "root.xml");
-	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgBrowser, "browser");
+	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgCover, "coverbrowser");
+	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgList, "listbrowser");
+	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgDetail, "detailbrowser");
 	reg.SetViewElement(viRootView, verHeader, "header");
 	reg.SetViewElement(viRootView, verBackground, "background");
 	reg.SetViewElement(viRootView, verInfopane, "infopane");
 	reg.SetViewElement(viRootView, verFooter, "footer");
 	reg.SetViewElement(viRootView, verWatch, "time");
 	reg.SetViewElement(viRootView, verMessage, "message");
+	reg.SetViewElement(viRootView, verScrollbar, "scrollbar");
 	/*
 		reg.SetSubView(viRootView, viDetailView, "detail.xml");
 		reg.SetViewElement(viDetailView, vedBackground, "background");

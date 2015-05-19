@@ -6,19 +6,32 @@
 #include "plex.h"
 #include "pictureCache.h"
 
-cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavigator(rootView, rootView->GetViewGrid(eViewGrids::vgBrowser) )
+cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavigator(rootView)
 {
 	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
-	//m_pViewHeader = std::shared_ptr<cViewHeader>( new cViewHeader(rootView->GetViewElement(eViewElementsRoot::verHeader)));
 	m_pHeader = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verHeader));
 	m_pfooter = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
 	m_pInfopane = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verInfopane));
 	m_pWatch = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verWatch));
+	m_pScrollbar = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verScrollbar));
 	m_lastsecond = 0;
 
 	m_pService = NULL;
 	m_pContainer = NULL;
 	m_viewEntryIndex = 0;
+
+	Config *conf = &Config::GetInstance();
+	if(conf->DefaultViewMode == ViewMode::Cover) {
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgCover) ));
+		SetGridDimensions(conf->CoverGridRows, conf->CoverGridColumns);
+	} else if(conf->DefaultViewMode == ViewMode::Detail) {
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgDetail) ));
+		SetGridDimensions(conf->DetailGridRows, conf->DetailGridColumns);
+	} else if(conf->DefaultViewMode == ViewMode::List) {
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgList) ));
+		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
+	}
+
 	SwitchGrid(m_viewEntryIndex);
 	SwitchView();
 }
@@ -52,23 +65,26 @@ void cBrowserGrid::SwitchView(ViewMode mode)
 	Config *conf = &Config::GetInstance();
 	conf->DefaultViewMode = mode;
 	if(conf->DefaultViewMode == ViewMode::Cover) {
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgCover) ));
 		SetGridDimensions(conf->CoverGridRows, conf->CoverGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::Detail) {
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgDetail) ));
 		SetGridDimensions(conf->DetailGridRows, conf->DetailGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::List) {
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgList) ));
 		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
 	}
 
 	int activePos = SelectedObject()->AbsolutePosition;
 	//ProcessData();
-	
+
 	for(std::vector<cGridElement*>::iterator it = m_vElements.begin(); it != m_vElements.end(); ++it) {
 		cGridElement *elem = *it;
 		elem->Position = -1;
 		elem->Dirty();
 		elem->SetPosition(-1,-1);
 	}
-	
+
 	m_pGrid->Clear();
 	m_firstElementIter = m_vElements.begin() + activePos;
 	m_setIterator = true;
@@ -155,13 +171,13 @@ void cBrowserGrid::ProcessData()
 			}
 		}
 	}
-	
+
 	int pos = 0;
 	for(std::vector<cGridElement*>::iterator it = m_vElements.begin(); it != m_vElements.end(); ++it) {
 		cGridElement *elem = *it;
 		elem->AbsolutePosition = pos++;
 	}
-	
+
 	m_firstElementIter = m_vElements.begin();
 
 	m_pGrid->Clear();
@@ -222,7 +238,7 @@ void cBrowserGrid::DrawGrid()
 void cBrowserGrid::DrawBackground()
 {
 	m_pBackground->ClearTokens();
-	
+
 	auto video = dynamic_cast<plexclient::Video*>(SelectedObject());
 	if(video) {
 		bool cached = false;
@@ -309,6 +325,29 @@ void cBrowserGrid::DrawFooter()
 	}
 
 	m_pfooter->Display();
+}
+
+void cBrowserGrid::DrawScrollbar()
+{
+	/*
+	if (m_vElements.size() == 0)
+		return;
+	int scrollBarHeight = (double)m_rows / (double)m_vElements.size() * 1000;
+
+	// in welcher Zeile sind wir?
+	int currentRow = SelectedObject()->AbsolutePosition / m_columns;
+
+	int offset = (double)startPos / (double)m_vElements.size() * 1000;
+	m_pScrollbar->Clear();
+	m_pScrollbar->ClearTokens();
+
+	int y = (100 - GetHeight())/2;
+
+	m_pScrollbar->AddIntToken("posy", y);
+	m_pScrollbar->AddIntToken("totalheight", menuHeight);
+	m_pScrollbar->AddIntToken("height", scrollBarHeight);
+	m_pScrollbar->AddIntToken("offset", offset);
+	m_pScrollbar->Display();*/
 }
 
 void cBrowserGrid::NextTab()

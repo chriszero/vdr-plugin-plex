@@ -51,9 +51,10 @@ protected:
 	void GenerateServerElements();
 	void FilterElements(int scrollOffset);
 	void SetGridElementData(cGridElement *obj);
+	void SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid> grid);
 	
 public:
-	cViewGridNavigator(skindesignerapi::cOsdView* rootView, skindesignerapi::cViewGrid* viewGrid);
+	cViewGridNavigator(skindesignerapi::cOsdView* rootView);
 	void SetGridDimensions(int rows, int columns);
 	virtual void Flush() { m_pGrid->Display(); };
 	virtual void Clear() { m_pGrid->Clear(); };

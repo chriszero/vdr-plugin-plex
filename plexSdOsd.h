@@ -31,11 +31,14 @@ enum eViewElementsRoot {
 	verFooter,
 	verInfopane,
 	verWatch,
-	verMessage
+	verMessage,
+	verScrollbar
 };
 
 enum eViewGrids {
-	vgBrowser
+	vgCover,
+	vgDetail,
+	vgList
 };
 
 enum eViewElementsDetail {
