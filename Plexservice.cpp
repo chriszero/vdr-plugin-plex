@@ -3,6 +3,7 @@
 #include "PlexHelper.h"
 #include "plexgdm.h"
 #include <memory>
+#include <Poco/Net/NetException.h>
 
 namespace plexclient
 {
@@ -72,7 +73,7 @@ void Plexservice::Authenticate()
 	try {
 		std::string token = GetMyPlexToken();
 		auto pRequest = CreateRequest("/?X-Plex-Token=" + token);
-		
+
 		Poco::Net::HTTPClientSession session(pServer->GetIpAdress(), pServer->GetPort());
 		session.sendRequest(*pRequest);
 		Poco::Net::HTTPResponse response;
@@ -114,11 +115,12 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		dsyslog("[plex] URI: http://%s:%d%s", pServer->GetIpAdress().c_str(), pServer->GetPort(), uri.c_str());
 
 		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, pServer));
-		
+
 		session.abort();
 		return pAllsections;
 
-	} catch (Poco::Exception &exc) {
+	} catch (Poco::Net::NetException &exc) {
+		pServer->Offline = true;
 		return 0;
 	}
 }
@@ -136,7 +138,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetLastSection(bool current)
 	return NULL;
 }
 
-bool Plexservice::IsRoot() 
+bool Plexservice::IsRoot()
 {
 	return m_vUriStack.size() <= 1;
 }
@@ -158,22 +160,26 @@ std::unique_ptr<Poco::Net::HTTPRequest> Plexservice::CreateRequest(std::string p
 	return pRequest;
 }
 
-MediaContainer Plexservice::GetMediaContainer(std::string fullUrl)
+std::shared_ptr<MediaContainer> Plexservice::GetMediaContainer(std::string fullUrl)
 {
-	Poco::URI fileuri(fullUrl);
-	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
-	PlexHelper::AddHttpHeader(request);
+	try {
+		Poco::URI fileuri(fullUrl);
+		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
+		PlexHelper::AddHttpHeader(request);
 
-	Poco::Net::HTTPClientSession session(fileuri.getHost(), fileuri.getPort());
+		Poco::Net::HTTPClientSession session(fileuri.getHost(), fileuri.getPort());
 
-	session.sendRequest(request);
-	Poco::Net::HTTPResponse response;
-	std::istream &rs = session.receiveResponse(response);
+		session.sendRequest(request);
+		Poco::Net::HTTPResponse response;
+		std::istream &rs = session.receiveResponse(response);
 
-	MediaContainer allsections(&rs, plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort()));
-	
-	session.abort();
-	return allsections;
+		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort())));
+
+		session.abort();
+		return pAllsections;
+	} catch (Poco::Net::NetException &exc) {
+		return 0;
+	}
 }
 
 std::string Plexservice::encode(std::string message)

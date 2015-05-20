@@ -62,6 +62,9 @@ void cBrowserGrid::Flush()
 
 void cBrowserGrid::SwitchView(ViewMode mode)
 {
+	auto selObj = SelectedObject();
+	if(!selObj) return;
+	
 	Config *conf = &Config::GetInstance();
 	conf->DefaultViewMode = mode;
 	if(conf->DefaultViewMode == ViewMode::Cover) {
@@ -74,8 +77,8 @@ void cBrowserGrid::SwitchView(ViewMode mode)
 		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgList) ));
 		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
 	}
-
-	int activePos = SelectedObject()->AbsolutePosition;
+	
+	int activePos = selObj->AbsolutePosition;
 	//ProcessData();
 
 	for(std::vector<cGridElement*>::iterator it = m_vElements.begin(); it != m_vElements.end(); ++it) {
@@ -111,25 +114,31 @@ void cBrowserGrid::SwitchGrid(int index)
 	m_pHeader->Clear();
 	m_pHeader->ClearTokens();
 
-	if(m_viewEntryIndex < Config::GetInstance().m_viewentries.size()) {
-		ViewEntry entry = Config::GetInstance().m_viewentries[index];
-		m_pHeader->AddStringToken("tabname", tr(entry.Name.c_str()));
-		m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), entry.PlexPath ) );
-		m_pContainer = m_pService->GetSection(m_pService->StartUri);
-		m_bServersAreRoot = false;
-		m_vServerElements.clear();
+	if(plexclient::plexgdm::GetInstance().GetFirstServer()) {
+		if(m_viewEntryIndex < Config::GetInstance().m_viewentries.size()) {
+			ViewEntry entry = Config::GetInstance().m_viewentries[index];
+			m_pHeader->AddStringToken("tabname", tr(entry.Name.c_str()));
+			m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), entry.PlexPath ) );
+			m_pContainer = m_pService->GetSection(m_pService->StartUri);
+			m_bServersAreRoot = false;
+			m_vServerElements.clear();
+		} else {
+			//Server View
+			m_pHeader->AddStringToken("tabname", tr("Library"));
+			m_pService = NULL;
+			m_pContainer = NULL;
+			m_bServersAreRoot = true;
+			SetServerElements();
+		}
 	} else {
-		//Server View
-		m_pHeader->AddStringToken("tabname", tr("Library"));
+		m_pHeader->AddStringToken("tabname", tr("No Plex Media Server found."));
+		m_pInfopane->AddStringToken("title", tr("No Plex Media Server found."));
 		m_pService = NULL;
 		m_pContainer = NULL;
-		m_bServersAreRoot = true;
-		SetServerElements();
 	}
-
 	ProcessData();
-
-	SelectedObject()->AddTokens(m_pHeader, false);
+	auto selObj = SelectedObject();
+	if(selObj) selObj->AddTokens(m_pHeader, false);
 }
 
 void cBrowserGrid::SetServerElements()
@@ -254,7 +263,7 @@ void cBrowserGrid::DrawBackground()
 void cBrowserGrid::DrawInfopane()
 {
 	m_pInfopane->Clear();
-	SelectedObject()->AddTokens(m_pInfopane, true);
+	if(SelectedObject())	SelectedObject()->AddTokens(m_pInfopane, true);
 }
 
 void cBrowserGrid::DrawFooter()
@@ -410,12 +419,21 @@ bool cBrowserGrid::DrawTime()
  * cDummyElement
  */
 
+cDummyElement::cDummyElement()
+{
+	m_title = "../";
+}
+
+cDummyElement::cDummyElement(std::string title)
+{
+	m_title = title;
+}
+
 void cDummyElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
 	grid->AddIntToken("isdummy", 1);
-	grid->AddStringToken("title", "../");
-	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
+	grid->AddStringToken("title", m_title);
 }
 
 std::string cDummyElement::GetTitle()

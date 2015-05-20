@@ -161,6 +161,7 @@ void plexgdm::discover()
 				if(s_it->GetIpAdress() == host) {
 					flag = false;
 					s_it->ParseData(data, host);
+					isyslog("[plex] Server Updated: %s", host.c_str());
 				}
 			}
 			if(flag) {
@@ -193,7 +194,7 @@ PlexServer* plexgdm::GetServer(std::string ip, int port)
 
 PlexServer* plexgdm::GetFirstServer()
 {
-	if(m_vServers.size() > 0) return &m_vServers[0];
+	if(m_vServers.size() > 0 && !m_vServers[0].Offline) return &m_vServers[0];
 	else return NULL;
 }
 

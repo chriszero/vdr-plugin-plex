@@ -13,7 +13,12 @@
 
 class cDummyElement : public cGridElement
 {
+private:
+	std::string m_title;
+	
 public:
+	cDummyElement(std::string title);
+	cDummyElement();
 	virtual std::string GetTitle();
 	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
 };

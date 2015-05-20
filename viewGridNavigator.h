@@ -65,7 +65,7 @@ public:
 	virtual eOSState NavigateSelect() = 0;
 	virtual eOSState NavigateBack() = 0;
 	virtual void ReDraw(cGridElement* element);
-	cGridElement* SelectedObject() { return *m_activeElementIter; }
+	cGridElement* SelectedObject();
 };
 
 #endif // cViewGridNAVIGATOR_H

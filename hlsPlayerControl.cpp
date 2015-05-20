@@ -23,11 +23,12 @@ cControl* cHlsPlayerControl::Create(plexclient::Video Video)
 
 	// get Metadata
 	std::string uri = Video.m_pServer->GetUri() + Video.m_sKey;
-	plexclient::MediaContainer pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
-
-	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer.m_vVideos[0], Video.m_iMyPlayOffset);
-	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, pmcontainer.m_vVideos[0], Video.m_iMyPlayOffset), pmcontainer.m_vVideos[0]);
-	playerControl->m_title = pmcontainer.m_vVideos[0].m_sTitle;
+	auto pmcontainer = plexclient::Plexservice::GetMediaContainer(uri);
+	if(pmcontainer == NULL) return NULL;
+	
+	std::string transcodeUri =  plexclient::Plexservice::GetUniversalTranscodeUrl(&pmcontainer->m_vVideos[0], Video.m_iMyPlayOffset);
+	cHlsPlayerControl* playerControl = new cHlsPlayerControl(new cHlsPlayer(transcodeUri, pmcontainer->m_vVideos[0], Video.m_iMyPlayOffset), pmcontainer->m_vVideos[0]);
+	playerControl->m_title = pmcontainer->m_vVideos[0].m_sTitle;
 	return playerControl;
 }
 

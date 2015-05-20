@@ -14,6 +14,7 @@ void PlexServer::ParseData(std::string data, std::string ip)
 	m_sIpAddress = ip;
 	std::istringstream f(data);
 	std::string s;
+	Offline = false;
 	while(std::getline(f, s)) {
 		int pos = s.find(':');
 		if(pos > 0) {

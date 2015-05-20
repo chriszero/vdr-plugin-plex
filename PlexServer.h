@@ -60,6 +60,7 @@ public:
 	std::string GetUri();
 
 	void DiscoverSettings();
+	bool Offline;
 
 protected:
 	PlexServer(std::string data, std::string ip);

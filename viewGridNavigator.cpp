@@ -51,6 +51,8 @@ void cViewGridNavigator::ReDraw(cGridElement* element)
 
 void cViewGridNavigator::FilterElements(int scrollOffset)
 {
+	if(m_vElements.size() == 0) return;
+
 	int startOffset = scrollOffset;
 	int endOffset = startOffset + (m_rows * m_columns);
 	if(scrollOffset < 0) {
@@ -130,6 +132,13 @@ void cViewGridNavigator::SetGridElementData(cGridElement *obj)
 		obj->SetPosition(x, y);
 		m_pGrid->MoveGrid(obj->GridElementId(), x, y, width, height);
 	}
+}
+
+cGridElement* cViewGridNavigator::SelectedObject()
+{
+	if(!m_setIterator) 
+		return *m_activeElementIter;
+	return NULL;
 }
 
 void cViewGridNavigator::SetGridDimensions(int rows, int columns)

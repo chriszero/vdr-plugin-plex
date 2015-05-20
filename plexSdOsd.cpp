@@ -64,12 +64,13 @@ void cPlexSdOsd::Flush()
 eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
-	plexclient::Video* vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+	plexclient::Video* vid = NULL;
 
 	if (m_pBrowserGrid->DrawTime())
 		m_pBrowserGrid->Flush();
 
 	if(m_messageDisplayed) {
+		vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
 		switch (Key & ~k_Repeat) {
 		case kOk:
 			vid->m_iMyPlayOffset = vid->m_lViewoffset/1000;
@@ -111,6 +112,7 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 			Flush();
 			break;
 		case kRed:
+			vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
 			if(vid) {
 				if(vid->m_iViewCount > 0) vid->SetUnwatched();
 				else vid->SetWatched();
@@ -133,6 +135,7 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 	}
 
 	if(state == eOSState::osUser1) {
+		vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
 		if(vid->m_iMyPlayOffset == 0 && vid->m_lViewoffset > 0 ) {
 			cString message = cString::sprintf(tr("'Ok' to start from %ld minutes, 'Back' to start from beginning."), vid->m_lViewoffset / 60000);
 			DrawMessage(std::string(message));
