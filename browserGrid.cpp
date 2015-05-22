@@ -64,7 +64,7 @@ void cBrowserGrid::SwitchView(ViewMode mode)
 {
 	auto selObj = SelectedObject();
 	if(!selObj) return;
-	
+
 	Config *conf = &Config::GetInstance();
 	conf->DefaultViewMode = mode;
 	if(conf->DefaultViewMode == ViewMode::Cover) {
@@ -77,7 +77,7 @@ void cBrowserGrid::SwitchView(ViewMode mode)
 		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgList) ));
 		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
 	}
-	
+
 	int activePos = selObj->AbsolutePosition;
 	//ProcessData();
 
@@ -113,6 +113,9 @@ void cBrowserGrid::SwitchGrid(int index)
 
 	m_pHeader->Clear();
 	m_pHeader->ClearTokens();
+	m_pHeader->AddIntToken("columns", m_columns);
+	m_pHeader->AddIntToken("rows", m_rows);
+	m_pHeader->AddIntToken("totalcount", m_vElements.size());
 
 	if(plexclient::plexgdm::GetInstance().GetFirstServer()) {
 		if(m_viewEntryIndex < Config::GetInstance().m_viewentries.size()) {
@@ -138,7 +141,10 @@ void cBrowserGrid::SwitchGrid(int index)
 	}
 	ProcessData();
 	auto selObj = SelectedObject();
-	if(selObj) selObj->AddTokens(m_pHeader, false);
+	if(selObj) {
+		selObj->AddTokens(m_pHeader, false);
+		m_pHeader->AddIntToken("position", selObj->AbsolutePosition);
+	}
 }
 
 void cBrowserGrid::SetServerElements()
@@ -263,7 +269,13 @@ void cBrowserGrid::DrawBackground()
 void cBrowserGrid::DrawInfopane()
 {
 	m_pInfopane->Clear();
-	if(SelectedObject())	SelectedObject()->AddTokens(m_pInfopane, true);
+	if(SelectedObject()) {
+		SelectedObject()->AddTokens(m_pInfopane, true);
+		m_pInfopane->AddIntToken("columns", m_columns);
+		m_pInfopane->AddIntToken("rows", m_rows);
+		m_pInfopane->AddIntToken("totalcount", m_vElements.size());
+		m_pInfopane->AddIntToken("position", SelectedObject()->AbsolutePosition);
+	}
 }
 
 void cBrowserGrid::DrawFooter()

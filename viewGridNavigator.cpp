@@ -121,13 +121,13 @@ void cViewGridNavigator::SetGridElementData(cGridElement *obj)
 		// fill data
 		obj->SetPosition(x, y);
 		obj->AddTokens(m_pGrid, true, std::bind(&cViewGridNavigator::ReDraw, this, std::placeholders::_1));
-		m_pGrid->SetGrid(obj->GridElementId(), x, y, width, height);
-		obj->InitFinished();
 		// set GridDimensions
 		m_pGrid->AddIntToken("columns", m_columns);
 		m_pGrid->AddIntToken("rows", m_rows);
 		m_pGrid->AddIntToken("position", obj->AbsolutePosition);
 		m_pGrid->AddIntToken("totalcount", m_vElements.size());
+		m_pGrid->SetGrid(obj->GridElementId(), x, y, width, height);
+		obj->InitFinished();
 	} else {
 		obj->SetPosition(x, y);
 		m_pGrid->MoveGrid(obj->GridElementId(), x, y, width, height);
