@@ -202,6 +202,7 @@ void cBrowserGrid::ProcessData()
 
 eOSState cBrowserGrid::NavigateSelect()
 {
+	if(m_setIterator) return eOSState::osContinue;;
 	plexclient::Directory* dir = dynamic_cast<plexclient::Directory*>(SelectedObject());
 	if(dir) {
 		m_pContainer = m_pService->GetSection(dir->m_sKey);
@@ -222,6 +223,7 @@ eOSState cBrowserGrid::NavigateSelect()
 
 eOSState cBrowserGrid::NavigateBack()
 {
+	if(m_setIterator) return eOSState::osContinue;;
 	std::shared_ptr<plexclient::MediaContainer> pCont = NULL;
 	if(m_pService) {
 		pCont = m_pService->GetLastSection();

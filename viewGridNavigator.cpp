@@ -152,7 +152,7 @@ void cViewGridNavigator::SetGridDimensions(int rows, int columns)
 
 bool cViewGridNavigator::NavigateDown()
 {
-	if (m_activeElementIter == m_vElements.end() - 1) return false;
+	if (m_setIterator || m_activeElementIter == m_vElements.end() - 1) return false;
 	auto next = m_activeElementIter + m_columns;
 	if(next >= m_vElements.end()) next = m_vElements.end()-1;
 
@@ -169,7 +169,7 @@ bool cViewGridNavigator::NavigateDown()
 
 bool cViewGridNavigator::NavigateUp()
 {
-	if (m_activeElementIter == m_vElements.begin()) return false;
+	if (m_setIterator || m_activeElementIter == m_vElements.begin()) return false;
 	auto next = m_activeElementIter - m_columns;
 	if(next < m_vElements.begin()) next = m_vElements.begin();
 
@@ -186,7 +186,7 @@ bool cViewGridNavigator::NavigateUp()
 
 bool cViewGridNavigator::NavigateLeft()
 {
-	if (m_activeElementIter == m_vElements.begin()) return false;
+	if (m_setIterator || m_activeElementIter == m_vElements.begin()) return false;
 	auto next = m_activeElementIter - 1;
 	if(next < m_vElements.begin()) next = m_vElements.begin();
 
@@ -204,7 +204,7 @@ bool cViewGridNavigator::NavigateLeft()
 
 bool cViewGridNavigator::NavigateRight()
 {
-	if (m_activeElementIter == m_vElements.end() - 1) return false;
+	if (m_setIterator || m_activeElementIter == m_vElements.end() - 1) return false;
 	auto next = m_activeElementIter + 1;
 	if(next >= m_vElements.end()) next = m_vElements.end()-1;
 

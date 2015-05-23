@@ -69,6 +69,22 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 	if (m_pBrowserGrid->DrawTime())
 		m_pBrowserGrid->Flush();
 
+	//check if some plexservers are online
+	if(plexclient::plexgdm::GetInstance().GetFirstServer() == NULL ||
+	   (plexclient::plexgdm::GetInstance().GetFirstServer() && plexclient::plexgdm::GetInstance().GetFirstServer()->Offline)
+	  ) {
+		DrawMessage(std::string(tr("No Plex Media Server found.")));
+		
+		switch (Key & ~k_Repeat) {
+		case kOk:
+		case kBack:
+			return eOSState::osEnd;
+			break;
+		default:
+			return eOSState::osContinue;
+		}
+	}
+
 	if(m_messageDisplayed) {
 		vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
 		switch (Key & ~k_Repeat) {
