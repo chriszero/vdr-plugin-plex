@@ -232,7 +232,7 @@ eOSState cBrowserGrid::NavigateBack()
 		ProcessData();
 		return eOSState::osContinue;
 
-	} else if(m_bServersAreRoot) {
+	} else if(m_bServersAreRoot && m_pService) {
 		m_pContainer = NULL;
 		m_pService = NULL;
 		SetServerElements();
