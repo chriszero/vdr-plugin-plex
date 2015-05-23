@@ -42,6 +42,8 @@ void cViewGridNavigator::ReDraw(cGridElement* element)
 		double x, y;
 		element->GetPosition(x, y);
 		element->AddTokens(m_pGrid);
+		m_pGrid->AddIntToken("columns", m_columns);
+		m_pGrid->AddIntToken("rows", m_rows);
 		double width = 1.0 / m_columns;
 		double height = 1.0 / m_rows;
 		m_pGrid->SetGrid(element->GridElementId(), x, y, width, height);
