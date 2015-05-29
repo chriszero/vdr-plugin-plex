@@ -19,6 +19,7 @@ cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavig
 	m_pService = NULL;
 	m_pContainer = NULL;
 	m_viewEntryIndex = 0;
+	m_redrawBackground = true;
 
 	Config *conf = &Config::GetInstance();
 	if(conf->DefaultViewMode == ViewMode::Cover) {
@@ -53,10 +54,14 @@ void cBrowserGrid::Clear()
 
 void cBrowserGrid::Flush()
 {
+	if(m_redrawBackground){
+		m_pBackground->Display();
+		m_redrawBackground = false;
+	}
+	
 	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
-	m_pBackground->Display();
-	m_pInfopane->Display();
 	m_pGrid->Display();
+
 	m_pRootView->Display();
 }
 
@@ -145,6 +150,8 @@ void cBrowserGrid::SwitchGrid(int index)
 		selObj->AddTokens(m_pHeader, false);
 		m_pHeader->AddIntToken("position", selObj->AbsolutePosition);
 	}
+	
+	DrawBackground();
 }
 
 void cBrowserGrid::SetServerElements()
@@ -246,7 +253,6 @@ eOSState cBrowserGrid::NavigateBack()
 
 void cBrowserGrid::DrawGrid()
 {
-	DrawBackground();
 	m_pHeader->Display();
 	DrawInfopane();
 	DrawFooter();
@@ -254,15 +260,16 @@ void cBrowserGrid::DrawGrid()
 
 void cBrowserGrid::DrawBackground()
 {
+	m_redrawBackground = true;
 	m_pBackground->ClearTokens();
 
-	auto video = dynamic_cast<plexclient::Video*>(SelectedObject());
+	/*auto video = dynamic_cast<plexclient::Video*>(SelectedObject());
 	if(video) {
 		bool cached = false;
 		std::string path = cPictureCache::GetInstance().GetPath(video->ArtUri(), 1920, 1080, cached);
 		m_pBackground->AddStringToken("selecteditembackground", path);
 	}
-
+	*/
 	m_pBackground->AddIntToken("isdirectory", 1);
 	m_pBackground->AddStringToken("currentdirectorybackground", "/path");
 	m_pBackground->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
@@ -278,6 +285,7 @@ void cBrowserGrid::DrawInfopane()
 		m_pInfopane->AddIntToken("totalcount", m_vElements.size());
 		m_pInfopane->AddIntToken("position", SelectedObject()->AbsolutePosition);
 	}
+	m_pInfopane->Display();
 }
 
 void cBrowserGrid::DrawFooter()

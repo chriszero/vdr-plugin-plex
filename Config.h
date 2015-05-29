@@ -69,8 +69,8 @@ public:
 	std::string GetPassword();
 	int ThumbHeight() { return 1080 / CoverGridRows; };
 	int ThumbWidth() { return 1920 / CoverGridColumns; };
-	int ArtHeight() { return 1080; };
-	int ArtWidth() { return 1920; };
+	int ArtHeight() { return 1080 / 4; };
+	int ArtWidth() { return 1920 / 4; };
 	int BannerHeight() { return 1080 / 2; };
 	int BannerWidth() { return 1920 / 2; };
 	

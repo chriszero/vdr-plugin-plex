@@ -49,6 +49,7 @@ private:
 	std::shared_ptr<skindesignerapi::cViewElement> m_pWatch;
 	int m_lastsecond;
 	int m_viewEntryIndex;
+	bool m_redrawBackground;
 
 	bool m_bServersAreRoot;
 	std::vector<cServerElement> m_vServerElements;
