@@ -84,6 +84,8 @@ MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 			type = SEASON;
 		} else if (Poco::icompare(sType, "episode") == 0) {
 			type = EPISODE;
+		} else if (Poco::icompare(sType, "clip") == 0) {
+			type = CLIP;
 		}
 	}
 	return type;

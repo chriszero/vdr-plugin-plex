@@ -240,7 +240,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddIntToken("hasart", cached);
 	if (cached)	grid->AddStringToken("art", art);
 
-	if(m_tType == MediaType::MOVIE) {
+	if(m_tType == MediaType::MOVIE || m_tType == MediaType::CLIP) {
 		grid->AddIntToken("ismovie", true);
 	}
 
