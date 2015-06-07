@@ -7,16 +7,16 @@
 #include <Poco/StringTokenizer.h>
 #include <Poco/URI.h>
 #include <Poco/Exception.h>
-#include <Poco/Net/HTTPStreamFactory.h>
 #include "plexSdOsd.h"
 #include "PVideo.h"
 #include "Directory.h"
+#include "plexgdm.h"
+#include "PlexServer.h"
 
 using Poco::URIStreamOpener;
 using Poco::StreamCopier;
 using Poco::Path;
 using Poco::Exception;
-using Poco::Net::HTTPStreamFactory;
 
 cPictureCache::cPictureCache()
 {
@@ -25,7 +25,6 @@ cPictureCache::cPictureCache()
 	Poco::Path path(m_cacheDir);
 	Poco::File f(path.toString());
 	f.createDirectories();
-	HTTPStreamFactory::registerFactory();
 	m_bAllInvalidated = false;
 }
 
@@ -39,11 +38,9 @@ void cPictureCache::Action()
 			std::string transcodeUri = TranscodeUri(info.uri, info.width, info.height);
 			std::string file = FileName(info.uri, info.width);
 			if(!Cached(info.uri, info.width)) {
-				auto stream = DownloadFile(transcodeUri);
-				if(stream) {
-					SaveFileToDisk(stream, file);
+				if(DownloadFileAndSave(transcodeUri, file)) {
 					LOCK_THREAD;
-					if (!m_bAllInvalidated && info.onCached && info.calle && info.calle->IsVisible()) { 
+					if (!m_bAllInvalidated && info.onCached && info.calle && info.calle->IsVisible()) {
 						info.onCached(info.calle);
 					}
 				}
@@ -54,30 +51,43 @@ void cPictureCache::Action()
 	}
 }
 
-std::shared_ptr<std::istream> cPictureCache::DownloadFile(std::string uri)
+bool cPictureCache::DownloadFileAndSave(std::string Uri, std::string localFile)
 {
 	try {
-		std::shared_ptr<std::istream> pStream(URIStreamOpener::defaultOpener().open(uri));
-		return pStream;
-	} catch (Poco::Exception &exc) {
-		return NULL;
-	}
-}
+		Poco::URI fileUri(Uri);
+		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileUri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
 
-void cPictureCache::SaveFileToDisk(std::shared_ptr<std::istream> file, std::string fileName)
-{
-	try {
+		Poco::Net::HTTPClientSession session(fileUri.getHost(), fileUri.getPort());
+		session.sendRequest(request);
+		Poco::Net::HTTPResponse response;
+		std::istream &rs = session.receiveResponse(response);
+
+		if (response.getStatus() != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK)
+			return false;
+
+		std::string type = response.getContentType();
+		std::string fileName = localFile;
+	
+		if(type == "image/png" || fileUri.getPathAndQuery().find(".png") != std::string::npos) {
+			fileName += ".png";
+		}
+		else if(type == "image/jpeg" || fileUri.getPathAndQuery().find(".jpg") != std::string::npos) {
+			fileName += ".jpg";
+		}
+		
 		Poco::Path p(fileName);
 		Poco::File f(p.makeParent().toString());
 		f.createDirectories();
-		
+
 		std::ofstream outFile;
 		outFile.open(fileName);
-		Poco::StreamCopier::copyStream(*file, outFile);
+		Poco::StreamCopier::copyStream(rs, outFile);
 		outFile.close();
+		return true;
 	} catch (Poco::Exception &exc) {
-		std::cout << "SaveFile Error: " << exc.displayText() << std::endl;
+		return false;
 	}
+
 }
 
 std::string cPictureCache::FileName(std::string uri, int width)
@@ -97,13 +107,20 @@ std::string cPictureCache::TranscodeUri(std::string uri, int width, int height)
 	Poco::URI::encode(uri, " !\"#$%&'()*+,/:;=?@[]", escapedUri);
 	Poco::URI u(uri);
 	int port = u.getPort();
-	std::string tUri = Poco::format("http://%s:%d/photo/:/transcode?width=%d&height=%d&url=%s", u.getHost(), port, width, height, escapedUri);
+	std::string host = u.getHost();
+	auto plServer = plexclient::plexgdm::GetInstance().GetFirstServer();
+	if (plServer) {
+		host = plServer->GetIpAdress();
+		port = plServer->GetPort();
+	}
+	
+	std::string tUri = Poco::format("http://%s:%d/photo/:/transcode?width=%d&height=%d&url=%s", host, port, width, height, escapedUri);
 	return tUri;
 }
 
 bool cPictureCache::Cached(std::string uri, int width)
 {
-	return Poco::File(FileName(uri, width)).exists();
+	return Poco::File(FileName(uri, width) + ".jpg").exists() || Poco::File(FileName(uri, width) + ".png").exists();
 }
 
 std::string cPictureCache::GetPath(std::string uri, int width, int height, bool& cached, std::function<void(cGridElement*)> OnCached, cGridElement* calle)
@@ -112,6 +129,12 @@ std::string cPictureCache::GetPath(std::string uri, int width, int height, bool&
 	cached = Cached(uri, width);
 	std::string file = FileName(uri, width);
 	if(cached) {
+		if(Poco::File(FileName(uri, width) + ".jpg").exists()) {
+			file += ".jpg";
+		} else if(Poco::File(FileName(uri, width) + ".png").exists()) {
+			file += ".png";
+		}
+		std::cout << "Cached file: " << file << std::endl;
 		return file;
 	} else {
 		CacheInfo info(uri, width, height, OnCached, calle);

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-05-17 20:27+0200\n"
+"POT-Creation-Date: 2015-06-05 20:35+0200\n"
 "PO-Revision-Date: 2015-05-17 20:51+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,6 +20,9 @@ msgstr ""
 
 msgid "Library"
 msgstr "Bibliothek"
+
+msgid "No Plex Media Server found."
+msgstr "Kein Plexmediaserver gefunden."
 
 msgid "Switch View"
 msgstr "Ansicht wechseln"
@@ -120,9 +123,6 @@ msgstr "%s - Bilbliotek"
 #, c-format
 msgid "%s - Video Channels"
 msgstr "%s - Video Kanäle"
-
-msgid "No Plex Media Server found."
-msgstr "Kein Plexmediaserver gefunden."
 
 msgid "Browse Plex"
 msgstr "Durchsuche Plex"

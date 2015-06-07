@@ -41,10 +41,9 @@ private:
 	volatile bool m_bAllInvalidated;
 
 	std::string FileName(std::string uri, int width);
-
-	std::shared_ptr<std::istream> DownloadFile(std::string uri);
-	void SaveFileToDisk(std::shared_ptr<std::istream> file, std::string fileName);
 	std::string TranscodeUri(std::string uri, int width, int height);
+
+	bool DownloadFileAndSave(std::string uri, std::string localFile);
 
 	std::string m_cacheDir;
 
