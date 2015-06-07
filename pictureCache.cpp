@@ -37,12 +37,14 @@ void cPictureCache::Action()
 
 			std::string transcodeUri = TranscodeUri(info.uri, info.width, info.height);
 			std::string file = FileName(info.uri, info.width);
+			bool ok = true;
 			if(!Cached(info.uri, info.width)) {
-				if(DownloadFileAndSave(transcodeUri, file)) {
-					LOCK_THREAD;
-					if (!m_bAllInvalidated && info.onCached && info.calle && info.calle->IsVisible()) {
-						info.onCached(info.calle);
-					}
+				ok = DownloadFileAndSave(transcodeUri, file);
+			}
+			if(ok) {
+				LOCK_THREAD;
+				if (!m_bAllInvalidated && info.onCached && info.calle && info.calle->IsVisible()) {
+					info.onCached(info.calle);
 				}
 			}
 			cCondWait::SleepMs(5);
@@ -67,14 +69,24 @@ bool cPictureCache::DownloadFileAndSave(std::string Uri, std::string localFile)
 
 		std::string type = response.getContentType();
 		std::string fileName = localFile;
-	
-		if(type == "image/png" || fileUri.getPathAndQuery().find(".png") != std::string::npos) {
-			fileName += ".png";
+
+		// check filetype
+		char buffer[2];
+		rs.read(buffer, 2);
+		bool isPng = false;
+		
+		if(buffer[0] == char(0x89) && buffer[1]  == char(0x50) ) {
+			isPng = true;
 		}
-		else if(type == "image/jpeg" || fileUri.getPathAndQuery().find(".jpg") != std::string::npos) {
+		rs.putback(buffer[1]);
+		rs.putback(buffer[0]);
+
+		if(isPng) {
+			fileName += ".png";
+		} else if(type == "image/jpeg" || fileUri.getPathAndQuery().find(".jpg") != std::string::npos) {
 			fileName += ".jpg";
 		}
-		
+
 		Poco::Path p(fileName);
 		Poco::File f(p.makeParent().toString());
 		f.createDirectories();
@@ -113,7 +125,7 @@ std::string cPictureCache::TranscodeUri(std::string uri, int width, int height)
 		host = plServer->GetIpAdress();
 		port = plServer->GetPort();
 	}
-	
+
 	std::string tUri = Poco::format("http://%s:%d/photo/:/transcode?width=%d&height=%d&url=%s", host, port, width, height, escapedUri);
 	return tUri;
 }
@@ -134,7 +146,7 @@ std::string cPictureCache::GetPath(std::string uri, int width, int height, bool&
 		} else if(Poco::File(FileName(uri, width) + ".png").exists()) {
 			file += ".png";
 		}
-		std::cout << "Cached file: " << file << std::endl;
+		
 		return file;
 	} else {
 		CacheInfo info(uri, width, height, OnCached, calle);
