@@ -61,6 +61,8 @@ public:
 	std::vector<ViewEntry> m_viewentries;
 	std::vector<ViewEntry> m_serverViewentries;
 	
+	bool UseMpv;
+	
 	std::string GetUUID();
 	void SetUUID(const char* uuid);
 	std::string GetHostname();
@@ -110,6 +112,7 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int ListGridColumns;
 	int ListGridRows;
 	int DefaultViewMode;
+	int UseMpv;
 
     virtual void Store(void);
 

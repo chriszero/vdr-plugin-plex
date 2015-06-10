@@ -4,6 +4,7 @@
 #include "plexOsd.h"
 #include "plexSdOsd.h"
 #include "pictureCache.h"
+#include "services.h"
 
 #include <libskindesignerapi/skindesignerapi.h>
 
@@ -167,6 +168,20 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 */
 void cMyPlugin::PlayFile(plexclient::Video Vid)
 {
+	cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
+
+	if(Config::GetInstance().UseMpv && mpvPlugin) {
+		Play_StartPlayService_v1_0_t req;
+		char* file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
+		req.Filename = file;
+		//req.Title = &Vid.GetTitle().c_str();
+		mpvPlugin->Service(PLAY_START_PLAY_SERVICE, &req);
+
+	} else if (Config::GetInstance().UseMpv) {
+		isyslog("Can't find mpv %s, playing directly.", mpvPlugin ? "service" : "plugin");
+	}
+
+
 	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
 	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
 		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);

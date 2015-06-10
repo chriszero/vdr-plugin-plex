@@ -99,6 +99,7 @@ bool Config::Parse(const char *name, const char *value)
 	else if (strcasecmp(name, "DetailGridRows") == 0) 	Config::GetInstance().DetailGridRows = atoi(value);
 	else if (strcasecmp(name, "ListGridColumns") == 0) 	Config::GetInstance().ListGridColumns = atoi(value);
 	else if (strcasecmp(name, "ListGridRows") == 0) 	Config::GetInstance().ListGridRows = atoi(value);
+	else if (strcasecmp(name, "UseMpv") == 0) 	Config::GetInstance().UseMpv = atoi(value) ? true : false;
 	else parsed = false;
 
 	if(!parsed) {
@@ -144,11 +145,13 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	DetailGridRows = Config::GetInstance().DetailGridRows;
 	ListGridColumns = Config::GetInstance().ListGridColumns;
 	ListGridRows = Config::GetInstance().ListGridRows;
+	UseMpv = Config::GetInstance().UseMpv;
 	
 	DefaultViewMode = Config::GetInstance().DefaultViewMode;
 	
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
+	Add(new cMenuEditBoolItem(tr("Use Mpv Plugin (If Availiable)"), (int*)&UseMpv, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use custom transcoding profile"), (int*)&UseCustomTranscodeProfile, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use Plex account"), (int*)&UsePlexAccount, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditStrItem(tr("Plex Username"), Username, STRING_SIZE));
@@ -194,6 +197,7 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().ListGridColumns = ListGridColumns;
 	Config::GetInstance().ListGridRows = ListGridRows;
 	Config::GetInstance().DefaultViewMode = (ViewMode)DefaultViewMode;
+	Config::GetInstance().UseMpv = UseMpv;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
 	SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
@@ -211,4 +215,5 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("ListGridColumns", Config::GetInstance().ListGridColumns);
 	SetupStore("ListGridRows", Config::GetInstance().ListGridRows);
 	SetupStore("DefaultViewMode", Config::GetInstance().DefaultViewMode);
+	SetupStore("UseMpv", Config::GetInstance().UseMpv);
 }
