@@ -66,6 +66,20 @@ Poco::Timestamp XmlObject::GetNodeValueAsTimeStamp(Poco::XML::Node* pNode)
 	return value;
 }
 
+Poco::DateTime XmlObject::GetNodeValueAsDateTime(Poco::XML::Node* pNode)
+{
+	Poco::DateTime value;
+	if(pNode != 0) {
+		try {
+			std::string format = "%Y-%m-%d";
+			std::string val = pNode->nodeValue();
+			int diff;
+			value = Poco::DateTimeParser::parse(format, val, diff);
+		} catch (Poco::Exception) {}
+	}
+	return value;
+}
+
 MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 {
 	MediaType type = UNDEF;
@@ -98,10 +112,18 @@ StreamType XmlObject::GetNodeValueAsStreamType(Poco::XML::Node* pNode)
 	if(pNode != 0) {
 		int iType = GetNodeValueAsInt(pNode);
 		switch(iType) {
-			case 1: type = sVIDEO; break;
-			case 2: type = sAUDIO; break;
-			case 3: type = sSUBTITLE; break;
-			default: type = sUNDEF; break;
+		case 1:
+			type = sVIDEO;
+			break;
+		case 2:
+			type = sAUDIO;
+			break;
+		case 3:
+			type = sSUBTITLE;
+			break;
+		default:
+			type = sUNDEF;
+			break;
 		}
 	}
 	return type;

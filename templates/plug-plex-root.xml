@@ -67,6 +67,7 @@
 		
 	
 	Following tokens are avaliable if the item is a directory or video
+	{year}						Year of production
 	{hasthumb}					bool
 		{thumb}					string, Image/Cover
 	{hasart}					bool
@@ -79,13 +80,25 @@
 	
 	{isshow}				Condition, Show/Series
 			{summary}			Description, plot, summary
+			{leafCount}		Total leafs, episodes
+			{viewedLeafCount}	viewed Leafs, episodes
+			{childCount}		total childs, seasons
+			{rating}			int, starrating 0.0 - 10.0 multiplied by 10 -> 0 - 100
+			{ratingstring}		string, rating formated as double %.1f
+			{studio}			Studio
+			{roles[actor]}		looptoken
+			{genres[genre]}	looptoken
 	
 	{isseason}				Condition
 			{summary}			Description, plot, summary
+			{seriestitle}		Seriestitle
+			{leafCount}		Total leafs, episodes
+			{viewedLeafCount}	viewed Leafs, episodes
+			{childCount}		total childs, seasons
 	
 	If the item is a video following tokens are avaliable
 	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 
-	{contentrating}		string, FSK, PEGI
+	{contentrating}		string, FSK, PEGI -> eg. de/16
 	{rating}			int, starrating 0.0 - 10.0 multiplied by 10 -> 0 - 100
 	{ratingstring}		string, rating formated as double %.1f
 	{viewoffset}		int, minutes, last viewed position
@@ -93,8 +106,14 @@
 	{orginaltitle}		original title
 	{summary}			Description, plot, summary
 	{studio}			Studio
-	{year}				Year of production
 	{viewCount}			Unseen if less than 1
+	
+	{originallyAvailableYear}		Year of release/first aired
+	{originallyAvailableMonth}	Month of release/first aired
+	{originallyAvailableDay}		Day of release/first aired
+	
+	{roles[actor]}		looptoken
+	{genres[genre]}	looptoken
 	
 	{videoResolution}	string (sd, 720, 1080)
 	{bitrate}			int

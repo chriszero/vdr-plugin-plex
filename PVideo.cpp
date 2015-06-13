@@ -100,23 +100,41 @@ void Video::Parse(Poco::XML::Node* pNode)
 			m_dRating = GetNodeValueAsDouble(pAttribs->getNamedItem("rating"));
 			m_tAddedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("addedAt"));
 			m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
+			m_tOriginallyAvailableAt = GetNodeValueAsDateTime(pAttribs->getNamedItem("originallyAvailableAt"));
 
 			pAttribs->release();
 
 		} else if(Poco::icompare(pChildNode->nodeName(), "Media") == 0) {
 			m_Media = Media(pChildNode);
 		} else if(Poco::icompare(pChildNode->nodeName(), "Genre") == 0) {
-			m_vGenre.push_back(GetNodeValue(pChildNode));
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();			
+			m_vGenre.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
+			pAttribs->release();
+			
 		} else if(Poco::icompare(pChildNode->nodeName(), "Writer") == 0) {
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
 			m_vWriter.push_back(GetNodeValue(pChildNode));
+			pAttribs->release();
+			
 		} else if(Poco::icompare(pChildNode->nodeName(), "Director") == 0) {
-			m_vDirector.push_back(GetNodeValue(pChildNode));
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+			m_vDirector.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
+			pAttribs->release();
+			
 		} else if(Poco::icompare(pChildNode->nodeName(), "Country") == 0) {
-			m_vCountry.push_back(GetNodeValue(pChildNode));
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+			m_vCountry.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
+			pAttribs->release();
+			
 		} else if(Poco::icompare(pChildNode->nodeName(), "Role") == 0) {
-			m_vRole.push_back(GetNodeValue(pChildNode));
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+			m_vRole.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
+			pAttribs->release();
+			
 		} else if(Poco::icompare(pChildNode->nodeName(), "Collection") == 0) {
-			m_sCollection = GetNodeValue(pChildNode);
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+			m_sCollection = GetNodeValue(pAttribs->getNamedItem("tag"));
+			pAttribs->release();
 		}
 		pChildNode = it.nextNode();
 	}
@@ -243,6 +261,22 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	if(m_tType == MediaType::MOVIE || m_tType == MediaType::CLIP) {
 		grid->AddIntToken("ismovie", true);
 	}
+	
+	map<string, string> roles;
+	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
+		roles["actor"] = *it;
+	}
+	grid->AddLoopToken("roles", roles);
+
+	map<string, string> gernes;
+	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
+		roles["genre"] = *it;
+	}
+	grid->AddLoopToken("genres", gernes);
+	
+	grid->AddIntToken("originallyAvailableYear", m_tOriginallyAvailableAt.year());
+	grid->AddIntToken("originallyAvailableMonth", m_tOriginallyAvailableAt.month());
+	grid->AddIntToken("originallyAvailableDay", m_tOriginallyAvailableAt.day());
 
 	if(m_tType == MediaType::EPISODE) {
 		grid->AddIntToken("isepisode", true);

@@ -5,6 +5,8 @@
 
 #include <Poco/DOM/Document.h>
 #include <Poco/Timestamp.h>
+#include <Poco/DateTime.h>
+#include <Poco/DateTimeParser.h>
 #include <Poco/String.h>
 #include <Poco/Exception.h>
 
@@ -23,6 +25,7 @@ protected:
 	static double GetNodeValueAsDouble(Poco::XML::Node* pNode);
 	static bool GetNodeValueAsBool(Poco::XML::Node* pNode);
 	static Poco::Timestamp GetNodeValueAsTimeStamp(Poco::XML::Node* pNode);
+	static Poco::DateTime GetNodeValueAsDateTime(Poco::XML::Node* pNode);
 	static MediaType GetNodeValueAsMediaType(Poco::XML::Node* pNode);
 	static StreamType GetNodeValueAsStreamType(Poco::XML::Node* pNode);
 

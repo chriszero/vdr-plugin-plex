@@ -67,6 +67,7 @@ public:
 	double m_dRating;
 	Poco::Timestamp m_tAddedAt;
 	Poco::Timestamp m_tUpdatedAt;
+	Poco::DateTime m_tOriginallyAvailableAt;
 
 	std::vector<std::string> m_vGenre;
 	std::vector<std::string> m_vWriter;

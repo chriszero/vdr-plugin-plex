@@ -10,31 +10,48 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 {
 	m_pParent = parent;
 	m_pServer = Server;
-	if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
-		Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pNode->attributes();
 
-		m_bAllowSync = GetNodeValueAsBool(pAttribs->getNamedItem("allowSync"));
-		m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
-		m_iLeafCount = GetNodeValueAsInt(pAttribs->getNamedItem("leafCount"));
-		m_iViewedLeafCount = GetNodeValueAsInt(pAttribs->getNamedItem("viewedLeafCount"));
-		m_iChildCount = GetNodeValueAsInt(pAttribs->getNamedItem("childCount"));
-		m_fRating = GetNodeValueAsDouble(pAttribs->getNamedItem("rating"));
-		m_iYear = GetNodeValueAsInt(pAttribs->getNamedItem("year"));
-		m_sArt = GetNodeValue(pAttribs->getNamedItem("art"));
-		m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
-		m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
-		m_sTitle = GetNodeValue(pAttribs->getNamedItem("title"));
-		m_sTitle1 = GetNodeValue(pAttribs->getNamedItem("title1"));
-		m_sTitle2 = GetNodeValue(pAttribs->getNamedItem("title2"));
-		m_sComposite = GetNodeValue(pAttribs->getNamedItem("composite"));
-		m_sLanguage = GetNodeValue(pAttribs->getNamedItem("language"));
-		m_sUuid = GetNodeValue(pAttribs->getNamedItem("uuid"));
-		m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
-		m_tCreatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("createdAt"));
-		m_eType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
-		m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
+	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
+	Poco::XML::Node* pChildNode = it.nextNode();
 
-		pAttribs->release();
+	while(pChildNode) {
+		if(Poco::icompare(pChildNode->nodeName(), "Directory") == 0) {
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+
+			m_bAllowSync = GetNodeValueAsBool(pAttribs->getNamedItem("allowSync"));
+			m_iIndex = GetNodeValueAsInt(pAttribs->getNamedItem("index"));
+			m_iLeafCount = GetNodeValueAsInt(pAttribs->getNamedItem("leafCount"));
+			m_iViewedLeafCount = GetNodeValueAsInt(pAttribs->getNamedItem("viewedLeafCount"));
+			m_iChildCount = GetNodeValueAsInt(pAttribs->getNamedItem("childCount"));
+			m_fRating = GetNodeValueAsDouble(pAttribs->getNamedItem("rating"));
+			m_iYear = GetNodeValueAsInt(pAttribs->getNamedItem("year"));
+			m_sArt = GetNodeValue(pAttribs->getNamedItem("art"));
+			m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
+			m_sKey = GetNodeValue(pAttribs->getNamedItem("key"));
+			m_sTitle = GetNodeValue(pAttribs->getNamedItem("title"));
+			m_sTitle1 = GetNodeValue(pAttribs->getNamedItem("title1"));
+			m_sTitle2 = GetNodeValue(pAttribs->getNamedItem("title2"));
+			m_sComposite = GetNodeValue(pAttribs->getNamedItem("composite"));
+			m_sLanguage = GetNodeValue(pAttribs->getNamedItem("language"));
+			m_sUuid = GetNodeValue(pAttribs->getNamedItem("uuid"));
+			m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
+			m_tCreatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("createdAt"));
+			m_eType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
+			m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
+			m_sStudio = GetNodeValue(pAttribs->getNamedItem("studio"));
+
+			pAttribs->release();
+		} else if(Poco::icompare(pChildNode->nodeName(), "Genre") == 0) {
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+			m_vGenre.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
+			pAttribs->release();
+			
+		} else if(Poco::icompare(pChildNode->nodeName(), "Role") == 0) {
+			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
+			m_vRole.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
+			pAttribs->release();
+		}
+		pChildNode = it.nextNode();
 	}
 	if(m_sTitle2.empty()) m_sTitle2 = parent->m_sTitle2;
 }
@@ -79,12 +96,36 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 	if(m_eType == MediaType::SHOW) {
 		grid->AddIntToken("isshow", true);
 		grid->AddStringToken("summary", m_sSummary);
+		grid->AddIntToken("leafCount", m_iLeafCount);
+		grid->AddIntToken("viewedLeafCount", m_iViewedLeafCount);
+		grid->AddIntToken("childCount", m_iChildCount);
+		grid->AddIntToken("rating", m_fRating*10);
+		grid->AddStringToken("ratingstring", Poco::format("%.1f", m_fRating));
+		grid->AddStringToken("studio", m_sStudio);
+		
+		map<string, string> roles;
+		for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
+			roles["actor"] = *it;
+		}
+		grid->AddLoopToken("roles", roles);
+		
+		map<string, string> gernes;
+		for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
+			roles["genre"] = *it;
+		}
+		grid->AddLoopToken("genres", gernes);
+		
+		grid->AddIntToken("year", m_iYear);
 	}
 
 	if(m_eType == MediaType::SEASON) {
 		grid->AddIntToken("isseason", true);
 		if(m_pParent) grid->AddStringToken("summary", m_pParent->m_sSummary);
 		grid->AddIntToken("season", m_iIndex);
+		grid->AddIntToken("leafCount", m_iLeafCount);
+		grid->AddIntToken("viewedLeafCount", m_iViewedLeafCount);
+		grid->AddStringToken("seriestitle", m_pParent->m_sParentTitle);
+		grid->AddIntToken("year", m_pParent->m_iParentYear);
 	}
 
 	// Banner, Seriesbanner

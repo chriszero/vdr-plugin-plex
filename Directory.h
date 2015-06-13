@@ -30,9 +30,9 @@ using Poco::Exception;
 namespace plexclient
 {
 class MediaContainer;
-	
+
 class Directory: private XmlObject, public cGridElement
-{	
+{
 public:
 	Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
 
@@ -53,13 +53,18 @@ public:
 	std::string m_sUuid;
 	std::string m_sArt;
 	std::string m_sThumb;
+	std::string m_sStudio;
 	Poco::Timestamp m_tUpdatedAt;
 	Poco::Timestamp m_tCreatedAt;
 	std::string m_sKey;
+
+	std::vector<std::string> m_vGenre;
+	std::vector<std::string> m_vRole;
+
 	MediaType m_eType;
 	PlexServer* m_pServer;
 	MediaContainer* m_pParent;
-		
+
 	virtual std::string GetTitle();
 	std::string ArtUri();
 	std::string ThumbUri();
