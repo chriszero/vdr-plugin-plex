@@ -22,6 +22,7 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 				m_sTitle1 = GetNodeValue(pAttribs->getNamedItem("title1"));
 				m_sTitle2 = GetNodeValue(pAttribs->getNamedItem("title2"));
 				m_sGrandparentTitle = GetNodeValue(pAttribs->getNamedItem("grandparentTitle"));
+				m_sParentTitle = GetNodeValue(pAttribs->getNamedItem("parentTitle"));
 				m_iParentIndex = GetNodeValueAsInt(pAttribs->getNamedItem("parentIndex"));
 				m_sThumb = GetNodeValue(pAttribs->getNamedItem("thumb"));
 				m_sBanner = GetNodeValue(pAttribs->getNamedItem("banner"));

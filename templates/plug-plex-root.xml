@@ -94,7 +94,6 @@
 			{seriestitle}		Seriestitle
 			{leafCount}		Total leafs, episodes
 			{viewedLeafCount}	viewed Leafs, episodes
-			{childCount}		total childs, seasons
 	
 	If the item is a video following tokens are avaliable
 	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 

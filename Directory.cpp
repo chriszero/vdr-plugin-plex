@@ -111,7 +111,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 		
 		map<string, string> gernes;
 		for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-			roles["genre"] = *it;
+			gernes["genre"] = *it;
 		}
 		grid->AddLoopToken("genres", gernes);
 		
