@@ -242,7 +242,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken("studio", m_sStudio);
 	grid->AddIntToken("viewCount", m_iViewCount);
 	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
-	if(m_iDuration < 0) // avoid division by zero
+	if(m_iDuration > 0) // avoid division by zero
 		grid->AddIntToken("viewoffsetpercent", 100.0 / m_iDuration * m_lViewoffset);
 	else 
 		grid->AddIntToken("viewoffsetpercent", 0);
