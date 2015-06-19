@@ -242,6 +242,10 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken("studio", m_sStudio);
 	grid->AddIntToken("viewCount", m_iViewCount);
 	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
+	if(m_iDuration < 0) // avoid division by zero
+		grid->AddIntToken("viewoffsetpercent", 100.0 / m_iDuration * m_lViewoffset);
+	else 
+		grid->AddIntToken("viewoffsetpercent", 0);
 	grid->AddIntToken("duration", m_iDuration/1000/60);
 	grid->AddIntToken("year", m_iYear);
 	grid->AddIntToken("viewgroup", m_pParent->m_eViewGroup);
@@ -270,7 +274,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 
 	map<string, string> gernes;
 	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-		roles["genre"] = *it;
+		gernes["genre"] = *it;
 	}
 	grid->AddLoopToken("genres", gernes);
 	

@@ -101,6 +101,7 @@
 	{rating}			int, starrating 0.0 - 10.0 multiplied by 10 -> 0 - 100
 	{ratingstring}		string, rating formated as double %.1f
 	{viewoffset}		int, minutes, last viewed position
+	{viewoffsetpercent} last viewed position as percent value 0 - 100
 	{duration}			int, minutes, total duration
 	{orginaltitle}		original title
 	{summary}			Description, plot, summary
