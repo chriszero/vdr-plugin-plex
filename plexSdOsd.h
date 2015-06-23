@@ -54,7 +54,7 @@ private:
 	std::shared_ptr<skindesignerapi::cViewElement> m_pMessage;
 	bool m_messageDisplayed;
 
-	skindesignerapi::cOsdView* m_pRootView;
+	std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
 	
 	void Flush();
 	//void SwitchGrid(ePlexMenuTab currentTab);

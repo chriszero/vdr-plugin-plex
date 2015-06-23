@@ -12,7 +12,7 @@ cGridElement::cGridElement()
 	m_bInit = true;
 }
 
-cViewGridNavigator::cViewGridNavigator(skindesignerapi::cOsdView* rootView)
+cViewGridNavigator::cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView)
 {
 	m_columns = 2;
 	m_rows = 2;

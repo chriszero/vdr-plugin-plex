@@ -14,12 +14,12 @@ cPlexSdOsd::cPlexSdOsd()
 
 cPlexSdOsd::~cPlexSdOsd()
 {
+	m_pRootView->Deactivate(true);
 	if(m_pBrowserGrid)
 		m_pBrowserGrid->Clear();
 	if(m_pMessage)
 		m_pMessage->Clear();
 	cPictureCache::GetInstance().RemoveAll();
-	delete m_pRootView;
 }
 
 bool cPlexSdOsd::SdSupport()
@@ -43,7 +43,7 @@ void cPlexSdOsd::Show(void)
 		return;
 	}
 
-	m_pRootView = GetOsdView(eViews::viRootView);
+	m_pRootView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView(eViews::viRootView));
 	if (!m_pRootView) {
 		esyslog("[plex]: used skindesigner skin does not support plex");
 		return;

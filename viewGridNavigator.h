@@ -38,8 +38,8 @@ protected:
 	int m_rows;
 	int m_columns;
 	
+	std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
 	std::shared_ptr<skindesignerapi::cViewGrid> m_pGrid;
-	skindesignerapi::cOsdView* m_pRootView;
 	
 	bool m_newDimensions;
 	bool m_setIterator;
@@ -54,10 +54,10 @@ protected:
 	void SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid> grid);
 	
 public:
-	cViewGridNavigator(skindesignerapi::cOsdView* rootView);
+	cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView);
 	void SetGridDimensions(int rows, int columns);
 	virtual void Flush() { m_pGrid->Display(); };
-	virtual void Clear() { m_pGrid->Clear(); };
+	virtual void Clear() = 0;
 	virtual bool NavigateLeft();
 	virtual bool NavigateRight();
 	virtual bool NavigateUp();

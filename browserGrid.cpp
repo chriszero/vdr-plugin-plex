@@ -6,7 +6,7 @@
 #include "plex.h"
 #include "pictureCache.h"
 
-cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavigator(rootView)
+cBrowserGrid::cBrowserGrid(std::shared_ptr<skindesignerapi::cOsdView> rootView) : cViewGridNavigator(rootView)
 {
 	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
 	m_pHeader = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verHeader));
@@ -23,13 +23,13 @@ cBrowserGrid::cBrowserGrid(skindesignerapi::cOsdView* rootView) : cViewGridNavig
 
 	Config *conf = &Config::GetInstance();
 	if(conf->DefaultViewMode == ViewMode::Cover) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgCover) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid(eViewGrids::vgCover) ));
 		SetGridDimensions(conf->CoverGridRows, conf->CoverGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::Detail) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgDetail) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid(eViewGrids::vgDetail) ));
 		SetGridDimensions(conf->DetailGridRows, conf->DetailGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::List) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgList) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid(eViewGrids::vgList) ));
 		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
 	}
 

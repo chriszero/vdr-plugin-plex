@@ -65,7 +65,7 @@ private:
 	void DrawScrollbar();
 	
 public:
-	cBrowserGrid(skindesignerapi::cOsdView* rootView);
+	cBrowserGrid(std::shared_ptr<skindesignerapi::cOsdView> rootView);
 	~cBrowserGrid();
 	//cBrowserGrid(skindesignerapi::cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
 	std::shared_ptr<plexclient::MediaContainer> MediaContainer() { return m_pContainer; }
