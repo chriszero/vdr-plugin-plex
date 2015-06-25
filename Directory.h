@@ -45,9 +45,11 @@ public:
 	int m_iChildCount; // Number of Seasons
 	double m_fRating;
 	std::string m_sSummary;
+	std::string m_sParentSummary;
 	std::string m_sTitle;
 	std::string m_sTitle1;
 	std::string m_sTitle2;
+	std::string m_sParentTitle; 
 	std::string m_sComposite;
 	std::string m_sLanguage;
 	std::string m_sUuid;

@@ -31,6 +31,7 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 			m_sTitle = GetNodeValue(pAttribs->getNamedItem("title"));
 			m_sTitle1 = GetNodeValue(pAttribs->getNamedItem("title1"));
 			m_sTitle2 = GetNodeValue(pAttribs->getNamedItem("title2"));
+			m_sParentTitle = GetNodeValue(pAttribs->getNamedItem("parentTitle"));
 			m_sComposite = GetNodeValue(pAttribs->getNamedItem("composite"));
 			m_sLanguage = GetNodeValue(pAttribs->getNamedItem("language"));
 			m_sUuid = GetNodeValue(pAttribs->getNamedItem("uuid"));
@@ -38,6 +39,7 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 			m_tCreatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("createdAt"));
 			m_eType = GetNodeValueAsMediaType(pAttribs->getNamedItem("type"));
 			m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
+			m_sParentSummary = GetNodeValue(pAttribs->getNamedItem("parentSummary"));
 			m_sStudio = GetNodeValue(pAttribs->getNamedItem("studio"));
 
 			pAttribs->release();
@@ -45,7 +47,7 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
 			m_vGenre.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
 			pAttribs->release();
-			
+
 		} else if(Poco::icompare(pChildNode->nodeName(), "Role") == 0) {
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
 			m_vRole.push_back(GetNodeValue(pAttribs->getNamedItem("tag")));
@@ -92,6 +94,18 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 	if(m_eType == MediaType::UNDEF || m_eType == MediaType::MOVIE || m_eType == MediaType::PHOTO) {
 		grid->AddIntToken("isdirectory", true);
 	}
+	
+	map<string, string> roles;
+	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
+		roles["actor"] = *it;
+	}
+	grid->AddLoopToken("roles", roles);
+
+	map<string, string> genres;
+	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
+		genres["genre"] = *it;
+	}
+	grid->AddLoopToken("genres", genres);
 
 	if(m_eType == MediaType::SHOW) {
 		grid->AddIntToken("isshow", true);
@@ -102,29 +116,27 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 		grid->AddIntToken("rating", m_fRating*10);
 		grid->AddStringToken("ratingstring", Poco::format("%.1f", m_fRating));
 		grid->AddStringToken("studio", m_sStudio);
-		
-		map<string, string> roles;
-		for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
-			roles["actor"] = *it;
-		}
-		grid->AddLoopToken("roles", roles);
-		
-		map<string, string> gernes;
-		for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-			gernes["genre"] = *it;
-		}
-		grid->AddLoopToken("genres", gernes);
-		
+
 		grid->AddIntToken("year", m_iYear);
 	}
 
 	if(m_eType == MediaType::SEASON) {
 		grid->AddIntToken("isseason", true);
-		if(m_pParent) grid->AddStringToken("summary", m_pParent->m_sSummary);
+		
+		std::string summary = m_sParentSummary;
+		if(m_sParentSummary.empty() && m_pParent)
+			summary = m_pParent->m_sSummary;
+			
+		grid->AddStringToken("summary", summary);
 		grid->AddIntToken("season", m_iIndex);
 		grid->AddIntToken("leafCount", m_iLeafCount);
 		grid->AddIntToken("viewedLeafCount", m_iViewedLeafCount);
-		grid->AddStringToken("seriestitle", m_pParent->m_sParentTitle);
+		
+		std::string seriesTitle = m_sParentTitle;
+		if(seriesTitle.empty() && m_pParent)
+			seriesTitle = m_pParent->m_sParentTitle;
+		
+		grid->AddStringToken("seriestitle", seriesTitle);
 		grid->AddIntToken("year", m_pParent->m_iParentYear);
 	}
 

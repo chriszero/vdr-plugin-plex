@@ -272,11 +272,11 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	}
 	grid->AddLoopToken("roles", roles);
 
-	map<string, string> gernes;
+	map<string, string> genres;
 	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-		gernes["genre"] = *it;
+		genres["genre"] = *it;
 	}
-	grid->AddLoopToken("genres", gernes);
+	grid->AddLoopToken("genres", genres);
 	
 	grid->AddIntToken("originallyAvailableYear", m_tOriginallyAvailableAt.year());
 	grid->AddIntToken("originallyAvailableMonth", m_tOriginallyAvailableAt.month());
