@@ -94,6 +94,7 @@
 			{seriestitle}		Seriestitle
 			{leafCount}		Total leafs, episodes
 			{viewedLeafCount}	viewed Leafs, episodes
+			
 	
 	If the item is a video following tokens are avaliable
 	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} 
@@ -131,7 +132,7 @@
 		{seriestitle}		Title of the series/show
 		{season}			int, Season
 		{episode}			int, Episode, season based
-		{hasbanner}			bool, Bannerstyle?
+		{hasbanner}		bool, Bannerstyle
 			{banner}		Image path
 		{hasseriesthumb}	bool, seriesthumb (seasoncover, seriescover)
 			{seriesthumb}	Image path

@@ -266,17 +266,18 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 		grid->AddIntToken("ismovie", true);
 	}
 	
-	map<string, string> roles;
 	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
+		map<string, string> roles;
 		roles["actor"] = *it;
+		grid->AddLoopToken("actor[roles]", roles);
 	}
-	grid->AddLoopToken("roles", roles);
 
-	map<string, string> genres;
 	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-		genres["genre"] = *it;
+		map<string, string> genres;
+		genres.insert(std::pair<string, string>("genres[genre]", *it));
+		grid->AddLoopToken("genres", genres);
 	}
-	grid->AddLoopToken("genres", genres);
+	
 	
 	grid->AddIntToken("originallyAvailableYear", m_tOriginallyAvailableAt.year());
 	grid->AddIntToken("originallyAvailableMonth", m_tOriginallyAvailableAt.month());
