@@ -80,6 +80,8 @@ bool cMyPlugin::Start(void)
 		reg.SetViewElement(viDetailView, vedHeader, "header");
 		reg.SetViewElement(viDetailView, vedFooter, "footer");
 	*/
+	
+	//reg.SetMenu(meRoot, "streamselect.xml");
 	if (skindesignerapi::SkindesignerAPI::RegisterPlugin(&reg)) {
 		m_pSdCheck = new cPlexSdOsd();
 		cMyPlugin::bSkindesigner = m_pSdCheck->SdSupport();
@@ -171,11 +173,13 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 	cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
 
 	if(Config::GetInstance().UseMpv && mpvPlugin) {
-		Play_StartPlayService_v1_0_t req;
+		Mpv_StartPlayService_v1_0_t req;
 		char* file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
 		req.Filename = file;
+		req.Title = (char*)Vid.GetTitle().c_str();
 		//req.Title = &Vid.GetTitle().c_str();
-		mpvPlugin->Service(PLAY_START_PLAY_SERVICE, &req);
+		mpvPlugin->Service(MPV_START_PLAY_SERVICE, &req);
+		return;
 
 	} else if (Config::GetInstance().UseMpv) {
 		isyslog("Can't find mpv %s, playing directly.", mpvPlugin ? "service" : "plugin");
