@@ -45,8 +45,8 @@ protected:
 	bool m_setIterator;
 	std::vector<cGridElement*> m_vElements;
 	std::vector<cGridElement*>::iterator m_activeElementIter;
-	std::vector<cGridElement*>::iterator m_firstElementIter;
-	std::vector<cGridElement*>::iterator m_lastElementIter;
+	int m_startIndex = 0;
+	int m_endIndex = 0;
 
 	void GenerateServerElements();
 	void FilterElements(int scrollOffset);

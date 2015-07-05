@@ -15,7 +15,7 @@ class cDummyElement : public cGridElement
 {
 private:
 	std::string m_title;
-	
+
 public:
 	cDummyElement(std::string title);
 	cDummyElement();
@@ -63,13 +63,13 @@ private:
 	void DrawBackground();
 	void DrawInfopane();
 	void DrawScrollbar();
-	
+
 public:
 	cBrowserGrid(std::shared_ptr<skindesignerapi::cOsdView> rootView);
 	~cBrowserGrid();
 	//cBrowserGrid(skindesignerapi::cViewGrid* viewGrid, std::shared_ptr<plexclient::Plexservice> service);
 	std::shared_ptr<plexclient::MediaContainer> MediaContainer() { return m_pContainer; }
-		
+
 	void DrawGrid();
 	void SwitchGrid(int index);
 	void SwitchView(ViewMode mode = Config::GetInstance().DefaultViewMode);

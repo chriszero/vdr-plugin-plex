@@ -61,6 +61,8 @@ public:
 	std::vector<ViewEntry> m_viewentries;
 	std::vector<ViewEntry> m_serverViewentries;
 	
+	bool ScrollByPage;
+	bool ScrollAllAround;
 	bool UseMpv;
 	
 	std::string GetUUID();
@@ -113,6 +115,8 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int ListGridRows;
 	int DefaultViewMode;
 	int UseMpv;
+	int ScrollByPage;
+	int ScrollAllAround;
 
     virtual void Store(void);
 

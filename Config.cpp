@@ -18,6 +18,10 @@ Config::Config() {
 	DetailGridColumns = 1;
 	DetailGridRows = 4;
 	
+	UseMpv = false;
+	ScrollByPage = true;
+	ScrollAllAround = true;
+	
 	DefaultViewMode = ViewMode::Cover;
 	
 	ViewEntry en;
@@ -100,6 +104,8 @@ bool Config::Parse(const char *name, const char *value)
 	else if (strcasecmp(name, "ListGridColumns") == 0) 	Config::GetInstance().ListGridColumns = atoi(value);
 	else if (strcasecmp(name, "ListGridRows") == 0) 	Config::GetInstance().ListGridRows = atoi(value);
 	else if (strcasecmp(name, "UseMpv") == 0) 	Config::GetInstance().UseMpv = atoi(value) ? true : false;
+	else if (strcasecmp(name, "ScrollByPage") == 0) 	Config::GetInstance().ScrollByPage = atoi(value) ? true : false;
+	else if (strcasecmp(name, "ScrollAllAround") == 0) 	Config::GetInstance().ScrollAllAround = atoi(value) ? true : false;
 	else parsed = false;
 
 	if(!parsed) {
@@ -146,12 +152,15 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	ListGridColumns = Config::GetInstance().ListGridColumns;
 	ListGridRows = Config::GetInstance().ListGridRows;
 	UseMpv = Config::GetInstance().UseMpv;
-	
+	ScrollByPage = Config::GetInstance().ScrollByPage;
+	ScrollAllAround = Config::GetInstance().ScrollAllAround;
 	DefaultViewMode = Config::GetInstance().DefaultViewMode;
 	
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use Mpv Plugin (If Availiable)"), (int*)&UseMpv, trVDR("no"), trVDR("yes")));
+	Add(new cMenuEditBoolItem(tr("Scroll by Page"), (int*)&ScrollByPage, trVDR("no"), trVDR("yes")));
+	Add(new cMenuEditBoolItem(tr("Scroll all around"), (int*)&ScrollAllAround, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use custom transcoding profile"), (int*)&UseCustomTranscodeProfile, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use Plex account"), (int*)&UsePlexAccount, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditStrItem(tr("Plex Username"), Username, STRING_SIZE));
@@ -198,6 +207,8 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().ListGridRows = ListGridRows;
 	Config::GetInstance().DefaultViewMode = (ViewMode)DefaultViewMode;
 	Config::GetInstance().UseMpv = UseMpv;
+	Config::GetInstance().ScrollByPage = ScrollByPage;
+	Config::GetInstance().ScrollAllAround = ScrollAllAround;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
 	SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
@@ -216,4 +227,6 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("ListGridRows", Config::GetInstance().ListGridRows);
 	SetupStore("DefaultViewMode", Config::GetInstance().DefaultViewMode);
 	SetupStore("UseMpv", Config::GetInstance().UseMpv);
+	SetupStore("ScrollByPage", Config::GetInstance().ScrollByPage);
+	SetupStore("ScrollAllAround", Config::GetInstance().ScrollAllAround);
 }

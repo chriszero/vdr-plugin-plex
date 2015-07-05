@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-06-05 20:35+0200\n"
-"PO-Revision-Date: 2015-05-17 20:51+0200\n"
+"POT-Creation-Date: 2015-07-05 13:51+0200\n"
+"PO-Revision-Date: 2015-07-05 16:25+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
@@ -35,6 +35,15 @@ msgstr "Gesehen"
 
 msgid "Hide main menu entry"
 msgstr "Verstecke Hauptmenüeintrag"
+
+msgid "Use Mpv Plugin (If Availiable)"
+msgstr "Verwende MPV-Plugin falls verfügbar"
+
+msgid "Scroll by Page"
+msgstr "Seitenweise Scrollen"
+
+msgid "Scroll all around"
+msgstr "Rundum scrollen"
 
 msgid "Use custom transcoding profile"
 msgstr "Benutze eigenes Transcoder Profil"

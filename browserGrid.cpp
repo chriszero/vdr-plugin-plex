@@ -94,7 +94,7 @@ void cBrowserGrid::SwitchView(ViewMode mode)
 	}
 
 	m_pGrid->Clear();
-	m_firstElementIter = m_vElements.begin() + activePos;
+	m_startIndex = activePos;
 	m_setIterator = true;
 	FilterElements(0);
 }
@@ -200,7 +200,7 @@ void cBrowserGrid::ProcessData()
 		elem->AbsolutePosition = pos++;
 	}
 
-	m_firstElementIter = m_vElements.begin();
+	m_startIndex = 0;
 
 	m_pGrid->Clear();
 	m_setIterator = true;
