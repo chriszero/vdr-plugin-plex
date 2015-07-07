@@ -16,6 +16,8 @@ cViewGridNavigator::cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView
 {
 	m_columns = 2;
 	m_rows = 2;
+	m_startIndex = 0;
+	m_endIndex = 0;
 	m_newDimensions = true;
 	m_setIterator = true;
 
