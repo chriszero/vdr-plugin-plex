@@ -61,6 +61,7 @@ void cBrowserGrid::Flush()
 	
 	cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 	m_pGrid->Display();
+	m_pScrollbar->Display();
 
 	m_pRootView->Display();
 }
@@ -256,6 +257,7 @@ void cBrowserGrid::DrawGrid()
 	m_pHeader->Display();
 	DrawInfopane();
 	DrawFooter();
+	DrawScrollbar();
 }
 
 void cBrowserGrid::DrawBackground()
@@ -360,25 +362,25 @@ void cBrowserGrid::DrawFooter()
 
 void cBrowserGrid::DrawScrollbar()
 {
-	/*
+	
 	if (m_vElements.size() == 0)
 		return;
-	int scrollBarHeight = (double)m_rows / (double)m_vElements.size() * 1000;
-
-	// in welcher Zeile sind wir?
+	
 	int currentRow = SelectedObject()->AbsolutePosition / m_columns;
+	int totalRows = m_vElements.size() / m_columns;
+	
+	int scrollBarHeight = 100.0 / totalRows * m_rows;  
 
-	int offset = (double)startPos / (double)m_vElements.size() * 1000;
+	int offset = 100.0 / totalRows * currentRow;
+	if(offset >= 100 - scrollBarHeight) {
+		offset = 100.0 - scrollBarHeight;
+	}
 	m_pScrollbar->Clear();
 	m_pScrollbar->ClearTokens();
-
-	int y = (100 - GetHeight())/2;
-
-	m_pScrollbar->AddIntToken("posy", y);
-	m_pScrollbar->AddIntToken("totalheight", menuHeight);
+	
 	m_pScrollbar->AddIntToken("height", scrollBarHeight);
 	m_pScrollbar->AddIntToken("offset", offset);
-	m_pScrollbar->Display();*/
+	m_pScrollbar->Display();
 }
 
 void cBrowserGrid::NextTab()
