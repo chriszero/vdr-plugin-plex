@@ -33,7 +33,6 @@ cMyPlugin::~cMyPlugin(void)
 {
 	plexclient::plexgdm::GetInstance().stopRegistration();
 	plexclient::ControlServer::GetInstance().Stop();
-	delete m_pSdCheck;
 }
 
 /**
