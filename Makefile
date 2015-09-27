@@ -95,7 +95,8 @@ OBJS = $(PLUGIN).o \
 	browserGrid.o \
 	viewHeader.o \
 	detailView.o \
-	pictureCache.o
+	pictureCache.o \
+	sdDisplayReplay.o
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp
 

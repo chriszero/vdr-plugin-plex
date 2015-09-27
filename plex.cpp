@@ -5,6 +5,7 @@
 #include "plexSdOsd.h"
 #include "pictureCache.h"
 #include "services.h"
+#include "sdDisplayReplay.h"
 
 #include <libskindesignerapi/skindesignerapi.h>
 
@@ -73,6 +74,10 @@ bool cMyPlugin::Start(void)
 	reg.SetViewElement(viRootView, verWatch, "time");
 	reg.SetViewElement(viRootView, verMessage, "message");
 	reg.SetViewElement(viRootView, verScrollbar, "scrollbar");
+	
+	reg.SetView(viReplay, "replay.xml");
+	reg.SetViewElement(viReplay, cSdDisplayReplay::eElements::Info, "info");
+	reg.SetViewElement(viReplay, cSdDisplayReplay::eElements::Replay, "replay");
 	/*
 		reg.SetSubView(viRootView, viDetailView, "detail.xml");
 		reg.SetViewElement(viDetailView, vedBackground, "background");

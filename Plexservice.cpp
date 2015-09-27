@@ -194,11 +194,13 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 {
 	PlexServer* pSrv = server ? server : video->m_pServer;
 	std::stringstream params;
-	params << "/video/:/transcode/universal/start.m3u8?";
+	//params << "/video/:/transcode/universal/start.m3u8?";
+	params << "/video/:/transcode/universal/start?";
 	params << "path=" << encode(pSrv->GetUri() + video->m_sKey);
 	params << "&mediaIndex=0";
 	params << "&partIndex=0";
 	params << "&protocol=hls";
+	//params << "&protocol=dash";
 	params << "&offset=" << offset;
 	params << "&fastSeek=1";
 	params << "&directPlay=0";
@@ -211,8 +213,17 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 	params << "&videoResolution=1920x1080";
 	params << "&videoQuality=100";
 	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
+	
+	params << "&X-Plex-Client-Identifier=" << encode(Config::GetInstance().GetUUID());
+	params << "&X-Plex-Device=PC";
+	params << "&X-Plex-Device-Name=" << encode(Config::GetInstance().GetHostname());
+	params << "&X-Plex-Language=" << Config::GetInstance().GetLanguage();
+	params << "&X-Plex-Model=Linux";
+	params << "&X-Plex-Platform=" << encode("VDR Plex Plugin");;
+	params << "&X-Plex-Product=" << encode("VDR Plex Plugin");
+	params << "&X-Plex-Provides=player";
 
-
+	//std::cout << pSrv->GetUri() << params.str() << std::endl;
 	return pSrv->GetUri() + params.str();
 }
 

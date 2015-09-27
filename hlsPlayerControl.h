@@ -3,6 +3,7 @@
 
 #include <vdr/player.h>
 #include <vdr/tools.h>
+//#include <libskindesignerapi/skindesignerosdbase.h>
 
 #include "hlsPlayer.h"
 #include "MediaContainer.h"

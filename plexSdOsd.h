@@ -22,6 +22,7 @@
 
 enum eViews {
 	viRootView,
+	viReplay,
 	viDetailView
 };
 
