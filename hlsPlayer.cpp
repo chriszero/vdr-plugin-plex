@@ -221,10 +221,14 @@ int cHlsSegmentLoader::EstimateSegmentSize()
 
 bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 {
-	Poco::Net::HTTPRequest segmentRequest(Poco::Net::HTTPRequest::HTTP_GET, segmentUri);
-	AddHeader(segmentRequest);
-	m_pClientSession->sendRequest(segmentRequest);
-
+	try {
+		Poco::Net::HTTPRequest segmentRequest(Poco::Net::HTTPRequest::HTTP_GET, segmentUri);
+		AddHeader(segmentRequest);
+		m_pClientSession->sendRequest(segmentRequest);
+	} catch (Poco::Exception&) {
+		esyslog("[plex] %s; %s failed.", __FUNCTION__, segmentUri.c_str());
+		return false;
+	}
 	Poco::Net::HTTPResponse segmentResponse;
 	std::istream& segmentFile = m_pClientSession->receiveResponse(segmentResponse);
 
@@ -318,16 +322,20 @@ bool cHlsSegmentLoader::DoLoad(void)
 					esyslog("[plex] %s 404, Transcoder died, see logfile from PMS", __FUNCTION__);
 					recover = true;
 					std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
-					Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
-					m_pClientSession->sendRequest(req);
-					Poco::Net::HTTPResponse reqResponse;
-					m_pClientSession->receiveResponse(reqResponse);
-					int tmp = m_lastLoadedSegment;
-					int tmp2 = m_lastSegmentSize;
-					CloseConnection();
-					LoadLists();
-					m_lastLoadedSegment = tmp;
-					m_lastSegmentSize = tmp2;
+					try {
+						Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
+						m_pClientSession->sendRequest(req);
+						Poco::Net::HTTPResponse reqResponse;
+						m_pClientSession->receiveResponse(reqResponse);
+						int tmp = m_lastLoadedSegment;
+						int tmp2 = m_lastSegmentSize;
+						CloseConnection();
+						LoadLists();
+						m_lastLoadedSegment = tmp;
+						m_lastSegmentSize = tmp2;
+					} catch (Poco::Exception&) {
+						return false;
+					}
 				}
 			}
 		} else {
@@ -695,17 +703,19 @@ void cHlsPlayer::ReportProgress(bool stopped)
 		state = "paused";
 	}
 
-	Poco::Net::HTTPClientSession session(m_Video.m_pServer->GetIpAdress(), m_Video.m_pServer->GetPort());
-	std::string uri = "/:/progress?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
-	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-	session.sendRequest(req);
+	try {
+		Poco::Net::HTTPClientSession session(m_Video.m_pServer->GetIpAdress(), m_Video.m_pServer->GetPort());
+		std::string uri = "/:/progress?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+		session.sendRequest(req);
 
-	Poco::Net::HTTPResponse resp;
-	session.receiveResponse(resp);
+		Poco::Net::HTTPResponse resp;
+		session.receiveResponse(resp);
 
-	if(resp.getStatus() == 200) {
-		dsyslog("[plex] %s", __FUNCTION__);
-	}
+		if(resp.getStatus() == 200) {
+			dsyslog("[plex] %s", __FUNCTION__);
+		}
+	} catch (Poco::Exception&) {}
 
 }
 
