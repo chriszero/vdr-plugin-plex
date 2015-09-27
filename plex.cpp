@@ -172,12 +172,15 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 	cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
 
 	if(Config::GetInstance().UseMpv && mpvPlugin) {
-		Mpv_StartPlayService_v1_0_t req;
+		Mpv_PlayFile req;
+		Mpv_SetTitle reqTitle;
 		char* file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
+		
 		req.Filename = file;
-		req.Title = (char*)Vid.GetTitle().c_str();
-		//req.Title = &Vid.GetTitle().c_str();
-		mpvPlugin->Service(MPV_START_PLAY_SERVICE, &req);
+		mpvPlugin->Service(MPV_PLAY_FILE, &req);
+		
+		reqTitle.Title = (char*)Vid.GetTitle().c_str();
+		mpvPlugin->Service(MPV_SET_TITLE, &reqTitle);
 		return;
 
 	} else if (Config::GetInstance().UseMpv) {
