@@ -103,9 +103,11 @@ void plexgdm::Action()
 				}
 			}
 
-		} catch(Poco::IOException) {
+		} catch(Poco::IOException&) {
 			// networkconnection is lost, reset
 			_helloSent = false;
+		} catch (Poco::Exception&) {
+			
 		}
 
 		if(m_discoveryIsRunning && _discoverTimer.TimedOut()) {
@@ -119,7 +121,7 @@ void plexgdm::Action()
 		// unregister from Server
 		std::string s = Poco::format("BYE %s\r\n%s", _clientHeader, _clientData);
 		update_sock.sendTo(s.c_str(), s.length(), m_clientRegisterGroup, 0);
-	} catch (Poco::IOException) {}
+	} catch (Poco::Exception) {}
 
 	m_clientRegistered = false;
 }
@@ -127,18 +129,20 @@ void plexgdm::Action()
 void plexgdm::discover()
 {
 	try {
-		Poco::Net::MulticastSocket socket(Poco::Net::SocketAddress(Poco::Net::IPAddress(), m_discoverAdress.port()), true);
-		// TODO: Discover multiple servers
+		
+
 		char buffer[1024];
 		std::map<std::string, std::string> vBuffer;
 
+		Poco::Net::MulticastSocket socket(Poco::Net::SocketAddress(Poco::Net::IPAddress(), m_discoverAdress.port()), true);
 		socket.setLoopback(true);
 		socket.setTimeToLive(1);
 		socket.setReceiveTimeout(Poco::Timespan(0, 600 * 1000)); // microseconds
-		socket.joinGroup(m_discoverAdress.host());
+		socket.joinGroup(m_discoverAdress.host()); // Throws a NotFoundException if there is no multicast network device
 		socket.sendTo(_discoverMessage.c_str(), _discoverMessage.length(), m_discoverAdress, 0);
-
+		
 		try {
+			
 			while(true) {
 				Poco::Net::SocketAddress sender;
 				int n = socket.receiveFrom(buffer, sizeof(buffer), sender);
@@ -147,9 +151,11 @@ void plexgdm::discover()
 					vBuffer[sender.host().toString()] = buf;
 				}
 			}
+			
 		} catch(Poco::TimeoutException) {}
-
+		
 		socket.close();
+
 		m_discoveryComplete = true;
 
 		for(std::map<std::string, std::string>::iterator it = vBuffer.begin(); it != vBuffer.end(); ++it) {
@@ -169,7 +175,11 @@ void plexgdm::discover()
 				isyslog("[plex] New Server Discovered: %s", host.c_str());
 			}
 		}
-	} catch (Poco::IOException) {} // No Networkconnection
+	} catch (Poco::IOException&) {
+		// No Networkconnection
+	} catch(Poco::NotFoundException&) {
+		// there is no multicast network device
+	} catch (Poco::Exception&) {}
 }
 
 void plexgdm::stopRegistration()
