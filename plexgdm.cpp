@@ -167,7 +167,7 @@ void plexgdm::discover()
 				if(s_it->GetIpAdress() == host) {
 					flag = false;
 					s_it->ParseData(data, host);
-					isyslog("[plex] Server Updated: %s", host.c_str());
+					dsyslog("[plex] Server Updated: %s", host.c_str());
 				}
 			}
 			if(flag) {
