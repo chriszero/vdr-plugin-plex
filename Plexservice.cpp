@@ -189,7 +189,6 @@ std::string Plexservice::encode(std::string message)
 	return temp;
 }
 
-
 std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server)
 {
 	PlexServer* pSrv = server ? server : video->m_pServer;
@@ -200,19 +199,30 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 	params << "&partIndex=0";
 	params << "&protocol=hls";
 	params << "&offset=" << offset;
-	params << "&fastSeek=1";
+	params << "&fastSeek=0";
 	params << "&directPlay=0";
 	params << "&directStream=1";
 	params << "&maxVideoBitrate=20000";
-	//params << "&subtitles=burn";
+	params << "&subtitles=burn";
 	//params << "&subtitleSize=90";
 	//params << "&skipSubtitles=1";
 	//params << "&audioBoost=100";
 	params << "&videoResolution=1920x1080";
 	params << "&videoQuality=100";
 	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
-
-
+	
+	params << "&includeCodecs=1";
+	params << "&copyts=1";
+	
+	if(Config::GetInstance().UseAc3) {
+		params << "&X-Plex-Client-Profile-Extra=";
+		if(Config::GetInstance().UseAc3)
+			params << encode("add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)");
+			
+		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.height&value=1080)");
+		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.frameRate&value=25)");
+		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.frameRate&value=25)");
+	}
 	return pSrv->GetUri() + params.str();
 }
 

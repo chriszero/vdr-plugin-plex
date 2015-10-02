@@ -331,4 +331,13 @@ std::string Video::ThumbUri()
 	return m_pServer->GetUri() + '/' + m_sThumb;
 }
 
+std::string Video::GetSubtitleUrl() 
+{
+	// /video/:/transcode/universal/subtitles
+	// Argument? m_sKey?
+	//std::string subtitleUrl = m_pServer.GetUri() + "/video/:/transcode/universal/subtitles?" + Config::GetInstance().GetUUID();
+	return "";
+	// Format is "Mpeg4 Timed Text" 
+}
+
 } // Namespace

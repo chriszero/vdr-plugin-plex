@@ -46,6 +46,8 @@ public:
 	bool UseCustomTranscodeProfile;
 	bool UsePlexAccount;
 	bool UseConfiguredServer;
+	bool UseAc3;
+
 	
 	int CoverGridColumns;
 	int CoverGridRows;
@@ -117,6 +119,7 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int UseMpv;
 	int ScrollByPage;
 	int ScrollAllAround;
+	int UseAc3;
 
     virtual void Store(void);
 

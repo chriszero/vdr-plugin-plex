@@ -106,6 +106,7 @@ bool Config::Parse(const char *name, const char *value)
 	else if (strcasecmp(name, "UseMpv") == 0) 	Config::GetInstance().UseMpv = atoi(value) ? true : false;
 	else if (strcasecmp(name, "ScrollByPage") == 0) 	Config::GetInstance().ScrollByPage = atoi(value) ? true : false;
 	else if (strcasecmp(name, "ScrollAllAround") == 0) 	Config::GetInstance().ScrollAllAround = atoi(value) ? true : false;
+	else if (strcasecmp(name, "UseAc3") == 0) 	Config::GetInstance().UseAc3 = atoi(value) ? true : false;
 	else parsed = false;
 
 	if(!parsed) {
@@ -155,9 +156,11 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	ScrollByPage = Config::GetInstance().ScrollByPage;
 	ScrollAllAround = Config::GetInstance().ScrollAllAround;
 	DefaultViewMode = Config::GetInstance().DefaultViewMode;
+	UseAc3 = Config::GetInstance().UseAc3;
 	
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
+	Add(new cMenuEditBoolItem(tr("Use AC3 instead of aac Audio"), (int*)&UseAc3, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use Mpv Plugin (If Availiable)"), (int*)&UseMpv, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Scroll by Page"), (int*)&ScrollByPage, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Scroll all around"), (int*)&ScrollAllAround, trVDR("no"), trVDR("yes")));
@@ -209,6 +212,7 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().UseMpv = UseMpv;
 	Config::GetInstance().ScrollByPage = ScrollByPage;
 	Config::GetInstance().ScrollAllAround = ScrollAllAround;
+	Config::GetInstance().UseAc3 = UseAc3;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
 	SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
@@ -229,4 +233,5 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("UseMpv", Config::GetInstance().UseMpv);
 	SetupStore("ScrollByPage", Config::GetInstance().ScrollByPage);
 	SetupStore("ScrollAllAround", Config::GetInstance().ScrollAllAround);
+	SetupStore("UseAc3", Config::GetInstance().ScrollAllAround);
 }
