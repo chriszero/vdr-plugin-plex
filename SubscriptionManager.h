@@ -78,6 +78,7 @@ private:
 	cSubscriberStatus* m_pStatus;
 	bool m_bStoppedSent;
 
+	void ReportProgress();
 	void NotifyServer();
 	void Cleanup();
 	std::string GetTimelineXml();

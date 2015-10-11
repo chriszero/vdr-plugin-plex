@@ -6,6 +6,7 @@
 #include <Poco/SharedPtr.h>
 
 #include "hlsPlayerControl.h"
+#include "services.h"
 
 namespace plexclient
 {
@@ -215,6 +216,14 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 					if(control) {
 						isyslog("[plex] Seeking to %d", offset);
 						control->SeekTo(offset);
+					} else if(cMyPlugin::PlayingFile) {
+						cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
+						if(mpvPlugin) {
+							Mpv_Seek seekData;
+							seekData.SeekAbsolute = offset;
+							seekData.SeekRelative = 0;
+							mpvPlugin->Service(MPV_SEEK, &seekData);
+						} 
 					}
 				}
 			} else if(request.getURI().find("/playback/playMedia") != std::string::npos) {
@@ -233,6 +242,10 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 					// MUSS im Maintread des Plugins/VDR gestartet werden
 					if(query.find("offset") != query.end()) {
 						Cont->m_vVideos[0].m_iMyPlayOffset = atoi(query["offset"].c_str()) / 1000;
+						if(Cont->m_vVideos[0].m_iMyPlayOffset == 0) {
+							Cont->m_vVideos[0].m_iMyPlayOffset = -1;
+						}
+							
 					}
 					
 					ActionManager::GetInstance().AddAction(Cont->m_vVideos[0]);
@@ -247,14 +260,30 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 				if(control) {
 					control->JumpRelative(30);
+				} else if(cMyPlugin::PlayingFile) {
+					cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
+					if(mpvPlugin) {
+						Mpv_Seek seekData;
+						seekData.SeekAbsolute = 0;
+						seekData.SeekRelative = 30;
+						mpvPlugin->Service(MPV_SEEK, &seekData);
+					}
 				} else
 					cRemote::Put(kFastFwd);
 			} else if(request.getURI().find("/playback/stepBack") != std::string::npos) {
 				cHlsPlayerControl* control = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
 				if(control) {
 					control->JumpRelative(-15);
-				}
-				cRemote::Put(kFastRew);
+				}else if(cMyPlugin::PlayingFile) {
+					cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
+					if(mpvPlugin) {
+						Mpv_Seek seekData;
+						seekData.SeekAbsolute = 0;
+						seekData.SeekRelative = -15;
+						mpvPlugin->Service(MPV_SEEK, &seekData);
+					} 
+				} else
+						cRemote::Put(kFastRew);
 			} else if(request.getURI().find("/playback/skipNext") != std::string::npos) {
 				cRemote::Put(kFastFwd);
 			} else if(request.getURI().find("/playback/skipPrevious") != std::string::npos) {

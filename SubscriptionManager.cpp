@@ -12,6 +12,7 @@
 #include "Plexservice.h"
 #include "plexgdm.h"
 #include "PlexHelper.h"
+#include "plex.h"
 
 namespace plexclient
 {
@@ -32,6 +33,42 @@ void SubscriptionManager::Notify()
 		subs.SendUpdate(GetMsg(subs.m_iCommandId), false);
 	}
 	NotifyServer();
+	ReportProgress();
+}
+
+void SubscriptionManager::ReportProgress()
+{
+	if(!m_pStatus->pVideo) {
+		return;
+	}
+	
+	try {
+		int current, total, speed;
+		bool play, forward;
+		if(!m_pStatus->PlayerStopped && m_pStatus->pControl) {
+			m_pStatus->pControl->GetIndex(current, total);
+			current = current / m_pStatus->pControl->FramesPerSecond() * 1000;
+			total = total / m_pStatus->pControl->FramesPerSecond() * 1000;
+			m_pStatus->pControl->GetReplayMode(play, forward, speed);
+		} else {
+			return;
+		}
+		
+		m_pStatus->pControl->GetReplayMode(play, forward, speed);
+		
+		std::string state = "playing";
+		if (m_pStatus->PlayerStopped)	state = "stopped";
+		else if(!play) 					state = "paused";
+		
+		Poco::Net::HTTPClientSession session(m_pStatus->pVideo->m_pServer->GetIpAdress(), m_pStatus->pVideo->m_pServer->GetPort());
+		std::string uri = "/:/progress?key=" + std::string(itoa(m_pStatus->pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(current)) + "&state=" + state;
+		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
+		session.sendRequest(req);
+
+		Poco::Net::HTTPResponse resp;
+		session.receiveResponse(resp);
+
+	} catch (Poco::Exception&) {}
 }
 
 void SubscriptionManager::NotifyServer()
@@ -249,15 +286,22 @@ void cSubscriberStatus::Replaying(const cControl* DvbPlayerControl, const char* 
 {
 	//dsyslog("[plex]: '%s'", __FUNCTION__);
 	PlayerStopped = !On;
+	
+	if(PlayerStopped) {
+		cMyPlugin::PlayingFile = false;
+	}
+	
 	pControl = const_cast<cControl*>(DvbPlayerControl);
 	cHlsPlayerControl* hlsControl = dynamic_cast<cHlsPlayerControl*>(pControl);
 	if(hlsControl) {
 		pVideo = &hlsControl->m_Video;
+	} else if(cMyPlugin::PlayingFile) {
+		pVideo = &cMyPlugin::CurrentVideo;
 	} else {
 		pVideo = NULL;
 		pControl = NULL;
 	}
-
+	
 	SubscriptionManager::GetInstance().Notify();
 }
 

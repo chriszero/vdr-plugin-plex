@@ -15,6 +15,9 @@
 volatile bool cMyPlugin::CalledFromCode = false;
 bool cMyPlugin::bSkindesigner = false;
 
+plexclient::Video cMyPlugin::CurrentVideo;
+bool cMyPlugin::PlayingFile = false;
+
 /**
 **	Initialize any member variables here.
 **
@@ -79,7 +82,7 @@ bool cMyPlugin::Start(void)
 		reg.SetViewElement(viDetailView, vedHeader, "header");
 		reg.SetViewElement(viDetailView, vedFooter, "footer");
 	*/
-	
+
 	//reg.SetMenu(meRoot, "streamselect.xml");
 	if (skindesignerapi::SkindesignerAPI::RegisterPlugin(&reg)) {
 		m_pSdCheck = new cPlexSdOsd();
@@ -169,18 +172,36 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 */
 void cMyPlugin::PlayFile(plexclient::Video Vid)
 {
+	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
+		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
+		eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
+		if(response == kOk) {
+			Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
+		}
+	}
+
 	cPlugin* mpvPlugin = cPluginManager::GetPlugin("mpv");
 
 	if(Config::GetInstance().UseMpv && mpvPlugin) {
+		CurrentVideo = Vid;
+		cMyPlugin::PlayingFile = true;
+
 		Mpv_PlayFile req;
 		Mpv_SetTitle reqTitle;
 		char* file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
-		
+
 		req.Filename = file;
 		mpvPlugin->Service(MPV_PLAY_FILE, &req);
-		
+
 		reqTitle.Title = (char*)Vid.GetTitle().c_str();
 		mpvPlugin->Service(MPV_SET_TITLE, &reqTitle);
+
+		// Set "StartAt" for mpv player
+		Mpv_Seek seekData;
+		seekData.SeekAbsolute = Vid.m_iMyPlayOffset;
+		seekData.SeekRelative = 0;
+		mpvPlugin->Service(MPV_SEEK, &seekData);
+
 		return;
 
 	} else if (Config::GetInstance().UseMpv) {
@@ -189,13 +210,6 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 
 
 	isyslog("[plex]: play file '%s'\n", Vid.m_sKey.c_str());
-	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
-		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);
-		eKeys response = Skins.Message(eMessageType::mtInfo, message, 5);
-		if(response == kOk) {
-			Vid.m_iMyPlayOffset = Vid.m_lViewoffset/1000;
-		}
-	}
 	cControl* control = cHlsPlayerControl::Create(Vid);
 	if(control) {
 		cControl::Launch(control);
