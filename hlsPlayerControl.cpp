@@ -136,15 +136,37 @@ eOSState cHlsPlayerControl::ProcessKey(eKeys Key)
 	case kDown:
 		Pause();
 		break;
+	case kFastRew:
+	case kLeft:
+			player->JumpRelative(-10);
+			break;
+	case kFastFwd:
+	case kRight:
+			player->JumpRelative(10);
+			break;
 	case kGreen|k_Repeat:
+#if APIVERSNUM >= 20200
+		player->JumpRelative(-Setup.SkipSecondsRepeat);
+		break;
+#endif
 	case kGreen:
-		//Hide();
+#if APIVERSNUM >= 20200
+		player->JumpRelative(-Setup.SkipSeconds);
+#else
 		player->JumpRelative(-300);
+#endif
 		break;
 	case kYellow|k_Repeat:
+#if APIVERSNUM >= 20200
+		player->JumpRelative(Setup.SkipSecondsRepeat);
+		break;
+#endif
 	case kYellow:
-		//Hide();
+#if APIVERSNUM >= 20200
+		player->JumpRelative(Setup.SkipSeconds);
+#else
 		player->JumpRelative(300);
+#endif
 		break;
 	case kStop:
 	case kBlue:
@@ -251,7 +273,7 @@ bool cHlsPlayerControl::ShowProgress(bool Initial)
 	if (GetIndex(Current, Total)) {
 		if (!visible) {
 			displayReplay = Skins.Current()->DisplayReplay(modeOnly);
-			displayReplay->SetButtons(NULL,"-5m","+4m",tr("Stop"));
+			displayReplay->SetButtons(NULL,tr("Skip Back"),tr("Skip Forward"),tr("Stop"));
 			SetNeedsFastResponse(true);
 			visible = true;
 		}
