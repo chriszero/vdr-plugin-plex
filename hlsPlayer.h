@@ -75,6 +75,7 @@ public:
 class cHlsPlayer : public cPlayer, cThread
 {
 private:
+	std::ofstream* m_pDebugFile;
 	int AudioIndexOffset;
 	cHlsSegmentLoader* m_pSegmentLoader;
 	plexclient::Video m_Video;

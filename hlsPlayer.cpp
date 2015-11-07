@@ -7,6 +7,7 @@
 
 #include <pcrecpp.h>
 #include <algorithm>
+#include <fstream>
 
 #include "Plexservice.h"
 #include "XmlObject.h"
@@ -340,7 +341,7 @@ bool cHlsSegmentLoader::DoLoad(void)
 			}
 		} else {
 			if(nextSegmentSize >= m_ringBufferSize) {
-				ResizeRingbuffer(nextSegmentSize + MEGABYTE(1));
+				ResizeRingbuffer(nextSegmentSize + m_ringBufferSize - m_pRingbuffer->Free() + MEGABYTE(1));
 			}
 		}
 		m_bufferFilled = result;
@@ -446,12 +447,20 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offse
 	m_isBuffering = false;
 	AudioIndexOffset = 1000; // Just a magic number
 	m_tTimer.Set(1);
+	m_pDebugFile = NULL;
+
+	//m_pDebugFile = new std::ofstream();
+	//m_pDebugFile->open("debug.ts", std::ios::out);
 }
 
 cHlsPlayer::~cHlsPlayer()
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
 	Cancel();
+	if(m_pDebugFile) m_pDebugFile->close();
+	delete m_pDebugFile;
+	m_pDebugFile = NULL;
+	
 	delete m_pSegmentLoader;
 	m_pSegmentLoader = NULL;
 	Detach();
@@ -538,6 +547,11 @@ bool cHlsPlayer::DoPlay(void)
 			uchar* toPlay = m_pSegmentLoader->m_pRingbuffer->Get(bytesAvaliable);
 			if(bytesAvaliable >= TS_SIZE) {
 				int playedBytes = PlayTs(toPlay, TS_SIZE, false);
+				// save stream to disk to debug data
+				if(m_pDebugFile) {
+					m_pDebugFile-> write((char*)toPlay, playedBytes);
+				}
+					
 				m_pSegmentLoader->m_pRingbuffer->Del(playedBytes);
 				res = true;
 			} else {
@@ -567,6 +581,7 @@ bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribut
 		Total = m_pSegmentLoader->GetStreamLenght() * FramesPerSecond();
 	}
 	Current = GetPlayedSeconds() * FramesPerSecond();
+	std::cout << "FPS: " <<  FramesPerSecond() << "STC: " << this->DeviceGetSTC() << std::endl;
 	return true;
 }
 
