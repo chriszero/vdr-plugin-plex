@@ -163,7 +163,7 @@ std::string Video::GetTitle()
 bool Video::SetStream(Stream* stream)
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
+		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/library/parts/%d?%s", m_Media.m_iPartId, stream->GetSetStreamQuery());
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
@@ -186,7 +186,7 @@ bool Video::SetStream(Stream* stream)
 bool Video::SetUnwatched()
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
+		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/:/unscrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
@@ -209,7 +209,7 @@ bool Video::SetUnwatched()
 bool Video::SetWatched()
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_pServer->GetIpAdress(), m_pServer->GetPort());
+		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
 
 		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);

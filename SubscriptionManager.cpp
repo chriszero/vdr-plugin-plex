@@ -60,7 +60,7 @@ void SubscriptionManager::ReportProgress()
 		if (m_pStatus->PlayerStopped)	state = "stopped";
 		else if(!play) 					state = "paused";
 		
-		Poco::Net::HTTPClientSession session(m_pStatus->pVideo->m_pServer->GetIpAdress(), m_pStatus->pVideo->m_pServer->GetPort());
+		Poco::Net::HTTPClientSession session(m_pStatus->pVideo->m_pServer->GetHost(), m_pStatus->pVideo->m_pServer->GetPort());
 		std::string uri = "/:/progress?key=" + std::string(itoa(m_pStatus->pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(current)) + "&state=" + state;
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
 		session.sendRequest(req);
@@ -91,10 +91,10 @@ void SubscriptionManager::NotifyServer()
 		std::string server;
 		int port;
 		if(pVid) {
-			server = pVid->m_pServer->GetIpAdress();
+			server = pVid->m_pServer->GetHost();
 			port = pVid->m_pServer->GetPort();
 		} else if ( plexgdm::GetInstance().GetPlexservers().size() > 0) {
-			server = plexgdm::GetInstance().GetPlexservers().at(0).GetIpAdress();
+			server = plexgdm::GetInstance().GetPlexservers().at(0).GetHost();
 			port = plexgdm::GetInstance().GetPlexservers().at(0).GetPort();
 		} else {
 			// no plexservers in network
@@ -198,7 +198,7 @@ std::string SubscriptionManager::GetTimelineXml()
 		msg << " controllable=\"true\"";
 		msg << " machineIdentifier=\"" << (pVid ? pVid->m_pServer->GetUuid()	 : "") << "\"";
 		msg << " protocol=\"http\"";
-		msg << " address=\"" << (pVid ? pVid->m_pServer->GetIpAdress() : "") << "\"";
+		msg << " address=\"" << (pVid ? pVid->m_pServer->GetHost() : "") << "\"";
 		msg << " port=\"" << (pVid ? pVid->m_pServer->GetPort() : 0) << "\"";
 		msg << " guid=\"" << Config::GetInstance().GetUUID() << "\"";
 		msg << " containerKey=\"" << (pVid ? pVid->m_sKey : "/library/metadata/900000") << "\"";

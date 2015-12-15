@@ -4,7 +4,3 @@ cMpvWrapper::cMpvWrapper()
 {
 }
 
-cMpvWrapper::~cMpvWrapper()
-{
-}
-

@@ -7,6 +7,11 @@
 #include "services.h"
 
 #include <libskindesignerapi/skindesignerapi.h>
+#include <Poco/Net/SSLManager.h>
+#include <Poco/SharedPtr.h>
+#include <Poco/Net/Context.h>
+#include <Poco/Net/AcceptCertificateHandler.h>
+#include <Poco/Net/ConsoleCertificateHandler.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //	cPlugin
@@ -98,12 +103,31 @@ bool cMyPlugin::Start(void)
 */
 bool cMyPlugin::Initialize(void)
 {
+	// Initialize SSL
+	{
+	using namespace Poco;
+	using namespace Poco::Net;
+	using Poco::Net::SSLManager;
+	using Poco::Net::Context;
+	using Poco::Net::AcceptCertificateHandler;
+	using Poco::Net::PrivateKeyPassphraseHandler;
+	using Poco::Net::InvalidCertificateHandler;
+	using Poco::Net::ConsoleCertificateHandler;
+	
+		//SharedPtr<PrivateKeyPassphraseHandler> pConsoleHandler = new PrivateKeyPassphraseHandler;
+		SharedPtr<InvalidCertificateHandler> pInvalidCertHandler = new AcceptCertificateHandler(false);
+		Context::Ptr pContext = new Poco::Net::Context(
+			Context::CLIENT_USE, "", "", "", Context::VERIFY_NONE, // VERIFY_NONE...?!
+			9, false, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+		SSLManager::instance().initializeClient(NULL, pInvalidCertHandler, pContext);
+	}
 	// First Startup? Save UUID
 	SetupStore("UUID", Config::GetInstance().GetUUID().c_str());
 
 	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), Config::GetInstance().GetHostname(), "3200", DESCRIPTION, VERSION);
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();
+	plexclient::Plexservice::UpdateResources();
 	cPictureCache::GetInstance().Start();
 
 	return true;

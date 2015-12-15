@@ -482,7 +482,7 @@ void cServerElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> gri
 	grid->AddIntToken("isserver", 1);
 	grid->AddStringToken("title", m_pServer->GetServerName());
 	grid->AddStringToken("serverstartpointname", m_sStartName);
-	grid->AddStringToken("serverip", m_pServer->GetIpAdress());
+	grid->AddStringToken("serverip", m_pServer->GetHost());
 	grid->AddIntToken("serverport", m_pServer->GetPort());
 	grid->AddStringToken("serverversion", m_pServer->GetVersion());
 	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
