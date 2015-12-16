@@ -127,9 +127,8 @@ bool cMyPlugin::Initialize(void)
 	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), Config::GetInstance().GetHostname(), "3200", DESCRIPTION, VERSION);
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();
-	plexclient::Plexservice::UpdateResources();
 	cPictureCache::GetInstance().Start();
-
+	
 	return true;
 }
 

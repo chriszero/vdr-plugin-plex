@@ -32,7 +32,6 @@ Device::Device(Poco::XML::Node* pNode, MediaContainer* parent)
 
 	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
 	Poco::XML::Node* pChildNode = it.nextNode();
-	std::cout << "Found Device ";
 
 	while(pChildNode) {
 		if(Poco::icompare(pChildNode->nodeName(), "Device") == 0) {

@@ -3,6 +3,7 @@
 #include <vdr/tools.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Exception.h>
 
 #include <pcrecpp.h>
@@ -10,6 +11,7 @@
 #include <fstream>
 
 #include "Plexservice.h"
+#include "plexgdm.h"
 #include "XmlObject.h"
 #include "Media.h"
 #include "Stream.h"
@@ -137,6 +139,7 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 
 			if(responseStart.getStatus() != 200) {
 				esyslog("[plex]%s Response Not Valid", __FUNCTION__);
+				Poco::StreamCopier::copyStream(indexFile, std::cout);
 				return res;
 			}
 			m_indexParser = cM3u8Parser();
@@ -175,6 +178,7 @@ bool cHlsSegmentLoader::LoadStartList(void)
 	bool res = false;
 	ConnectToServer();
 	try {
+		dsyslog("[plex]%s %s", __FUNCTION__, m_startUri.toString().c_str());
 		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, m_startUri.getPathAndQuery());
 		AddHeader(request);
 		m_pClientSession->sendRequest(request);
@@ -184,6 +188,7 @@ bool cHlsSegmentLoader::LoadStartList(void)
 
 		if(responseStart.getStatus() != 200) {
 			esyslog("[plex]%s Response Not Valid", __FUNCTION__);
+			Poco::StreamCopier::copyStream(startFile, std::cout);
 			return res;
 		}
 
@@ -295,8 +300,14 @@ void cHlsSegmentLoader::CloseConnection(void)
 bool cHlsSegmentLoader::ConnectToServer(void)
 {
 	dsyslog("[plex]%s", __FUNCTION__);
-	if(!m_pClientSession)
-		m_pClientSession = new Poco::Net::HTTPClientSession(m_startUri.getHost(), m_startUri.getPort());
+	if(!m_pClientSession) {
+		if(m_startUri.getScheme().find("https") != std::string::npos) {
+			m_pClientSession = new Poco::Net::HTTPSClientSession(m_startUri.getHost(), m_startUri.getPort());
+		}
+		else {
+			m_pClientSession = new Poco::Net::HTTPClientSession(m_startUri.getHost(), m_startUri.getPort());
+		}
+	}
 
 	return m_pClientSession->connected();
 }

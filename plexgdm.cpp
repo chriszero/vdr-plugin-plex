@@ -2,6 +2,7 @@
 #include "plexgdm.h"
 #include "Config.h"
 #include <ctime>
+#include "Plexservice.h"
 
 namespace plexclient
 {
@@ -58,6 +59,10 @@ std::string plexgdm::getClientDetails()
 
 void plexgdm::Action()
 {
+	
+	// Get remote Resources
+	Plexservice::UpdateResources();
+	
 	if(Config::GetInstance().UseConfiguredServer) {
 		// Adds a Server to vector
 		GetServer(Config::GetInstance().s_serverHost, Config::GetInstance().ServerPort);
