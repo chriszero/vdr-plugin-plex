@@ -59,14 +59,15 @@ void SubscriptionManager::ReportProgress()
 		std::string state = "playing";
 		if (m_pStatus->PlayerStopped)	state = "stopped";
 		else if(!play) 					state = "paused";
-		
-		Poco::Net::HTTPClientSession session(m_pStatus->pVideo->m_pServer->GetHost(), m_pStatus->pVideo->m_pServer->GetPort());
-		std::string uri = "/:/progress?key=" + std::string(itoa(m_pStatus->pVideo->m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(current)) + "&state=" + state;
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-		session.sendRequest(req);
 
+		std::map<std::string, std::string> queryMap;
+		queryMap["key"] = std::to_string(m_pStatus->pVideo->m_iRatingKey);
+		queryMap["identifier"] = "com.plexapp.plugins.library";
+		queryMap["time"] = std::to_string(current);
+		queryMap["state"] = state;
+		
 		Poco::Net::HTTPResponse resp;
-		session.receiveResponse(resp);
+		m_pStatus->pVideo->m_pServer->MakeRequest(resp, "/:/progress", queryMap);
 
 	} catch (Poco::Exception&) {}
 }
@@ -88,40 +89,33 @@ void SubscriptionManager::NotifyServer()
 			return;
 		}
 		
-		std::string server;
-		int port;
+		PlexServer* pServer;
 		if(pVid) {
-			server = pVid->m_pServer->GetHost();
-			port = pVid->m_pServer->GetPort();
+			pServer = pVid->m_pServer;
 		} else if ( plexgdm::GetInstance().GetPlexservers().size() > 0) {
-			server = plexgdm::GetInstance().GetPlexservers().at(0).GetHost();
-			port = plexgdm::GetInstance().GetPlexservers().at(0).GetPort();
+			pServer = &plexgdm::GetInstance().GetPlexservers().at(0);
 		} else {
 			// no plexservers in network
 			return;
 		}
+		
+		std::map<std::string, std::string> queryMap;
 
-		std::stringstream uri;
-		uri << "/:/timeline";
-		uri << "?containerKey=" << Plexservice::encode(pVid ? pVid->m_sKey : "/library/metadata/900000");
-		uri << "&key=" << Plexservice::encode(pVid ? pVid->m_sKey : "/library/metadata/900000");
-		uri << "&ratingKey=" << (pVid ? pVid->m_iRatingKey : 900000);
-		uri << "&state=";
-		if (m_pStatus->PlayerStopped)	uri << "stopped";
-		else if(!play) 					uri << "paused";
-		else 							uri << "playing";
-		uri << "&time=" << current;
-		uri << "&duration=" << total;
+		queryMap["containerKey"] = pVid ? pVid->m_sKey : "/library/metadata/900000";
+		queryMap["key"] = pVid ? pVid->m_sKey : "/library/metadata/900000";
+		queryMap["ratingKey"] = pVid ? std::to_string(pVid->m_iRatingKey) : "900000";
 
-		Poco::Net::HTTPRequest Request(Poco::Net::HTTPRequest::HTTP_GET, uri.str(), Poco::Net::HTTPMessage::HTTP_1_1);
+		if (m_pStatus->PlayerStopped)	queryMap["state"] = "stopped";
+		else if(!play) 					queryMap["state"] = "paused";
+		else 							queryMap["state"] = "playing";
+		
+		queryMap["time"] = std::to_string(current);
+		queryMap["duration"] = std::to_string(total);
 
-		PlexHelper::AddHttpHeader(Request);
-				
-		Poco::Net::HTTPClientSession session(server, port);
-
-		session.sendRequest(Request);
+		
 		Poco::Net::HTTPResponse response;
-		session.receiveResponse(response);
+		pServer->MakeRequest(response, "/:/timeline", queryMap);
+		
 
 		if(m_pStatus->PlayerStopped) {
 			m_bStoppedSent = true;

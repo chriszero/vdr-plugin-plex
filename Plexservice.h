@@ -49,10 +49,10 @@ public:
 	PlexServer* GetServer();
 	void Authenticate();
 	
-	static std::string GetUniversalTranscodeUrl(Video* video, int offset = 0, PlexServer* server = 0);
+	static std::string GetUniversalTranscodeUrl(Video* video, int offset = 0, PlexServer* server = 0, bool http = false);
 	static std::string GetMyPlexToken();
 	static std::shared_ptr<MediaContainer> GetMediaContainer(std::string fullUrl);
-	static std::string encode(std::string message);
+	//static std::string encode(std::string message);
 	static void UpdateResources();
 
 	std::string StartUri;

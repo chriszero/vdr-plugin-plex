@@ -7,11 +7,13 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <map>
 
 #include <Poco/String.h>
 #include <Poco/Net/HTTPClientSession.h>
 #include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/MessageHeader.h>
 #include <Poco/URI.h>
 
@@ -60,6 +62,11 @@ class PlexServer
 	const bool& IsLocal() const {
 		return m_bLocal;
 	}
+	void SetAuthToken(std::string token) {
+		m_authToken = token;
+	}
+	
+	std::istream& MakeRequest(Poco::Net::HTTPResponse& response, std::string path, std::map<std::string, std::string> queryParameters = std::map<std::string, std::string>());
 	
 	std::string GetHost();
 	int GetPort();

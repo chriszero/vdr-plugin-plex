@@ -33,6 +33,7 @@ private:
 	uchar* m_pBuffer;
 
 	Poco::Net::HTTPClientSession* m_pClientSession;
+	plexclient::Video* m_pVideo
 	Poco::URI m_startUri;
 	std::string m_sessionUriPart;
 	std::string m_segmentUriPart;
@@ -59,7 +60,7 @@ protected:
 	bool DoLoad(void);
 
 public:
-	cHlsSegmentLoader(std::string startm3u8);
+	cHlsSegmentLoader(std::string startm3u8, plexclient::Video* pVideo);
 	~cHlsSegmentLoader();
 
 	cRingBufferLinear*  m_pRingbuffer;

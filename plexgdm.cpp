@@ -59,14 +59,17 @@ std::string plexgdm::getClientDetails()
 
 void plexgdm::Action()
 {
-	
-	// Get remote Resources
-	Plexservice::UpdateResources();
-	
 	if(Config::GetInstance().UseConfiguredServer) {
 		// Adds a Server to vector
 		GetServer(Config::GetInstance().s_serverHost, Config::GetInstance().ServerPort);
+
+		if(Config::GetInstance().UsePlexAccount) {
+			GetServer(Config::GetInstance().s_serverHost, Config::GetInstance().ServerPort)->SetAuthToken(Plexservice::GetMyPlexToken());
+		}
 	}
+	
+	// Get remote Resources
+	Plexservice::UpdateResources();
 	
 	char buffer[1024];
 	m_registrationIsRunning = true;
@@ -177,6 +180,10 @@ void plexgdm::discover()
 			}
 			if(flag) {
 				m_vServers.push_back(PlexServer(data, host));
+				// Set token for local servers
+				if(Config::GetInstance().UsePlexAccount) {
+					m_vServers[m_vServers.size()-1].SetAuthToken(Plexservice::GetMyPlexToken());
+				}
 				isyslog("[plex] New Server Discovered: %s", host.c_str());
 			}
 		}

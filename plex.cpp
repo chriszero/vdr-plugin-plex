@@ -211,8 +211,14 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 
 		Mpv_PlayFile req;
 		Mpv_SetTitle reqTitle;
-		char* file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
-
+		char* file;
+		if(Config::GetInstance().UsePlexAccount && Vid.m_pServer->IsLocal() == false) {
+			file = (char*)plexclient::Plexservice::GetUniversalTranscodeUrl(&Vid, Vid.m_iMyPlayOffset, NULL, true).c_str();
+		}
+		else {
+			 file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
+		}
+		
 		req.Filename = file;
 		mpvPlugin->Service(MPV_PLAY_FILE, &req);
 
