@@ -1,17 +1,49 @@
 #include <vdr/tools.h>
 #include "PlexServer.h"
+#include "Config.h"
+#include "plex.h"
 
 namespace plexclient
 {
+	
+PlexServer::PlexServer(std::string ip, int port)
+{
+	m_httpSession = NULL;
+	
+	Poco::URI uri;
+	uri.setHost(ip);
+	uri.setPort(port);
+	uri.setScheme("http");
+	m_uri = uri.toString();
+}
 
 PlexServer::PlexServer(std::string data, std::string ip)
 {
+	m_httpSession = NULL;
 	ParseData(data, ip);
+}
+
+PlexServer::PlexServer(std::string uri, std::string name, std::string uuid, std::string accessToken, bool owned, bool local)
+{
+	m_httpSession = NULL;
+	m_sServerName = name;
+	m_sUuid = uuid;
+	m_nOwned = owned;
+	m_bLocal = local;
+	m_authToken = accessToken;
+	
+	m_uri = uri;
+}
+
+PlexServer::~PlexServer()
+{
+	delete m_httpSession;
+	m_httpSession = NULL;
 }
 
 void PlexServer::ParseData(std::string data, std::string ip)
 {
-	m_sIpAddress = ip;
+	int port = 0;
 	std::istringstream f(data);
 	std::string s;
 	Offline = false;
@@ -27,7 +59,7 @@ void PlexServer::ParseData(std::string data, std::string ip)
 			} else if (name == "Name") {
 				m_sServerName = val;
 			} else if (name == "Port") {
-				m_nPort = atoi(val.c_str());
+				port = atoi(val.c_str());
 			} else if (name == "Updated-At") {
 				m_nUpdated = atol(val.c_str());
 			} else if (name == "Version") {
@@ -35,17 +67,81 @@ void PlexServer::ParseData(std::string data, std::string ip)
 			}
 		}
 	}
+	
+	m_bLocal = true;
+	
+	Poco::URI uri;
+	
+	uri.setHost(ip);
+	uri.setPort(port);
+	uri.setScheme("http");
+	
+	m_uri = uri.toString();
 }
 
-PlexServer::PlexServer(std::string ip, int port)
+std::string PlexServer::GetHost()
 {
-	m_sIpAddress = ip;
-	m_nPort = port;
+	Poco::URI uri(m_uri);
+	return uri.getHost();
+}
+
+int PlexServer::GetPort()
+{
+	Poco::URI uri(m_uri);
+	return uri.getPort();
+}
+
+Poco::Net::HTTPClientSession* PlexServer::GetClientSession()
+{
+	Poco::URI uri(m_uri);
+	if(m_httpSession == NULL) {
+		if(uri.getScheme().find("https") != std::string::npos) {
+			m_httpSession = new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort());
+		}
+		else {
+			m_httpSession = new Poco::Net::HTTPClientSession(uri.getHost(), uri.getPort());
+		}
+	}
+	return m_httpSession;
+}
+
+std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::string path, const std::map<std::string, std::string>& queryParameters)
+{
+	Poco::URI uri(path);
+	// Create a request with an optional query
+	if(queryParameters.size()) {
+		for (auto const& pair : queryParameters) {
+			// addQueryParameter does the encode already
+			uri.addQueryParameter(pair.first, pair.second);
+		}
+	}
+	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, uri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
+
+	request.add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
+	request.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
+	request.add("X-Plex-Device", "PC");
+	request.add("X-Plex-Device-Name", Config::GetInstance().GetHostname());
+	request.add("X-Plex-Language", Config::GetInstance().GetLanguage());
+	request.add("X-Plex-Model", "Linux");
+	request.add("X-Plex-Platform", "VDR");
+	request.add("X-Plex-Product", "plex for vdr");
+	request.add("X-Plex-Provides", "player");
+	request.add("X-Plex-Version", VERSION);
+
+	if(Config::GetInstance().UsePlexAccount && !GetAuthToken().empty()) {
+		// Add PlexToken to Header
+		request.add("X-Plex-Token", GetAuthToken());
+	}
+	
+	GetClientSession()->sendRequest(request);
+
+	return GetClientSession()->receiveResponse(response);
+	
 }
 
 std::string PlexServer::GetUri()
 {
-	return std::string("http://") + m_sIpAddress + ":" + std::string(itoa(m_nPort));
+	return  m_uri;
 }
 
 }

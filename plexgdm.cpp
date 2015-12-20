@@ -2,6 +2,7 @@
 #include "plexgdm.h"
 #include "Config.h"
 #include <ctime>
+#include "Plexservice.h"
 
 namespace plexclient
 {
@@ -61,7 +62,14 @@ void plexgdm::Action()
 	if(Config::GetInstance().UseConfiguredServer) {
 		// Adds a Server to vector
 		GetServer(Config::GetInstance().s_serverHost, Config::GetInstance().ServerPort);
+
+		if(Config::GetInstance().UsePlexAccount) {
+			GetServer(Config::GetInstance().s_serverHost, Config::GetInstance().ServerPort)->SetAuthToken(Plexservice::GetMyPlexToken());
+		}
 	}
+	
+	// Get remote Resources
+	Plexservice::UpdateResources();
 	
 	char buffer[1024];
 	m_registrationIsRunning = true;
@@ -164,7 +172,7 @@ void plexgdm::discover()
 			bool flag = true;
 			// Check for duplicates
 			for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
-				if(s_it->GetIpAdress() == host) {
+				if(s_it->GetHost() == host) {
 					flag = false;
 					s_it->ParseData(data, host);
 					dsyslog("[plex] Server Updated: %s", host.c_str());
@@ -172,6 +180,10 @@ void plexgdm::discover()
 			}
 			if(flag) {
 				m_vServers.push_back(PlexServer(data, host));
+				// Set token for local servers
+				if(Config::GetInstance().UsePlexAccount) {
+					m_vServers[m_vServers.size()-1].SetAuthToken(Plexservice::GetMyPlexToken());
+				}
 				isyslog("[plex] New Server Discovered: %s", host.c_str());
 			}
 		}
@@ -194,7 +206,7 @@ void plexgdm::stopRegistration()
 PlexServer* plexgdm::GetServer(std::string ip, int port)
 {
 	for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
-		if(s_it->GetIpAdress() == ip && s_it->GetPort() == port) {
+		if(s_it->GetHost() == ip && s_it->GetPort() == port) {
 			return &(*s_it);
 		}
 	}
@@ -206,6 +218,28 @@ PlexServer* plexgdm::GetFirstServer()
 {
 	if(m_vServers.size() > 0 && !m_vServers[0].Offline) return &m_vServers[0];
 	else return NULL;
+}
+
+PlexServer* plexgdm::GetServer(std::string uuid)
+{
+	for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
+		if(s_it->GetUuid() == uuid ){
+			return &(*s_it);
+		}
+	}
+	return NULL;
+}
+
+void plexgdm::AddServer(PlexServer server)
+{
+	for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
+		if(s_it->GetUuid() == server.GetUuid() ){
+			dsyslog("[plex] Server already in list: %s", server.GetUri().c_str());
+			return;
+		}
+	}
+	m_vServers.push_back(server);
+	isyslog("[plex] New Server Added: %s", server.GetUri().c_str());
 }
 
 } // namespace

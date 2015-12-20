@@ -5,8 +5,6 @@ class cMpvWrapper
 {
 public:
 	cMpvWrapper();
-	~cMpvWrapper();
-
 };
 
 #endif // CMPVWRAPPER_H

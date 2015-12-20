@@ -122,7 +122,7 @@ std::string cPictureCache::TranscodeUri(std::string uri, int width, int height)
 	std::string host = u.getHost();
 	auto plServer = plexclient::plexgdm::GetInstance().GetFirstServer();
 	if (plServer) {
-		host = plServer->GetIpAdress();
+		host = plServer->GetHost();
 		port = plServer->GetPort();
 	}
 

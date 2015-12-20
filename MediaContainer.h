@@ -19,6 +19,7 @@
 #include "PVideo.h"
 #include "PlexServer.h"
 #include "Config.h"
+#include "device.h"
 
 using Poco::XML::DOMParser;
 using Poco::XML::InputSource;
@@ -33,11 +34,13 @@ namespace plexclient
 {
 class Video;
 class Directory;
+class Device;
 
 class MediaContainer: XmlObject
 {
 public:
 	MediaContainer(std::istream *response, PlexServer* Server);
+	MediaContainer(std::istream *response);
 
 protected:
 
@@ -45,6 +48,7 @@ protected:
 public:
 	std::vector<Directory> m_vDirectories;
 	std::vector<Video> m_vVideos;
+	std::vector<Device> m_vDevices;
 
 	bool m_bAllowSync;
 	std::string m_sArt;

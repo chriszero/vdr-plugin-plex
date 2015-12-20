@@ -34,12 +34,9 @@ std::string Plexservice::GetMyPlexToken()
 		b64.close();
 		std::string tempToken = ss.str();
 
-		Poco::Net::Context::Ptr context = new Poco::Net::Context(
-		    Poco::Net::Context::CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE, // VERIFY_NONE...?!
-		    9, false, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
 
 		try {
-			Poco::Net::HTTPSClientSession plexSession("plex.tv", 443, context);
+			Poco::Net::HTTPSClientSession plexSession("plex.tv", 443);
 			Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, "/users/sign_in.xml", Poco::Net::HTTPMessage::HTTP_1_1);
 
 			PlexHelper::AddHttpHeader(request);
@@ -53,6 +50,7 @@ std::string Plexservice::GetMyPlexToken()
 				// parse the XML Response
 				user u(&rs);
 				myToken = u.authenticationToken;
+				isyslog("[plex] plex.tv login successfull.");
 			} else {
 				esyslog("[plex] plex.tv Login failed, check you creditials.");
 			}
@@ -74,7 +72,7 @@ void Plexservice::Authenticate()
 		std::string token = GetMyPlexToken();
 		auto pRequest = CreateRequest("/?X-Plex-Token=" + token);
 
-		Poco::Net::HTTPClientSession session(pServer->GetIpAdress(), pServer->GetPort());
+		Poco::Net::HTTPClientSession session(pServer->GetHost(), pServer->GetPort());
 		session.sendRequest(*pRequest);
 		Poco::Net::HTTPResponse response;
 		/*std::istream &rs = */
@@ -84,6 +82,59 @@ void Plexservice::Authenticate()
 		//Poco::StreamCopier::copyStream(rs, std::cout);
 	} catch (Poco::Exception &exc) {
 		esyslog("[plex]Exception in %s s%", __func__, exc.displayText().c_str() );
+	}
+}
+
+void Plexservice::UpdateResources()
+{
+	// We must be autenticated
+	// https://plex.tv/api/resources?includeHttps=1
+	if(!Config::GetInstance().UsePlexAccount) {
+		isyslog("[plex] To access remote servers, please login with your plex.tv account.");
+		return; // Plugin is used without plex.tv login
+	}
+	isyslog("[plex] Updating remote resources...");
+
+
+	std::shared_ptr<MediaContainer> pContainer = nullptr;
+	try {
+		Poco::URI fileuri("https://plex.tv/api/resources?includeHttps=1");
+
+		Poco::Net::HTTPSClientSession session(fileuri.getHost(), 443);		
+
+		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
+		PlexHelper::AddHttpHeader(request);
+		request.add("X-Plex-Token", GetMyPlexToken() );
+
+		session.sendRequest(request);
+		Poco::Net::HTTPResponse response;
+		std::istream &rs = session.receiveResponse(response);
+		
+		//Poco::StreamCopier::copyStream(rs, std::cout);
+
+		pContainer = std::shared_ptr<MediaContainer>(new MediaContainer(&rs));
+
+	} catch (Poco::Net::NetException &exc) {
+		std::cout << exc.displayText() << std::endl;
+		return;
+	}
+
+	for(std::vector<Device>::iterator d_it = pContainer->m_vDevices.begin(); d_it != pContainer->m_vDevices.end(); ++d_it) {
+
+		// check device is a server
+		if(d_it->m_sProvides.find("server") != std::string::npos) {
+			// is it a remote server?
+			if(d_it->m_bPublicAddressMatches == false) {
+				// pick remote connection
+				for(std::vector<Connection>::iterator c_it = d_it->m_vConnections.begin(); c_it != d_it->m_vConnections.end(); ++c_it) {
+					if(c_it->m_bLocal == false) {
+						dsyslog("[plex] Found remote server: %s", d_it->m_sName.c_str());
+						// a remote Server
+						plexgdm::GetInstance().AddServer(PlexServer(c_it->m_sUri, d_it->m_sName, d_it->m_sClientIdentifier, d_it->m_sAccessToken, d_it->m_bOwned, c_it->m_bLocal));
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -107,16 +158,13 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 			m_vUriStack.push(uri);
 		}
 
-		Poco::Net::HTTPClientSession session(pServer->GetIpAdress(), pServer->GetPort());
-		session.sendRequest(*pRequest);
+		dsyslog("[plex] URI: %s%s", pServer->GetUri().c_str(), uri.c_str());
+		
 		Poco::Net::HTTPResponse response;
-		std::istream &rs = session.receiveResponse(response);
-
-		dsyslog("[plex] URI: http://%s:%d%s", pServer->GetIpAdress().c_str(), pServer->GetPort(), uri.c_str());
+		std::istream &rs = pServer->MakeRequest(response, uri);;
 
 		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, pServer));
 
-		session.abort();
 		return pAllsections;
 
 	} catch (Poco::Net::NetException &exc) {
@@ -153,8 +201,13 @@ std::unique_ptr<Poco::Net::HTTPRequest> Plexservice::CreateRequest(std::string p
 	if(Config::GetInstance().UsePlexAccount) {
 		// Add PlexToken to Header
 		std::string token = GetMyPlexToken();
-		if(!token.empty())
+		if(pServer && !pServer->GetAuthToken().empty()) {
+			pRequest->add("X-Plex-Token", pServer->GetAuthToken());
+			dsyslog("[plex] Using server access token");
+		} else if(!token.empty()) {
 			pRequest->add("X-Plex-Token", token);
+			dsyslog("[plex] Using global access token");
+		}
 	}
 
 	return pRequest;
@@ -162,68 +215,75 @@ std::unique_ptr<Poco::Net::HTTPRequest> Plexservice::CreateRequest(std::string p
 
 std::shared_ptr<MediaContainer> Plexservice::GetMediaContainer(std::string fullUrl)
 {
+	PlexServer* pServer = NULL;
 	try {
 		Poco::URI fileuri(fullUrl);
-		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
-		PlexHelper::AddHttpHeader(request);
+		dsyslog("[plex] GetMediaContainer: %s", fullUrl.c_str());
 
-		Poco::Net::HTTPClientSession session(fileuri.getHost(), fileuri.getPort());
-
-		session.sendRequest(request);
+		pServer = plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort());
+		
 		Poco::Net::HTTPResponse response;
-		std::istream &rs = session.receiveResponse(response);
+		std::istream &rs = pServer->MakeRequest(response, fileuri.getPathAndQuery());
 
-		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort())));
+		//Poco::StreamCopier::copyStream(rs, std::cout);
 
-		session.abort();
+		std::shared_ptr<MediaContainer> pAllsections = std::shared_ptr<MediaContainer>(new MediaContainer(&rs, pServer));
 		return pAllsections;
 	} catch (Poco::Net::NetException &exc) {
+		std::cout << exc.displayText() << std::endl;
 		return 0;
 	}
 }
-
+/*
 std::string Plexservice::encode(std::string message)
 {
 	std::string temp;
 	Poco::URI::encode(message, " !\"#$%&'()*+,/:;=?@[]", temp);
 	return temp;
 }
-
-std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server)
+*/
+std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server, bool http)
 {
 	PlexServer* pSrv = server ? server : video->m_pServer;
-	std::stringstream params;
-	params << "/video/:/transcode/universal/start.m3u8?";
-	params << "path=" << encode(pSrv->GetUri() + video->m_sKey);
-	params << "&mediaIndex=0";
-	params << "&partIndex=0";
-	params << "&protocol=hls";
-	params << "&offset=" << offset;
-	params << "&fastSeek=0";
-	params << "&directPlay=0";
-	params << "&directStream=1";
-	params << "&maxVideoBitrate=20000";
-	params << "&subtitles=burn";
-	//params << "&subtitleSize=90";
-	//params << "&skipSubtitles=1";
-	//params << "&audioBoost=100";
-	params << "&videoResolution=1920x1080";
-	params << "&videoQuality=100";
-	params << "&session=" << encode(Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
+	Poco::URI transcodeUri(pSrv->GetUri());
+	transcodeUri.setPath("/video/:/transcode/universal/start.m3u8");
 	
-	params << "&includeCodecs=1";
-	params << "&copyts=1";
+	// Force set localhost and http
+	Poco::URI pathUri(pSrv->GetUri()+video->m_sKey);
+	pathUri.setHost("127.0.0.1");
+	pathUri.setScheme("http");
 	
+	transcodeUri.addQueryParameter("path", pathUri.toString());
+	transcodeUri.addQueryParameter("mediaIndex", "0");
+	transcodeUri.addQueryParameter("partIndex", "0");
+	transcodeUri.addQueryParameter("protocol", "hls");
+	transcodeUri.addQueryParameter("offset", std::to_string(offset) );
+	transcodeUri.addQueryParameter("fastSeek", "1");
+	transcodeUri.addQueryParameter("directPlay", "0");
+	transcodeUri.addQueryParameter("directStream", "1");
+	transcodeUri.addQueryParameter("subtitles", "burn");
+	transcodeUri.addQueryParameter("audioBoost", "100");
+	
+	if(pSrv->IsLocal()) {
+		transcodeUri.addQueryParameter("videoResolution", "1920x1080");
+		transcodeUri.addQueryParameter("maxVideoBitrate", "20000");
+		transcodeUri.addQueryParameter("videoQuality", "100");
+	} else {
+		transcodeUri.addQueryParameter("videoResolution", "1280x720");
+		transcodeUri.addQueryParameter("maxVideoBitrate", "8000");
+		transcodeUri.addQueryParameter("videoQuality", "100");
+	}
+	transcodeUri.addQueryParameter("session", Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
+	transcodeUri.addQueryParameter("includeCodecs", "1");
+	transcodeUri.addQueryParameter("copyts", "1");
+
 	if(Config::GetInstance().UseAc3) {
-		params << "&X-Plex-Client-Profile-Extra=";
-		if(Config::GetInstance().UseAc3)
-			params << encode("add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)");
-			
+		transcodeUri.addQueryParameter("X-Plex-Client-Profile-Extra", "add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.height&value=1080)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.frameRate&value=25)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.frameRate&value=25)");
 	}
-	return pSrv->GetUri() + params.str();
+	return transcodeUri.toString();
 }
 
 }

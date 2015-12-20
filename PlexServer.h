@@ -7,10 +7,13 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <map>
 
 #include <Poco/String.h>
 #include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/MessageHeader.h>
 #include <Poco/URI.h>
 
@@ -21,16 +24,16 @@ class PlexServer
 {
 	friend class plexgdm;
 
-public:
+	public:
+	PlexServer(std::string uri, std::string name, std::string uuid, std::string accessToken, bool owned, bool local);
+	~PlexServer();
+	
 	int GetMaster() const {
 		return m_nMaster;
 	}
 
-	int GetOwned() const {
+	int IsOwned() const {
 		return m_nOwned;
-	}
-	int GetPort() const {
-		return m_nPort;
 	}
 	const std::string& GetContentType() const {
 		return m_sContentType;
@@ -53,11 +56,24 @@ public:
 	const std::string& GetVersion() const {
 		return m_sVersion;
 	}
-	const std::string& GetIpAdress() const {
-		return m_sIpAddress;
+	const std::string& GetAuthToken() const {
+		return m_authToken;
 	}
-
+	const bool& IsLocal() const {
+		return m_bLocal;
+	}
+	void SetAuthToken(std::string token) {
+		m_authToken = token;
+	}
+	
+	std::istream& MakeRequest(Poco::Net::HTTPResponse& response, std::string path, const std::map<std::string, std::string>& queryParameters = std::map<std::string, std::string>());
+	
+	std::string GetHost();
+	int GetPort();
+	
 	std::string GetUri();
+	
+	Poco::Net::HTTPClientSession* GetClientSession();
 
 	void DiscoverSettings();
 	bool Offline;
@@ -73,15 +89,17 @@ private:
 	std::string m_sDiscovery;
 
 	int m_nOwned;
+	bool m_bLocal;
 	int m_nMaster;
 	std::string m_sRole;
 	std::string m_sContentType;
 	std::string m_sUuid;
 	std::string m_sServerName;
-	std::string m_sIpAddress;
-	int m_nPort;
+	std::string m_uri;
+	std::string m_authToken;
 	long m_nUpdated;
 	std::string m_sVersion;
+	Poco::Net::HTTPClientSession* m_httpSession;
 
 };
 

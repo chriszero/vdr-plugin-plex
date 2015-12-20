@@ -3,6 +3,7 @@
 #include <vdr/tools.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Exception.h>
 
 #include <pcrecpp.h>
@@ -10,6 +11,7 @@
 #include <fstream>
 
 #include "Plexservice.h"
+#include "plexgdm.h"
 #include "XmlObject.h"
 #include "Media.h"
 #include "Stream.h"
@@ -18,8 +20,9 @@ static cMutex hlsMutex;
 
 //--- cHlsSegmentLoader
 
-cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8)
+cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8, plexclient::Video* pVideo)
 {
+	m_pVideo = pVideo;
 	m_newList = false;
 	m_bufferFilled = false;
 	m_lastLoadedSegment = 0;
@@ -74,7 +77,7 @@ void cHlsSegmentLoader::Action(void)
 	m_ringBufferSize = MEGABYTE(estSize*m_segmentsToBuffer);
 
 	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*m_segmentsToBuffer);
-
+	
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
 	while(Running()) {
@@ -137,6 +140,7 @@ bool cHlsSegmentLoader::LoadIndexList(void)
 
 			if(responseStart.getStatus() != 200) {
 				esyslog("[plex]%s Response Not Valid", __FUNCTION__);
+				Poco::StreamCopier::copyStream(indexFile, std::cout);
 				return res;
 			}
 			m_indexParser = cM3u8Parser();
@@ -175,6 +179,7 @@ bool cHlsSegmentLoader::LoadStartList(void)
 	bool res = false;
 	ConnectToServer();
 	try {
+		dsyslog("[plex]%s %s", __FUNCTION__, m_startUri.toString().c_str());
 		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, m_startUri.getPathAndQuery());
 		AddHeader(request);
 		m_pClientSession->sendRequest(request);
@@ -184,6 +189,7 @@ bool cHlsSegmentLoader::LoadStartList(void)
 
 		if(responseStart.getStatus() != 200) {
 			esyslog("[plex]%s Response Not Valid", __FUNCTION__);
+			Poco::StreamCopier::copyStream(startFile, std::cout);
 			return res;
 		}
 
@@ -232,7 +238,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 	}
 	Poco::Net::HTTPResponse segmentResponse;
 	std::istream& segmentFile = m_pClientSession->receiveResponse(segmentResponse);
-
+	
 	if(segmentResponse.getStatus() != 200) {
 		// error
 		esyslog("[plex] %s; %s failed.", __FUNCTION__, segmentUri.c_str());
@@ -240,8 +246,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 	}
 	dsyslog("[plex] %s: %s successfully.", __FUNCTION__, segmentUri.c_str());
 
-	// copy response
-
+	// copy response	
 	int m = 0;
 	segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
 	std::streamsize n = segmentFile.gcount();
@@ -295,8 +300,14 @@ void cHlsSegmentLoader::CloseConnection(void)
 bool cHlsSegmentLoader::ConnectToServer(void)
 {
 	dsyslog("[plex]%s", __FUNCTION__);
-	if(!m_pClientSession)
-		m_pClientSession = new Poco::Net::HTTPClientSession(m_startUri.getHost(), m_startUri.getPort());
+	if(!m_pClientSession) {
+		if(m_startUri.getScheme().find("https") != std::string::npos) {
+			m_pClientSession = new Poco::Net::HTTPSClientSession(m_startUri.getHost(), m_startUri.getPort());
+		}
+		else {
+			m_pClientSession = new Poco::Net::HTTPClientSession(m_startUri.getHost(), m_startUri.getPort());
+		}
+	}
 
 	return m_pClientSession->connected();
 }
@@ -324,10 +335,8 @@ bool cHlsSegmentLoader::DoLoad(void)
 					recover = true;
 					std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
 					try {
-						Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
-						m_pClientSession->sendRequest(req);
 						Poco::Net::HTTPResponse reqResponse;
-						m_pClientSession->receiveResponse(reqResponse);
+						m_pVideo->m_pServer->MakeRequest(reqResponse, stopUri);
 						int tmp = m_lastLoadedSegment;
 						int tmp2 = m_lastSegmentSize;
 						CloseConnection();
@@ -361,10 +370,9 @@ bool cHlsSegmentLoader::StopLoader(void)
 	dsyslog("[plex]%s", __FUNCTION__);
 	try {
 		std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
-		m_pClientSession->sendRequest(req);
+		
 		Poco::Net::HTTPResponse reqResponse;
-		m_pClientSession->receiveResponse(reqResponse);
+		m_pVideo->m_pServer->MakeRequest(reqResponse, stopUri);
 
 		Cancel();
 
@@ -386,6 +394,11 @@ void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
 		req.add("X-Plex-Product", "Plex Home Theater");
 		req.add("X-Plex-Platform", "Plex Home Theater");
 	}
+	
+	if(Config::GetInstance().UsePlexAccount && !m_pVideo->m_pServer->GetAuthToken().empty()) {
+		// Add PlexToken to Header
+		req.add("X-Plex-Token", m_pVideo->m_pServer->GetAuthToken());
+	}
 }
 
 bool cHlsSegmentLoader::Active(void)
@@ -398,11 +411,9 @@ void cHlsSegmentLoader::Ping(void)
 	dsyslog("[plex]%s", __FUNCTION__);
 	try {
 		std::string uri = "/video/:/transcode/universal/ping?session=" + Config::GetInstance().GetUUID();
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-		AddHeader(req);
-		m_pClientSession->sendRequest(req);
+		
 		Poco::Net::HTTPResponse reqResponse;
-		m_pClientSession->receiveResponse(reqResponse);
+		m_pVideo->m_pServer->MakeRequest(reqResponse, uri);
 
 	} catch(Poco::Exception& exc) {
 		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
@@ -438,7 +449,6 @@ int cHlsSegmentLoader::GetStreamLenght()
 cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offset)
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
-	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8);
 	m_Video = Video;
 	m_timeOffset = offset;
 	m_jumpOffset = 0;
@@ -447,8 +457,9 @@ cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offse
 	m_isBuffering = false;
 	AudioIndexOffset = 1000; // Just a magic number
 	m_tTimer.Set(1);
+	m_pSegmentLoader = new cHlsSegmentLoader(startm3u8, &m_Video);
+	
 	m_pDebugFile = NULL;
-
 	//m_pDebugFile = new std::ofstream();
 	//m_pDebugFile->open("debug.ts", std::ios::out);
 }
@@ -581,7 +592,6 @@ bool cHlsPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribut
 		Total = m_pSegmentLoader->GetStreamLenght() * FramesPerSecond();
 	}
 	Current = GetPlayedSeconds() * FramesPerSecond();
-	std::cout << "FPS: " <<  FramesPerSecond() << "STC: " << this->DeviceGetSTC() << std::endl;
 	return true;
 }
 
@@ -667,15 +677,10 @@ void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tT
 	}
 	// Then do the request
 	if(streamId > 0) {
-		Poco::Net::HTTPClientSession session(m_Video.m_pServer->GetIpAdress(), m_Video.m_pServer->GetPort());
-
 		std::string uri = "/library/parts/" + std::string(itoa(m_Video.m_Media.m_iPartId)) + "?audioStreamID=" + std::string(itoa(streamId));
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
-		session.sendRequest(req);
 
 		Poco::Net::HTTPResponse resp;
-		session.receiveResponse(resp);
-
+		m_Video.m_pServer->MakeRequest(resp, uri);
 		if(resp.getStatus() == 200) {
 			DeviceSetCurrentAudioTrack(eTrackType(ttDolby + 0)); // hacky
 			DeviceSetAvailableTrack(ttDolby, 0, 0, TrackId->language);
@@ -719,13 +724,10 @@ void cHlsPlayer::ReportProgress(bool stopped)
 	}
 
 	try {
-		Poco::Net::HTTPClientSession session(m_Video.m_pServer->GetIpAdress(), m_Video.m_pServer->GetPort());
 		std::string uri = "/:/progress?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-		session.sendRequest(req);
 
 		Poco::Net::HTTPResponse resp;
-		session.receiveResponse(resp);
+		m_Video.m_pServer->MakeRequest(resp, uri);
 
 		if(resp.getStatus() == 200) {
 			dsyslog("[plex] %s", __FUNCTION__);
@@ -736,14 +738,11 @@ void cHlsPlayer::ReportProgress(bool stopped)
 
 void cHlsPlayer::SetWatched(void)
 {
-	Poco::Net::HTTPClientSession session(m_Video.m_pServer->GetIpAdress(), m_Video.m_pServer->GetPort());
 	std::string uri = "/:/scrobble?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library";
-	Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-	session.sendRequest(req);
 
 	Poco::Net::HTTPResponse resp;
-	session.receiveResponse(resp);
-
+	m_Video.m_pServer->MakeRequest(resp, uri);
+	
 	if(resp.getStatus() == 200) {
 		dsyslog("[plex] %s", __FUNCTION__);
 	}
