@@ -33,12 +33,12 @@ private:
 	uchar* m_pBuffer;
 
 	Poco::Net::HTTPClientSession* m_pClientSession;
-	plexclient::Video* m_pVideo
+	plexclient::Video* m_pVideo;
 	Poco::URI m_startUri;
 	std::string m_sessionUriPart;
 	std::string m_segmentUriPart;
 	std::string m_sessionCookie;
-
+	
 	cM3u8Parser m_startParser;
 	cM3u8Parser m_indexParser;
 

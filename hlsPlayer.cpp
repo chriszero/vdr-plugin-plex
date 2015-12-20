@@ -77,7 +77,7 @@ void cHlsSegmentLoader::Action(void)
 	m_ringBufferSize = MEGABYTE(estSize*m_segmentsToBuffer);
 
 	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*m_segmentsToBuffer);
-
+	
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
 	while(Running()) {
@@ -238,7 +238,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 	}
 	Poco::Net::HTTPResponse segmentResponse;
 	std::istream& segmentFile = m_pClientSession->receiveResponse(segmentResponse);
-
+	
 	if(segmentResponse.getStatus() != 200) {
 		// error
 		esyslog("[plex] %s; %s failed.", __FUNCTION__, segmentUri.c_str());
@@ -246,8 +246,7 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 	}
 	dsyslog("[plex] %s: %s successfully.", __FUNCTION__, segmentUri.c_str());
 
-	// copy response
-
+	// copy response	
 	int m = 0;
 	segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
 	std::streamsize n = segmentFile.gcount();
@@ -336,10 +335,8 @@ bool cHlsSegmentLoader::DoLoad(void)
 					recover = true;
 					std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
 					try {
-						Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
-						m_pClientSession->sendRequest(req);
 						Poco::Net::HTTPResponse reqResponse;
-						m_pClientSession->receiveResponse(reqResponse);
+						m_pVideo->m_pServer->MakeRequest(reqResponse, stopUri);
 						int tmp = m_lastLoadedSegment;
 						int tmp2 = m_lastSegmentSize;
 						CloseConnection();
@@ -373,10 +370,9 @@ bool cHlsSegmentLoader::StopLoader(void)
 	dsyslog("[plex]%s", __FUNCTION__);
 	try {
 		std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, stopUri);
-		m_pClientSession->sendRequest(req);
+		
 		Poco::Net::HTTPResponse reqResponse;
-		m_pClientSession->receiveResponse(reqResponse);
+		m_pVideo->m_pServer->MakeRequest(reqResponse, stopUri);
 
 		Cancel();
 
@@ -398,6 +394,11 @@ void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
 		req.add("X-Plex-Product", "Plex Home Theater");
 		req.add("X-Plex-Platform", "Plex Home Theater");
 	}
+	
+	if(Config::GetInstance().UsePlexAccount && !m_pVideo->m_pServer->GetAuthToken().empty()) {
+		// Add PlexToken to Header
+		req.add("X-Plex-Token", m_pVideo->m_pServer->GetAuthToken());
+	}
 }
 
 bool cHlsSegmentLoader::Active(void)
@@ -410,11 +411,9 @@ void cHlsSegmentLoader::Ping(void)
 	dsyslog("[plex]%s", __FUNCTION__);
 	try {
 		std::string uri = "/video/:/transcode/universal/ping?session=" + Config::GetInstance().GetUUID();
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-		AddHeader(req);
-		m_pClientSession->sendRequest(req);
+		
 		Poco::Net::HTTPResponse reqResponse;
-		m_pClientSession->receiveResponse(reqResponse);
+		m_pVideo->m_pServer->MakeRequest(reqResponse, uri);
 
 	} catch(Poco::Exception& exc) {
 		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());

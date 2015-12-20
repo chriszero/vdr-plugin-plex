@@ -67,8 +67,8 @@ void PlexServer::ParseData(std::string data, std::string ip)
 			}
 		}
 	}
-	delete m_httpSession;
-	m_httpSession = NULL;
+	
+	m_bLocal = true;
 	
 	Poco::URI uri;
 	
@@ -105,7 +105,7 @@ Poco::Net::HTTPClientSession* PlexServer::GetClientSession()
 	return m_httpSession;
 }
 
-std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::string path, std::map<std::string, std::string> queryParameters)
+std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::string path, const std::map<std::string, std::string>& queryParameters)
 {
 	Poco::URI uri(path);
 	// Create a request with an optional query
@@ -115,7 +115,6 @@ std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::st
 			uri.addQueryParameter(pair.first, pair.second);
 		}
 	}
-	
 	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, uri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
 
 	request.add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17");
@@ -135,6 +134,7 @@ std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::st
 	}
 	
 	GetClientSession()->sendRequest(request);
+
 	return GetClientSession()->receiveResponse(response);
 	
 }
