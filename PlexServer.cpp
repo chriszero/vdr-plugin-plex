@@ -15,6 +15,7 @@ PlexServer::PlexServer(std::string ip, int port)
 	uri.setPort(port);
 	uri.setScheme("http");
 	m_uri = uri.toString();
+	Offline = false;
 }
 
 PlexServer::PlexServer(std::string data, std::string ip)
@@ -31,7 +32,7 @@ PlexServer::PlexServer(std::string uri, std::string name, std::string uuid, std:
 	m_nOwned = owned;
 	m_bLocal = local;
 	m_authToken = accessToken;
-	
+	Offline = false;
 	m_uri = uri;
 }
 
@@ -102,10 +103,11 @@ Poco::Net::HTTPClientSession* PlexServer::GetClientSession()
 			m_httpSession = new Poco::Net::HTTPClientSession(uri.getHost(), uri.getPort());
 		}
 	}
+	m_httpSession->setTimeout(Poco::Timespan(5, 0)); // set 5 seconds Timeout
 	return m_httpSession;
 }
 
-std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::string path, const std::map<std::string, std::string>& queryParameters)
+std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, bool& ok, std::string path, const std::map<std::string, std::string>& queryParameters)
 {
 	Poco::URI uri(path);
 	// Create a request with an optional query
@@ -132,10 +134,15 @@ std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, std::st
 		// Add PlexToken to Header
 		request.add("X-Plex-Token", GetAuthToken());
 	}
-	
-	GetClientSession()->sendRequest(request);
-
-	return GetClientSession()->receiveResponse(response);
+	try {
+		GetClientSession()->sendRequest(request);
+	} catch (Poco::TimeoutException &exc) {
+		esyslog("[plex] Timeout: %s", path);
+		ok = false;
+	}
+	std::istream& stream = GetClientSession()->receiveResponse(response);
+	ok = response.getStatus() == 200;
+	return stream;
 	
 }
 

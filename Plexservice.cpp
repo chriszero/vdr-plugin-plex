@@ -128,7 +128,7 @@ void Plexservice::UpdateResources()
 				// pick remote connection
 				for(std::vector<Connection>::iterator c_it = d_it->m_vConnections.begin(); c_it != d_it->m_vConnections.end(); ++c_it) {
 					if(c_it->m_bLocal == false) {
-						dsyslog("[plex] Found remote server: %s", d_it->m_sName.c_str());
+						dsyslog("[plex] Found server via plex.tv: %s", d_it->m_sName.c_str());
 						// a remote Server
 						plexgdm::GetInstance().AddServer(PlexServer(c_it->m_sUri, d_it->m_sName, d_it->m_sClientIdentifier, d_it->m_sAccessToken, d_it->m_bOwned, c_it->m_bLocal));
 					}
@@ -153,7 +153,6 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 			uri = Poco::format("%s/%s", m_vUriStack.top(), section);
 		}
 
-		auto pRequest = CreateRequest(uri);
 		if(putOnStack) {
 			m_vUriStack.push(uri);
 		}
@@ -161,11 +160,17 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 		dsyslog("[plex] URI: %s%s", pServer->GetUri().c_str(), uri.c_str());
 		
 		Poco::Net::HTTPResponse response;
-		std::istream &rs = pServer->MakeRequest(response, uri);;
-
-		std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, pServer));
-
-		return pAllsections;
+		bool ok;
+		std::istream &rs = pServer->MakeRequest(response, ok, uri);
+		if(ok) {
+			std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, pServer));
+			return pAllsections;
+		}
+		else {
+			dsyslog("[plex] URI: %s%s Response bad: s%", pServer->GetUri().c_str(), uri.c_str(), response.getReasonForStatus(response.getStatus()).c_str() );
+			return 0;
+		}
+		
 
 	} catch (Poco::Net::NetException &exc) {
 		pServer->Offline = true;
@@ -223,25 +228,20 @@ std::shared_ptr<MediaContainer> Plexservice::GetMediaContainer(std::string fullU
 		pServer = plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort());
 		
 		Poco::Net::HTTPResponse response;
-		std::istream &rs = pServer->MakeRequest(response, fileuri.getPathAndQuery());
-
+		bool ok;
+		std::istream &rs = pServer->MakeRequest(response, ok, fileuri.getPathAndQuery());
+		if(ok) {
+			std::shared_ptr<MediaContainer> pAllsections = std::shared_ptr<MediaContainer>(new MediaContainer(&rs, pServer));
+			return pAllsections;
+		}
+		return 0;
 		//Poco::StreamCopier::copyStream(rs, std::cout);
-
-		std::shared_ptr<MediaContainer> pAllsections = std::shared_ptr<MediaContainer>(new MediaContainer(&rs, pServer));
-		return pAllsections;
 	} catch (Poco::Net::NetException &exc) {
 		std::cout << exc.displayText() << std::endl;
 		return 0;
 	}
 }
-/*
-std::string Plexservice::encode(std::string message)
-{
-	std::string temp;
-	Poco::URI::encode(message, " !\"#$%&'()*+,/:;=?@[]", temp);
-	return temp;
-}
-*/
+
 std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server, bool http)
 {
 	PlexServer* pSrv = server ? server : video->m_pServer;

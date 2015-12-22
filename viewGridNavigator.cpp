@@ -61,7 +61,7 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 	if(m_startIndex < 0) m_startIndex = 0;
 
 	m_endIndex = m_startIndex + (m_rows * m_columns);
-	if(m_endIndex > m_vElements.size()) m_endIndex = m_vElements.size();
+	if(m_endIndex > (int)m_vElements.size()) m_endIndex = m_vElements.size();
 	
 	if(scrollOffset > 0 && m_startIndex >= m_endIndex) {
 		// allign elements
@@ -70,7 +70,7 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 		m_startIndex = m_endIndex - delta;
 	}
 	
-	unsigned int i = 0;
+	int i = 0;
 	int pos = 0;
 	for(auto it = m_vElements.begin(); it != m_vElements.end(); ++it) {
 

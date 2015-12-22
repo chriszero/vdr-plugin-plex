@@ -336,7 +336,8 @@ bool cHlsSegmentLoader::DoLoad(void)
 					std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
 					try {
 						Poco::Net::HTTPResponse reqResponse;
-						m_pVideo->m_pServer->MakeRequest(reqResponse, stopUri);
+						bool ok;
+						m_pVideo->m_pServer->MakeRequest(reqResponse, ok, stopUri);
 						int tmp = m_lastLoadedSegment;
 						int tmp2 = m_lastSegmentSize;
 						CloseConnection();
@@ -372,7 +373,8 @@ bool cHlsSegmentLoader::StopLoader(void)
 		std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
 		
 		Poco::Net::HTTPResponse reqResponse;
-		m_pVideo->m_pServer->MakeRequest(reqResponse, stopUri);
+		bool ok;
+		m_pVideo->m_pServer->MakeRequest(reqResponse, ok, stopUri);
 
 		Cancel();
 
@@ -413,7 +415,8 @@ void cHlsSegmentLoader::Ping(void)
 		std::string uri = "/video/:/transcode/universal/ping?session=" + Config::GetInstance().GetUUID();
 		
 		Poco::Net::HTTPResponse reqResponse;
-		m_pVideo->m_pServer->MakeRequest(reqResponse, uri);
+		bool ok;
+		m_pVideo->m_pServer->MakeRequest(reqResponse, ok, uri);
 
 	} catch(Poco::Exception& exc) {
 		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
@@ -680,8 +683,9 @@ void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tT
 		std::string uri = "/library/parts/" + std::string(itoa(m_Video.m_Media.m_iPartId)) + "?audioStreamID=" + std::string(itoa(streamId));
 
 		Poco::Net::HTTPResponse resp;
-		m_Video.m_pServer->MakeRequest(resp, uri);
-		if(resp.getStatus() == 200) {
+		bool ok;
+		m_Video.m_pServer->MakeRequest(resp, ok, uri);
+		if(ok) {
 			DeviceSetCurrentAudioTrack(eTrackType(ttDolby + 0)); // hacky
 			DeviceSetAvailableTrack(ttDolby, 0, 0, TrackId->language);
 			JumpRelative(0); // Reload Stream to get new Audio
@@ -727,9 +731,10 @@ void cHlsPlayer::ReportProgress(bool stopped)
 		std::string uri = "/:/progress?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library&time=" + std::string(itoa(GetPlayedSeconds()*1000)) + "&state=" + state;
 
 		Poco::Net::HTTPResponse resp;
-		m_Video.m_pServer->MakeRequest(resp, uri);
+		bool ok;
+		m_Video.m_pServer->MakeRequest(resp, ok, uri);
 
-		if(resp.getStatus() == 200) {
+		if(ok) {
 			dsyslog("[plex] %s", __FUNCTION__);
 		}
 	} catch (Poco::Exception&) {}
@@ -741,9 +746,10 @@ void cHlsPlayer::SetWatched(void)
 	std::string uri = "/:/scrobble?key=" + std::string(itoa(m_Video.m_iRatingKey)) + "&identifier=com.plexapp.plugins.library";
 
 	Poco::Net::HTTPResponse resp;
-	m_Video.m_pServer->MakeRequest(resp, uri);
+	bool ok;
+	m_Video.m_pServer->MakeRequest(resp, ok, uri);
 	
-	if(resp.getStatus() == 200) {
+	if(ok) {
 		dsyslog("[plex] %s", __FUNCTION__);
 	}
 }

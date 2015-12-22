@@ -67,7 +67,8 @@ void SubscriptionManager::ReportProgress()
 		queryMap["state"] = state;
 		
 		Poco::Net::HTTPResponse resp;
-		m_pStatus->pVideo->m_pServer->MakeRequest(resp, "/:/progress", queryMap);
+		bool ok;
+		m_pStatus->pVideo->m_pServer->MakeRequest(resp, ok, "/:/progress", queryMap);
 
 	} catch (Poco::Exception&) {}
 }
@@ -114,7 +115,8 @@ void SubscriptionManager::NotifyServer()
 
 		
 		Poco::Net::HTTPResponse response;
-		pServer->MakeRequest(response, "/:/timeline", queryMap);
+		bool ok;
+		pServer->MakeRequest(response, ok, "/:/timeline", queryMap);
 		
 
 		if(m_pStatus->PlayerStopped) {

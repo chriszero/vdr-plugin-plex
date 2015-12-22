@@ -13,7 +13,7 @@ cPlexBrowser::cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexse
 {
 	dsyslog("[plex]%s:\n", __FUNCTION__);
 	pService = Service;
-	pService->Authenticate();
+	//pService->Authenticate();
 	if(pService == pLastService) {
 		pCont = pService->GetLastSection(true);
 	} else {

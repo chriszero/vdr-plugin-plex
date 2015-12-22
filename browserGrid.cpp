@@ -124,7 +124,7 @@ void cBrowserGrid::SwitchGrid(int index)
 	m_pHeader->AddIntToken("totalcount", m_vElements.size());
 
 	if(plexclient::plexgdm::GetInstance().GetFirstServer()) {
-		if(m_viewEntryIndex < Config::GetInstance().m_viewentries.size()) {
+		if(m_viewEntryIndex < (int)Config::GetInstance().m_viewentries.size()) {
 			ViewEntry entry = Config::GetInstance().m_viewentries[index];
 			m_pHeader->AddStringToken("tabname", tr(entry.Name.c_str()));
 			m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), entry.PlexPath ) );
@@ -224,7 +224,7 @@ eOSState cBrowserGrid::NavigateSelect()
 		m_vServerElements.clear();
 		ProcessData();
 		return eOSState::osContinue;
-	} else if(plexclient::Video* vid = dynamic_cast<plexclient::Video*>(SelectedObject())) {
+	} else if(dynamic_cast<plexclient::Video*>(SelectedObject())) {
 		return eOSState::osUser1;
 	} else return eOSState::osEnd;
 }
@@ -295,9 +295,9 @@ void cBrowserGrid::DrawFooter()
 	//if (!active)
 	//   return;
 	cString nextTab = "Library";
-	if(m_viewEntryIndex + 1 < Config::GetInstance().m_viewentries.size()) {
+	if(m_viewEntryIndex + 1 < (int)Config::GetInstance().m_viewentries.size()) {
 		nextTab = Config::GetInstance().m_viewentries[m_viewEntryIndex + 1].Name.c_str();
-	} else if(m_viewEntryIndex + 1 == Config::GetInstance().m_viewentries.size() + 1) {
+	} else if(m_viewEntryIndex + 1 == (int)Config::GetInstance().m_viewentries.size() + 1) {
 		nextTab = Config::GetInstance().m_viewentries[0].Name.c_str();
 	}
 	cString prevTab = "Library";
@@ -386,7 +386,7 @@ void cBrowserGrid::DrawScrollbar()
 void cBrowserGrid::NextTab()
 {
 	m_viewEntryIndex++;
-	if(m_viewEntryIndex > Config::GetInstance().m_viewentries.size()) {
+	if(m_viewEntryIndex > (int)Config::GetInstance().m_viewentries.size()) {
 		m_viewEntryIndex = 0;
 	}
 	SwitchGrid(m_viewEntryIndex);

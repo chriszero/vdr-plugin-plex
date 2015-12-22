@@ -66,7 +66,7 @@ class PlexServer
 		m_authToken = token;
 	}
 	
-	std::istream& MakeRequest(Poco::Net::HTTPResponse& response, std::string path, const std::map<std::string, std::string>& queryParameters = std::map<std::string, std::string>());
+	std::istream& MakeRequest(Poco::Net::HTTPResponse& response, bool& ok, std::string path, const std::map<std::string, std::string>& queryParameters = std::map<std::string, std::string>());
 	
 	std::string GetHost();
 	int GetPort();

@@ -169,22 +169,19 @@ void plexgdm::discover()
 		for(std::map<std::string, std::string>::iterator it = vBuffer.begin(); it != vBuffer.end(); ++it) {
 			std::string host = it->first;
 			std::string data = it->second;
-			bool flag = true;
-			// Check for duplicates
-			for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
-				if(s_it->GetHost() == host) {
-					flag = false;
-					s_it->ParseData(data, host);
-					dsyslog("[plex] Server Updated: %s", host.c_str());
-				}
+
+			PlexServer newServ(data, host);
+			// Set token for local servers
+			if(Config::GetInstance().UsePlexAccount) {
+				newServ.SetAuthToken(Plexservice::GetMyPlexToken());
 			}
-			if(flag) {
-				m_vServers.push_back(PlexServer(data, host));
-				// Set token for local servers
-				if(Config::GetInstance().UsePlexAccount) {
-					m_vServers[m_vServers.size()-1].SetAuthToken(Plexservice::GetMyPlexToken());
-				}
-				isyslog("[plex] New Server Discovered: %s", host.c_str());
+			
+			if(AddServer(newServ)) {
+				isyslog("[plex] New server found via GDM: %s", host.c_str());
+			}
+			else if(GetServer(newServ.m_sUuid)) {
+				GetServer(newServ.m_sUuid)->ParseData(data, host);
+				dsyslog("[plex] Server updated via GDM: %s", host.c_str());
 			}
 		}
 	} catch (Poco::IOException&) {
@@ -230,16 +227,16 @@ PlexServer* plexgdm::GetServer(std::string uuid)
 	return NULL;
 }
 
-void plexgdm::AddServer(PlexServer server)
+bool plexgdm::AddServer(PlexServer server)
 {
 	for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
 		if(s_it->GetUuid() == server.GetUuid() ){
-			dsyslog("[plex] Server already in list: %s", server.GetUri().c_str());
-			return;
+			return false;
 		}
 	}
 	m_vServers.push_back(server);
 	isyslog("[plex] New Server Added: %s", server.GetUri().c_str());
+	return true;
 }
 
 } // namespace
