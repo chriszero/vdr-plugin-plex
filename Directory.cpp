@@ -60,9 +60,13 @@ Directory::Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer*
 
 std::string Directory::GetTitle()
 {
+	std::string seriesTitle = m_sParentTitle;
+	if(seriesTitle.empty() && m_pParent)
+		seriesTitle = m_pParent->m_sParentTitle;
+			
 	switch(m_eType) {
-	case SEASON:
-		return Poco::format(tr("%s - Season %d"), m_sTitle2, m_iIndex);
+	case SEASON:			
+		return Poco::format(tr("%s - Season %d"), seriesTitle, m_iIndex);
 	default:
 		return m_sTitle;
 	}

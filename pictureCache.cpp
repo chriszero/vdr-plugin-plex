@@ -57,14 +57,13 @@ bool cPictureCache::DownloadFileAndSave(std::string Uri, std::string localFile)
 {
 	try {
 		Poco::URI fileUri(Uri);
-		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileUri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
+		plexclient::PlexServer* pServer = plexclient::plexgdm::GetInstance().GetServer(fileUri.getHost(), fileUri.getPort());
 
-		Poco::Net::HTTPClientSession session(fileUri.getHost(), fileUri.getPort());
-		session.sendRequest(request);
 		Poco::Net::HTTPResponse response;
-		std::istream &rs = session.receiveResponse(response);
+		bool ok;
+		std::istream &rs = pServer->MakeRequest(response, ok, fileUri.getPathAndQuery());
 
-		if (response.getStatus() != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK)
+		if (!ok)
 			return false;
 
 		std::string type = response.getContentType();
@@ -105,7 +104,12 @@ bool cPictureCache::DownloadFileAndSave(std::string Uri, std::string localFile)
 std::string cPictureCache::FileName(std::string uri, int width)
 {
 	Poco::URI u(uri);
-	std::string file = Poco::format("%s_%d", u.getPathAndQuery(), width);
+	plexclient::PlexServer* pServer = plexclient::plexgdm::GetInstance().GetServer(u.getHost(), u.getPort());
+	std::string uuid = "default";
+	if(pServer && !pServer->GetUuid().empty()) {
+		uuid = pServer->GetUuid();
+	}
+	std::string file = Poco::format("%s/%s_%d", uuid, u.getPathAndQuery(), width);
 
 	Poco::Path path(m_cacheDir);
 	path.append(file);
@@ -115,19 +119,21 @@ std::string cPictureCache::FileName(std::string uri, int width)
 
 std::string cPictureCache::TranscodeUri(std::string uri, int width, int height)
 {
-	std::string escapedUri;
-	Poco::URI::encode(uri, " !\"#$%&'()*+,/:;=?@[]", escapedUri);
+	// We have to transform the uri a little...
+	// httpX://ServerUri/.../queryUri=localhost
+	
 	Poco::URI u(uri);
-	int port = u.getPort();
-	std::string host = u.getHost();
-	auto plServer = plexclient::plexgdm::GetInstance().GetFirstServer();
-	if (plServer) {
-		host = plServer->GetHost();
-		port = plServer->GetPort();
-	}
+	auto plServer = plexclient::plexgdm::GetInstance().GetServer(u.getHost(), u.getPort());
+	u.setHost("127.0.0.1"); // set to localhost and http only!
+	u.setScheme("http");
+	
+	Poco::URI serverUri(plServer->GetUri());
+	serverUri.setPath("/photo/:/transcode");
+	serverUri.addQueryParameter("width", std::to_string(width));
+	serverUri.addQueryParameter("height", std::to_string(height));
+	serverUri.addQueryParameter("url", u.toString());
 
-	std::string tUri = Poco::format("http://%s:%d/photo/:/transcode?width=%d&height=%d&url=%s", host, port, width, height, escapedUri);
-	return tUri;
+	return serverUri.toString();
 }
 
 bool cPictureCache::Cached(std::string uri, int width)

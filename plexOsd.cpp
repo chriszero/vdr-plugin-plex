@@ -89,7 +89,6 @@ eOSState cPlexBrowser::ProcessKey(eKeys key)
 		case kBack:
 			return LevelUp();
 		case kRed:
-			std::cout << "RED";
 			if(item->IsVideo()) {
 				std::cout << " Video Info";
 			}
@@ -180,16 +179,19 @@ cPlexMenu::cPlexMenu(const char *title, int c0, int c1, int c2, int c3, int c4)
 	SetHasHotkeys();
 
 	for(std::vector<plexclient::PlexServer>::iterator it = plexclient::plexgdm::GetInstance().GetPlexservers().begin(); it != plexclient::plexgdm::GetInstance().GetPlexservers().end(); ++it) {
-		//&(*it)
-		auto s1 = std::make_shared<plexclient::Plexservice>( &(*it) );
-		s1->StartUri = "/library/sections";
-		Add(new cPlexOsdItem(Poco::format(tr("%s - Library"), it->GetServerName()).c_str(),  s1));
-
-		auto s2 = std::make_shared<plexclient::Plexservice>( &(*it) );
-		s2->StartUri = "/video";
-		Add(new cPlexOsdItem(Poco::format(tr("%s - Video Channels"), it->GetServerName()).c_str(), s2 ));
+		for(std::vector<ViewEntry>::iterator vEntry = Config::GetInstance().m_serverViewentries.begin(); vEntry != Config::GetInstance().m_serverViewentries.end(); ++vEntry) {
+			auto plexService = std::make_shared<plexclient::Plexservice>( &(*it) );
+			plexService->StartUri = vEntry->PlexPath;
+			Add(new cPlexOsdItem(Poco::format("%s - %s", it->GetServerName(), vEntry->Name ).c_str(), plexService ));
+		}
+		for(std::vector<ViewEntry>::iterator vEntry = Config::GetInstance().m_viewentries.begin(); vEntry != Config::GetInstance().m_viewentries.end(); ++vEntry) {
+			auto plexService = std::make_shared<plexclient::Plexservice>( &(*it) );
+			plexService->StartUri = vEntry->PlexPath;
+			Add(new cPlexOsdItem(Poco::format("%s - %s", it->GetServerName(), vEntry->Name ).c_str(), plexService ));
+		}
 	}
-
+	
+	
 	if(Count() < 1) {
 		Add(new cPlexOsdItem(tr("No Plex Media Server found.")), false);
 	}

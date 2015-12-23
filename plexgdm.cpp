@@ -211,10 +211,18 @@ PlexServer* plexgdm::GetServer(std::string ip, int port)
 	return &m_vServers[m_vServers.size()-1];
 }
 
+/*
+ * Returns the first owned online server, if there is no owned server it will return the first remote server, or NULL
+ */
 PlexServer* plexgdm::GetFirstServer()
 {
-	if(m_vServers.size() > 0 && !m_vServers[0].Offline) return &m_vServers[0];
-	else return NULL;
+	for(std::vector<PlexServer>::iterator s_it = m_vServers.begin(); s_it != m_vServers.end(); ++s_it) {
+		if(s_it->IsOwned() && !s_it->Offline) {
+			return &(*s_it);
+		}
+	}
+	if (m_vServers.size() > 0) return &m_vServers[0];
+	return NULL;
 }
 
 PlexServer* plexgdm::GetServer(std::string uuid)

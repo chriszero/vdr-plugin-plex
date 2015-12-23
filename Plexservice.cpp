@@ -246,7 +246,26 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 {
 	PlexServer* pSrv = server ? server : video->m_pServer;
 	Poco::URI transcodeUri(pSrv->GetUri());
-	transcodeUri.setPath("/video/:/transcode/universal/start.m3u8");
+	if(!http) {
+		transcodeUri.setPath("/video/:/transcode/universal/start.m3u8");
+		transcodeUri.addQueryParameter("protocol", "hls");
+		transcodeUri.addQueryParameter("includeCodecs", "1");
+		transcodeUri.addQueryParameter("copyts", "1");
+		transcodeUri.addQueryParameter("directPlay", "0");
+		transcodeUri.addQueryParameter("directStream", "1");
+		transcodeUri.addQueryParameter("subtitles", "burn");
+		transcodeUri.addQueryParameter("audioBoost", "100");
+	} else {
+		transcodeUri.setScheme("http"); // mpv segfaults with https... :-(
+		transcodeUri.setPath("/video/:/transcode/universal/start");
+		transcodeUri.addQueryParameter("protocol", "http");
+		
+		transcodeUri.addQueryParameter("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
+		transcodeUri.addQueryParameter("X-Plex-Product", "Chromecast");
+		transcodeUri.addQueryParameter("X-Plex-Platform", "Chromecast");
+		transcodeUri.addQueryParameter("X-Plex-Token", pSrv->GetAuthToken());
+	}
+	
 	
 	// Force set localhost and http
 	Poco::URI pathUri(pSrv->GetUri()+video->m_sKey);
@@ -256,13 +275,9 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 	transcodeUri.addQueryParameter("path", pathUri.toString());
 	transcodeUri.addQueryParameter("mediaIndex", "0");
 	transcodeUri.addQueryParameter("partIndex", "0");
-	transcodeUri.addQueryParameter("protocol", "hls");
 	transcodeUri.addQueryParameter("offset", std::to_string(offset) );
 	transcodeUri.addQueryParameter("fastSeek", "1");
-	transcodeUri.addQueryParameter("directPlay", "0");
-	transcodeUri.addQueryParameter("directStream", "1");
-	transcodeUri.addQueryParameter("subtitles", "burn");
-	transcodeUri.addQueryParameter("audioBoost", "100");
+
 	
 	if(pSrv->IsLocal()) {
 		transcodeUri.addQueryParameter("videoResolution", "1920x1080");
@@ -274,15 +289,20 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 		transcodeUri.addQueryParameter("videoQuality", "100");
 	}
 	transcodeUri.addQueryParameter("session", Config::GetInstance().GetUUID()); // TODO: generate Random SessionID
-	transcodeUri.addQueryParameter("includeCodecs", "1");
-	transcodeUri.addQueryParameter("copyts", "1");
 
-	if(Config::GetInstance().UseAc3) {
+
+	if(Config::GetInstance().UseAc3 && !http) {
 		transcodeUri.addQueryParameter("X-Plex-Client-Profile-Extra", "add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.height&value=1080)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.frameRate&value=25)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.frameRate&value=25)");
 	}
+	if(http) {
+
+
+	}
+	std::cout << transcodeUri.toString() << std::endl;
+	
 	return transcodeUri.toString();
 }
 

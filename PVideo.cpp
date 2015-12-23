@@ -143,6 +143,11 @@ void Video::Parse(Poco::XML::Node* pNode)
 std::string Video::GetTitle()
 {
 	std::string res = m_sTitle;
+	
+	std::string seriesTitle = m_sGrandparentTitle;
+	if(seriesTitle.empty() && m_pParent) 
+		seriesTitle = m_pParent->m_sGrandparentTitle;
+	
 	switch(m_tType) {
 	case MOVIE:
 		if(m_iYear > 0) {
@@ -152,7 +157,7 @@ std::string Video::GetTitle()
 		}
 		break;
 	case EPISODE:
-		res = Poco::format("%02dx%02d - %s", m_iParentIndex, m_iIndex, m_sTitle);
+		res = Poco::format("%s - %02dx%02d - %s", seriesTitle, m_iParentIndex, m_iIndex, m_sTitle);
 		break;
 	default:
 		break;
@@ -165,7 +170,7 @@ bool Video::SetStream(Stream* stream)
 	try {
 		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
 
-		std::string uri = Poco::format("/library/parts/%d?%s", m_Media.m_iPartId, stream->GetSetStreamQuery());
+		std::string uri = Poco::format("/library/parts/%d?%s&X-Plex-Token=%s", m_Media.m_iPartId, stream->GetSetStreamQuery(), m_pServer->GetAuthToken());
 		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_PUT, uri);
 		session.sendRequest(req);
 
@@ -186,14 +191,11 @@ bool Video::SetStream(Stream* stream)
 bool Video::SetUnwatched()
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
-
 		std::string uri = Poco::format("/:/unscrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-		session.sendRequest(req);
 
 		Poco::Net::HTTPResponse resp;
-		session.receiveResponse(resp);
+		bool ok;
+		m_pServer->MakeRequest(resp, ok, uri);
 
 		if(resp.getStatus() == 200) {
 			dsyslog("[plex]: Set Unwatched: %s", uri.c_str());
@@ -209,16 +211,13 @@ bool Video::SetUnwatched()
 bool Video::SetWatched()
 {
 	try {
-		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
-
 		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
-		Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, uri);
-		session.sendRequest(req);
-
+		
 		Poco::Net::HTTPResponse resp;
-		session.receiveResponse(resp);
+		bool ok;
+		m_pServer->MakeRequest(resp, ok, uri);
 
-		if(resp.getStatus() == 200) {
+		if(ok) {
 			dsyslog("[plex]: Set Watched: %s", uri.c_str());
 			return true;
 		}
