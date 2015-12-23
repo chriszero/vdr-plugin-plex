@@ -292,17 +292,12 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 
 
 	if(Config::GetInstance().UseAc3 && !http) {
-		transcodeUri.addQueryParameter("X-Plex-Client-Profile-Extra", "add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3");
+		transcodeUri.addQueryParameter("X-Plex-Client-Profile-Extra", "add-transcode-target-audio-codec(type=videoProfile&context=streaming&protocol=hls&audioCodec=ac3)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.height&value=1080)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.frameRate&value=25)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.frameRate&value=25)");
 	}
-	if(http) {
-
-
-	}
-	std::cout << transcodeUri.toString() << std::endl;
-	
+		
 	return transcodeUri.toString();
 }
 
