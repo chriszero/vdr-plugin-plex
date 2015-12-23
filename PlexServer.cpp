@@ -137,7 +137,7 @@ std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, bool& o
 	try {
 		GetClientSession()->sendRequest(request);
 	} catch (Poco::TimeoutException &exc) {
-		esyslog("[plex] Timeout: %s", path);
+		esyslog("[plex] Timeout: %s", path.c_str());
 		ok = false;
 	}
 	std::istream& stream = GetClientSession()->receiveResponse(response);
