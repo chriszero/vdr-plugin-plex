@@ -38,8 +38,8 @@ TMPDIR ?= /tmp
 export CFLAGS	= $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
 
-CXXFLAGS += -std=gnu++0x
-#CXXFLAGS += -std=c++11
+#CXXFLAGS += -std=gnu++0x
+CXXFLAGS += -std=c++11
 
 ### The version number of VDR's plugin API:
 

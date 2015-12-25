@@ -34,7 +34,7 @@ cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8, plexclient::Video* p
 	// Initialize members
 	m_pClientSession = NULL;
 
-	m_ringBufferSize = MEGABYTE(32);
+	m_ringBufferSize = MEGABYTE(1);
 	m_pRingbuffer = NULL;
 
 	m_startUri = Poco::URI(startm3u8);
@@ -64,7 +64,7 @@ void cHlsSegmentLoader::SkipEmptySegments(int segmentDuration)
 
 bool cHlsSegmentLoader::LoadM3u8(std::string uri)
 {
-	LOCK_THREAD;
+	//LOCK_THREAD;
 	m_startUri = Poco::URI(uri);
 	return m_newList = true;
 }
@@ -73,10 +73,9 @@ void cHlsSegmentLoader::Action(void)
 {
 	if(!LoadLists()) return;
 
-	int estSize = EstimateSegmentSize();
-	m_ringBufferSize = MEGABYTE(estSize*m_segmentsToBuffer);
+	m_ringBufferSize = MEGABYTE(1);
 
-	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, estSize*m_segmentsToBuffer);
+	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, 1);
 	
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
@@ -245,20 +244,27 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 		return false;
 	}
 	dsyslog("[plex] %s: %s successfully.", __FUNCTION__, segmentUri.c_str());
-
+	
+	if(segmentResponse.getContentLength() <= TS_SIZE) {
+		// Empty segment
+		return true;
+	}
 	// copy response	
-	int m = 0;
 	segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
 	std::streamsize n = segmentFile.gcount();
 	while(n > 0) {
-		m = m_pRingbuffer->Put(m_pBuffer, n);
-		if(m < n) {
-			//
-			esyslog("[plex]%s oops, this should not happen. Segment doesn't fitted completly into ringbuffer", __FUNCTION__);
-			break;
-		} else {
+		if(m_pRingbuffer->Free() >= n) {
+			m_pRingbuffer->Put(m_pBuffer, n);
+			
 			segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
 			n = segmentFile.gcount();
+		}
+		else {
+			cCondWait::SleepMs(1);
+		}
+		if(m_newList) {
+			std::cout << "LoadSegment, break loop" << std::endl;
+			break;
 		}
 	}
 	return true;
@@ -318,42 +324,30 @@ bool cHlsSegmentLoader::DoLoad(void)
 	bool result = true;
 	bool recover = false;
 	if(m_lastLoadedSegment <  m_indexParser.vPlaylistItems.size()) {
-		int nextSegmentSize = GetSegmentSize(m_lastLoadedSegment);
 
-		if(m_pRingbuffer->Free() > nextSegmentSize) {
-
-			if(m_lastSegmentSize <= TS_SIZE && nextSegmentSize <= TS_SIZE) { // skip empty segments
-				nextSegmentSize = GetSegmentSize(m_lastLoadedSegment++);
-			} else {
-				std::string segmentUri = GetSegmentUri(m_lastLoadedSegment);
-				if(result = LoadSegment(segmentUri)) {
-					m_lastLoadedSegment++;
-					m_lastSegmentSize = nextSegmentSize;
-				} else {
-					// transcoder may be died, plex bug, restart transcode session
-					esyslog("[plex] %s 404, Transcoder died, see logfile from PMS", __FUNCTION__);
-					recover = true;
-					std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
-					try {
-						Poco::Net::HTTPResponse reqResponse;
-						bool ok;
-						m_pVideo->m_pServer->MakeRequest(reqResponse, ok, stopUri);
-						int tmp = m_lastLoadedSegment;
-						int tmp2 = m_lastSegmentSize;
-						CloseConnection();
-						LoadLists();
-						m_lastLoadedSegment = tmp;
-						m_lastSegmentSize = tmp2;
-					} catch (Poco::Exception&) {
-						return false;
-					}
-				}
-			}
+		std::string segmentUri = GetSegmentUri(m_lastLoadedSegment);
+		if(result = LoadSegment(segmentUri)) {
+			m_lastLoadedSegment++;
 		} else {
-			if(nextSegmentSize >= m_ringBufferSize) {
-				ResizeRingbuffer(nextSegmentSize + m_ringBufferSize - m_pRingbuffer->Free() + MEGABYTE(1));
+			// transcoder may be died, plex bug, restart transcode session
+			esyslog("[plex] %s 404, Transcoder died, see logfile from PMS", __FUNCTION__);
+			recover = true;
+			std::string stopUri = "/video/:/transcode/universal/stop?session=" + m_sessionCookie;
+			try {
+				Poco::Net::HTTPResponse reqResponse;
+				bool ok;
+				m_pVideo->m_pServer->MakeRequest(reqResponse, ok, stopUri);
+				int tmp = m_lastLoadedSegment;
+				int tmp2 = m_lastSegmentSize;
+				CloseConnection();
+				LoadLists();
+				m_lastLoadedSegment = tmp;
+				m_lastSegmentSize = tmp2;
+			} catch (Poco::Exception&) {
+				return false;
 			}
 		}
+
 		m_bufferFilled = result;
 	} else {
 		result = false;
@@ -378,7 +372,7 @@ bool cHlsSegmentLoader::StopLoader(void)
 
 		Cancel();
 
-		return reqResponse.getStatus() == 200;
+		return ok;
 	} catch(Poco::Exception& exc) {
 		esyslog("[plex]%s %s ", __FUNCTION__, exc.displayText().c_str());
 		return false;
