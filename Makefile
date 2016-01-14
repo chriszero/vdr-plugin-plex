@@ -20,7 +20,7 @@ CONFIG := #-DDEBUG			# uncomment to build DEBUG
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*const VERSION *=' $(PLUGIN).h | awk '{ print $$7 }' | sed -e 's/[";]//g')
-GIT_REV = $(shell git describe --always 2>/dev/null)
+GIT_REV = $(shell git describe --tags --always 2>/dev/null)
 
 ### The directory environment:
 

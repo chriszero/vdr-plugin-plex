@@ -19,9 +19,11 @@ Config::Config() {
 	DetailGridRows = 4;
 	
 	UseMpv = false;
+  UseAc3 = true;
 	ScrollByPage = true;
 	ScrollAllAround = true;
-	
+	BufferSize = 1;
+  
 	DefaultViewMode = ViewMode::Cover;
 	
 	ViewEntry en;
@@ -107,6 +109,7 @@ bool Config::Parse(const char *name, const char *value)
 	else if (strcasecmp(name, "ScrollByPage") == 0) 	Config::GetInstance().ScrollByPage = atoi(value) ? true : false;
 	else if (strcasecmp(name, "ScrollAllAround") == 0) 	Config::GetInstance().ScrollAllAround = atoi(value) ? true : false;
 	else if (strcasecmp(name, "UseAc3") == 0) 	Config::GetInstance().UseAc3 = atoi(value) ? true : false;
+  else if (strcasecmp(name, "BufferSize") == 0) 	Config::GetInstance().BufferSize = atoi(value);
 	else parsed = false;
 
 	if(!parsed) {
@@ -162,6 +165,8 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use AC3 instead of aac Audio"), (int*)&UseAc3, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use Mpv Plugin (If Availiable)"), (int*)&UseMpv, trVDR("no"), trVDR("yes")));
+  Add(new cMenuEditIntItem(tr("Buffer size for playing, in MB"), &BufferSize, 1, 128));
+  
 	Add(new cMenuEditBoolItem(tr("Scroll by Page"), (int*)&ScrollByPage, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Scroll all around"), (int*)&ScrollAllAround, trVDR("no"), trVDR("yes")));
 	Add(new cMenuEditBoolItem(tr("Use custom transcoding profile"), (int*)&UseCustomTranscodeProfile, trVDR("no"), trVDR("yes")));
@@ -213,6 +218,7 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().ScrollByPage = ScrollByPage;
 	Config::GetInstance().ScrollAllAround = ScrollAllAround;
 	Config::GetInstance().UseAc3 = UseAc3;
+  Config::GetInstance().BufferSize = BufferSize;
 	
 	SetupStore("UseCustomTranscodeProfile", Config::GetInstance().UseCustomTranscodeProfile);
 	SetupStore("HideMainMenuEntry", Config::GetInstance().HideMainMenuEntry);
@@ -234,4 +240,5 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("ScrollByPage", Config::GetInstance().ScrollByPage);
 	SetupStore("ScrollAllAround", Config::GetInstance().ScrollAllAround);
 	SetupStore("UseAc3", Config::GetInstance().ScrollAllAround);
+  SetupStore("BufferSize", Config::GetInstance().BufferSize);
 }

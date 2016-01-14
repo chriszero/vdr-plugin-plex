@@ -47,7 +47,7 @@ public:
 	bool UsePlexAccount;
 	bool UseConfiguredServer;
 	bool UseAc3;
-
+  int BufferSize;
 	
 	int CoverGridColumns;
 	int CoverGridRows;
@@ -120,6 +120,7 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int ScrollByPage;
 	int ScrollAllAround;
 	int UseAc3;
+  int BufferSize;
 
     virtual void Store(void);
 

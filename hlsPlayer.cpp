@@ -73,9 +73,9 @@ void cHlsSegmentLoader::Action(void)
 {
 	if(!LoadLists()) return;
 
-	m_ringBufferSize = MEGABYTE(1);
+	m_ringBufferSize = MEGABYTE(Config::GetInstance().BufferSize);
 
-	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, 1);
+	isyslog("[plex]%s Create Ringbuffer %d MB", __FUNCTION__, Config::GetInstance().BufferSize);
 	
 	m_pRingbuffer = new cRingBufferLinear(m_ringBufferSize, 2*TS_SIZE);
 
@@ -263,7 +263,6 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 			cCondWait::SleepMs(1);
 		}
 		if(m_newList) {
-			std::cout << "LoadSegment, break loop" << std::endl;
 			break;
 		}
 	}

@@ -2,15 +2,15 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Chris, 2015.
-# Chris <zerov83@gmail.com>, 2015.
+# Chris <zerov83@gmail.com>, 2015, 2016.
 msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-12-23 22:44+0100\n"
-"PO-Revision-Date: 2015-11-07 16:38+0200\n"
+"POT-Creation-Date: 2016-01-14 20:01+0100\n"
+"PO-Revision-Date: 2016-01-14 20:20+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
-"Language-Team: German\n"
+"Language-Team: chriszero\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -26,6 +26,9 @@ msgstr "Verwende AC3 anstelle von AAC"
 
 msgid "Use Mpv Plugin (If Availiable)"
 msgstr "Verwende MPV-Plugin falls verfügbar"
+
+msgid "Buffer size for playing, in MB"
+msgstr "Abspielpuffergröße, in MB"
 
 msgid "Scroll by Page"
 msgstr "Seitenweise Scrollen"
