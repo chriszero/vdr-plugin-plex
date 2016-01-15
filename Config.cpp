@@ -160,6 +160,7 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	ScrollAllAround = Config::GetInstance().ScrollAllAround;
 	DefaultViewMode = Config::GetInstance().DefaultViewMode;
 	UseAc3 = Config::GetInstance().UseAc3;
+  BufferSize = Config::GetInstance().BufferSize;
 	
 	
 	Add(new cMenuEditBoolItem(tr("Hide main menu entry"), (int*)&HideMainMenuEntry, trVDR("no"), trVDR("yes")));
