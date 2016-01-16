@@ -17,6 +17,7 @@
 #include "Stream.h"
 
 static cMutex hlsMutex;
+const int BUFFERSIZE = 8192;
 
 //--- cHlsSegmentLoader
 
@@ -29,7 +30,7 @@ cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8, plexclient::Video* p
 	m_segmentsToBuffer = 2;
 	m_streamlenght = 0;
 	m_lastSegmentSize = 0;
-	m_pBuffer = new uchar[8192];
+	m_pBuffer = new uchar[BUFFERSIZE];
 
 	// Initialize members
 	m_pClientSession = NULL;
@@ -243,21 +244,24 @@ bool cHlsSegmentLoader::LoadSegment(std::string segmentUri)
 		esyslog("[plex] %s; %s failed.", __FUNCTION__, segmentUri.c_str());
 		return false;
 	}
-	dsyslog("[plex] %s: %s successfully.", __FUNCTION__, segmentUri.c_str());
 	
 	if(segmentResponse.getContentLength() <= TS_SIZE) {
 		// Empty segment
+		dsyslog("[plex] %s: %s <= 188 byte.", __FUNCTION__, segmentUri.c_str());
 		return true;
 	}
+	
+	dsyslog("[plex] %s: %s successfully.", __FUNCTION__, segmentUri.c_str());
 	// copy response	
-	segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
+	segmentFile.read(reinterpret_cast<char*>(m_pBuffer), BUFFERSIZE);
 	std::streamsize n = segmentFile.gcount();
 	while(n > 0) {
 		if(m_pRingbuffer->Free() >= n) {
 			m_pRingbuffer->Put(m_pBuffer, n);
-			
-			segmentFile.read(reinterpret_cast<char*>(m_pBuffer), sizeof(m_pBuffer));
+
+			segmentFile.read(reinterpret_cast<char*>(m_pBuffer), BUFFERSIZE);
 			n = segmentFile.gcount();
+			m_bufferFilled = true;
 		}
 		else {
 			cCondWait::SleepMs(1);
