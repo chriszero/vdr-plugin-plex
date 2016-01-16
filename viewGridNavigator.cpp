@@ -210,6 +210,12 @@ bool cViewGridNavigator::NavigateLeft()
 {
 	if (m_setIterator || m_activeElementIter == m_vElements.begin()) return false;
 	auto next = m_activeElementIter - 1;
+
+	if (m_columns == 1) {
+		next = m_activeElementIter - m_rows;
+		FilterElements(-m_rows);
+	}
+
 	if(next < m_vElements.begin()) next = m_vElements.begin();
 
 	if(!(*next)->IsVisible()) {
@@ -232,6 +238,12 @@ bool cViewGridNavigator::NavigateRight()
 {
 	if (m_setIterator || m_activeElementIter == m_vElements.end() - 1) return false;
 	auto next = m_activeElementIter + 1;
+
+	if (m_columns == 1) {
+		next = m_activeElementIter + m_rows;
+		FilterElements(m_rows);
+	}
+
 	if(next >= m_vElements.end()) next = m_vElements.end()-1;
 
 	if(!(*next)->IsVisible()) {
