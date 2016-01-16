@@ -384,14 +384,13 @@ bool cHlsSegmentLoader::StopLoader(void)
 void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
 {
 	req.add("X-Plex-Client-Identifier", Config::GetInstance().GetUUID());
-	req.add("X-Plex-Device", "PC");
+//	req.add("X-Plex-Device", "PC");
 	req.add("X-Plex-Model", "Linux");
 	if(Config::GetInstance().UseCustomTranscodeProfile) {
-		req.add("X-Plex-Product", "VDR Plex Plugin");
-		req.add("X-Plex-Platform", "VDR Plex Plugin");
+		req.add("X-Plex-Device", "VDR Plex Plugin");
 	} else {
-		req.add("X-Plex-Product", "Plex Home Theater");
-		req.add("X-Plex-Platform", "Plex Home Theater");
+		//req.add("X-Plex-Device", "Plex Home Theater");
+		req.add("X-Plex-Device", "tvOS");
 	}
 	
 	if(Config::GetInstance().UsePlexAccount && !m_pVideo->m_pServer->GetAuthToken().empty()) {

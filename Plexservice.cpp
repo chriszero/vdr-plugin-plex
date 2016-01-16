@@ -250,7 +250,7 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 		transcodeUri.setPath("/video/:/transcode/universal/start.m3u8");
 		transcodeUri.addQueryParameter("protocol", "hls");
 		transcodeUri.addQueryParameter("includeCodecs", "1");
-		transcodeUri.addQueryParameter("copyts", "1");
+		//transcodeUri.addQueryParameter("copyts", "1");
 		transcodeUri.addQueryParameter("directPlay", "0");
 		transcodeUri.addQueryParameter("directStream", "1");
 		transcodeUri.addQueryParameter("subtitles", "burn");
@@ -297,7 +297,7 @@ std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, Plex
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=lowerBound&name=video.frameRate&value=25)");
 		//params << encode("+add-limitation(scope=videoCodec&scopeName=h264&type=upperBound&name=video.frameRate&value=25)");
 	}
-		
+	
 	return transcodeUri.toString();
 }
 
