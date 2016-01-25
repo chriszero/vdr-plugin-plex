@@ -389,8 +389,8 @@ void cHlsSegmentLoader::AddHeader(Poco::Net::HTTPRequest& req)
 	if(Config::GetInstance().UseCustomTranscodeProfile) {
 		req.add("X-Plex-Device", "VDR Plex Plugin");
 	} else {
-		//req.add("X-Plex-Device", "Plex Home Theater");
-		req.add("X-Plex-Device", "tvOS");
+		req.add("X-Plex-Device", "Plex Home Theater");
+		//req.add("X-Plex-Device", "tvOS");
 	}
 	
 	if(Config::GetInstance().UsePlexAccount && !m_pVideo->m_pServer->GetAuthToken().empty()) {
