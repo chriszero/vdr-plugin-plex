@@ -14,7 +14,9 @@
 
 #include <vector>
 #include <iostream>
-#include <libskindesignerapi/osdelements.h>
+#ifdef SKINDESIGNER
+	#include <libskindesignerapi/osdelements.h>
+#endif
 #include <memory>
 
 #include "XmlObject.h" // Base class: model::XmlObject
@@ -62,7 +64,9 @@ public:
 	
 	std::vector<Stream> m_vStreams;
 	
+#ifdef SKINDESIGNER	
 	void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid);
+#endif
 };
 
 }

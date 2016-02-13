@@ -6,7 +6,6 @@
 
 #include <vdr/tools.h>
 #include "PlexHelper.h"
-#include "pictureCache.h"
 
 namespace plexclient
 {
@@ -228,6 +227,7 @@ bool Video::SetWatched()
 	}
 }
 
+#ifdef SKINDESIGNER
 void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
@@ -315,6 +315,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 
 	m_Media.AddTokens(grid);
 }
+#endif
 
 std::string Video::ArtUri()
 {

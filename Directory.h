@@ -12,11 +12,14 @@
 #include <Poco/String.h>
 
 #include <memory>
-#include <libskindesignerapi/osdelements.h>
+#ifdef SKINDESIGNER
+	#include <libskindesignerapi/osdelements.h>
+	#include "pictureCache.h"
+	#include "viewGridNavigator.h"
+#endif
 
 #include "XmlObject.h"
 #include "MediaContainer.h"
-#include "viewGridNavigator.h"
 #include "PlexServer.h"
 
 using Poco::XML::DOMParser;
@@ -31,7 +34,10 @@ namespace plexclient
 {
 class MediaContainer;
 
-class Directory: private XmlObject, public cGridElement
+class Directory: private XmlObject
+#ifdef SKINDESIGNER
+, public cGridElement
+#endif
 {
 public:
 	Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
@@ -70,8 +76,11 @@ public:
 	virtual std::string GetTitle();
 	std::string ArtUri();
 	std::string ThumbUri();
+	
+#ifdef SKINDESIGNER
 	// gridElement
 	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+#endif
 };
 
 }

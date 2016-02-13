@@ -1,7 +1,6 @@
 #include "Directory.h"
 #include <vdr/i18n.h>
 #include <Poco/Format.h>
-#include "pictureCache.h"
 
 namespace plexclient
 {
@@ -72,6 +71,7 @@ std::string Directory::GetTitle()
 	}
 }
 
+#ifdef SKINDESIGNER
 void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
@@ -154,6 +154,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 		}
 	}
 }
+#endif
 
 std::string Directory::ArtUri()
 {

@@ -16,7 +16,12 @@
 #include "plexgdm.h"
 #include "cPlexOsdItem.h"
 #include "hlsPlayerControl.h"
-#include "plexSdOsd.h"
+
+#ifdef SKINDESIGNER
+	#include <libskindesignerapi/skindesignerapi.h>
+	#include "plexSdOsd.h"
+	#include "pictureCache.h"
+#endif
 
 #include <iostream>
 #include <string>
@@ -40,8 +45,10 @@ static const char *const MAINMENUENTRY = "Plex for VDR";
 class cMyPlugin:public cPlugin
 {
 private:
+#ifdef SKINDESIGNER
 	cPlexSdOsd* m_pSdCheck;
 	static bool bSkindesigner;
+#endif
 	
 public:
 	cMyPlugin(void);

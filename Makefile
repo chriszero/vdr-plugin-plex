@@ -16,6 +16,7 @@ LIBS += $(shell pkg-config --libs libskindesignerapi)
 ### Configuration (edit this for your needs)
 
 CONFIG := #-DDEBUG			# uncomment to build DEBUG
+DISABLESKINDESIGNER ?= 0
 
 ### The version number of this plugin (taken from the main source file):
 
@@ -59,10 +60,13 @@ PACKAGE = vdr-$(ARCHIVE)
 SOFILE = libvdr-$(PLUGIN).so
 
 ### Includes and Defines (add further entries here):
-
+ifneq ($(DISABLESKINDESIGNER),1)
+CONFIG += -DSKINDESIGNER
 INCLUDES += $(shell pkg-config --cflags libskindesignerapi)
 
 DEFINES += -DLIBSKINDESIGNERAPIVERSION='"$(shell pkg-config --modversion libskindesignerapi)"'
+endif
+
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DPLUGIN='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 	$(if $(GIT_REV), -DGIT_REV='"$(GIT_REV)"')
 
@@ -90,13 +94,16 @@ OBJS = $(PLUGIN).o \
 	Stream.o \
 	Media.o \
 	plexOsd.o \
-	plexSdOsd.o \
+	device.o
+
+ifneq ($(DISABLESKINDESIGNER),1)
+OBJS += plexSdOsd.o \
 	viewGridNavigator.o \
 	browserGrid.o \
 	viewHeader.o \
 	detailView.o \
-	pictureCache.o \
-	device.o
+	pictureCache.o 
+endif
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp
 

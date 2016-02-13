@@ -73,7 +73,10 @@ public:
 	
 	std::string ThumbUri();
 	std::string ArtUri();
+
+#ifdef SKINDESIGNER
 	void PreCache();
+#endif
 };
 
 }

@@ -47,6 +47,7 @@ Media::Media(Poco::XML::Node* pNode)
 	}
 }
 
+#ifdef SKINDESIGNER
 void Media::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid)
 {
 	grid->AddStringToken("videoResolution", m_sVideoResolution);
@@ -60,5 +61,6 @@ void Media::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid)
 	grid->AddStringToken("container", m_sContainer);
 	grid->AddStringToken("videoFrameRate", m_VideoFrameRate);
 }
+#endif
 
 }

@@ -1,5 +1,8 @@
 #include "MediaContainer.h"
-#include "pictureCache.h"
+
+#ifdef SKINDESIGNER
+	#include "pictureCache.h"
+#endif
 
 namespace plexclient
 {
@@ -69,6 +72,7 @@ std::string MediaContainer::ThumbUri()
 	return m_pServer->GetUri() + m_sThumb;
 }
 
+#ifdef SKINDESIGNER
 void MediaContainer::PreCache() 
 {
 	bool foo;
@@ -81,5 +85,6 @@ void MediaContainer::PreCache()
 		if(!it->m_sArt.empty()) cPictureCache::GetInstance().GetPath(it->ArtUri(), 1920, 1080, foo);
 	}*/
 }
+#endif
 
 }

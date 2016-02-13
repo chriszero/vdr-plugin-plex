@@ -2,11 +2,8 @@
 #include "SubscriptionManager.h"
 #include "plex.h"
 #include "plexOsd.h"
-#include "plexSdOsd.h"
-#include "pictureCache.h"
 #include "services.h"
 
-#include <libskindesignerapi/skindesignerapi.h>
 #include <Poco/Net/SSLManager.h>
 #include <Poco/SharedPtr.h>
 #include <Poco/Net/Context.h>
@@ -18,7 +15,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 volatile bool cMyPlugin::CalledFromCode = false;
+
+#ifdef SKINDESIGNER
 bool cMyPlugin::bSkindesigner = false;
+#endif
 
 plexclient::Video cMyPlugin::CurrentVideo;
 bool cMyPlugin::PlayingFile = false;
@@ -31,7 +31,9 @@ bool cMyPlugin::PlayingFile = false;
 */
 cMyPlugin::cMyPlugin(void)
 {
+#ifdef SKINDESIGNER
 	m_pSdCheck = NULL;
+#endif
 }
 
 /**
@@ -66,6 +68,7 @@ const char *cMyPlugin::Description(void)
 
 bool cMyPlugin::Start(void)
 {
+#ifdef SKINDESIGNER
 	skindesignerapi::cPluginStructure reg;
 	reg.name = "plex";
 	reg.libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
@@ -95,6 +98,7 @@ bool cMyPlugin::Start(void)
 	} else {
 		esyslog("[plex]: %s skindesigner not available", __FUNCTION__);
 	}
+#endif
 	return true;
 }
 
@@ -127,8 +131,10 @@ bool cMyPlugin::Initialize(void)
 	plexclient::plexgdm::GetInstance().clientDetails(Config::GetInstance().GetUUID(), Config::GetInstance().GetHostname(), "3200", DESCRIPTION, VERSION);
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();
+
+#ifdef SKINDESIGNER
 	cPictureCache::GetInstance().Start();
-	
+#endif
 	return true;
 }
 
@@ -146,8 +152,12 @@ const char *cMyPlugin::MainMenuEntry(void)
 cOsdObject *cMyPlugin::MainMenuAction(void)
 {
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
+#ifdef SKINDESIGNER
 	if(m_pSdCheck && m_pSdCheck->SdSupport()) return new cPlexSdOsd();
 	else return cPlexMenu::ProcessMenu();
+#else
+	return cPlexMenu::ProcessMenu();
+#endif
 }
 
 /**

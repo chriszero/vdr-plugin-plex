@@ -15,8 +15,12 @@
 #include <vector>
 #include <iostream>
 #include <memory>
-#include <libskindesignerapi/osdelements.h>
-#include "viewGridNavigator.h"
+
+#ifdef SKINDESIGNER
+	#include <libskindesignerapi/osdelements.h>
+	#include "viewGridNavigator.h"
+	#include "pictureCache.h"
+#endif
 
 #include "XmlObject.h"
 #include "MediaContainer.h"
@@ -35,7 +39,10 @@ namespace plexclient
 {
 class MediaContainer;
 
-class Video: private XmlObject, public cGridElement
+class Video: private XmlObject
+#ifdef SKINDESIGNER
+,public cGridElement
+#endif
 {
 private:
 	MediaContainer* m_pParent;
@@ -90,9 +97,11 @@ public:
 	std::string ArtUri();
 	
 	std::string GetSubtitleUrl();
-
+	
+#ifdef SKINDESIGNER
 	// gridElement
 	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+#endif
 };
 
 }
