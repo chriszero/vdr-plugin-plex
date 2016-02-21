@@ -1,6 +1,7 @@
 #include "Directory.h"
 #include <vdr/i18n.h>
 #include <Poco/Format.h>
+#include "tokendefinitions.h"
 
 namespace plexclient
 {
@@ -75,73 +76,75 @@ std::string Directory::GetTitle()
 void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
-	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
-	grid->AddStringToken("title", m_sTitle);
-	grid->AddIntToken("viewgroup", m_pParent->m_eViewGroup);
+	grid->AddIntToken((int)(eTokenGridInt::viewmode), Config::GetInstance().DefaultViewMode);
+	grid->AddStringToken((int)(eTokenGridStr::title), m_sTitle.c_str());
+	grid->AddIntToken((int)(eTokenGridInt::viewgroup), m_pParent->m_eViewGroup);
 
 	// Thumb, Cover, Episodepicture
 	bool cached = false;
 	if(!ThumbUri().empty()) {
 		std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
-		if (cached)	grid->AddStringToken("thumb", thumb);
+		if (cached)	grid->AddStringToken((int)(eTokenGridStr::thumb), thumb.c_str());
 	}
-	grid->AddIntToken("hasthumb", cached);
+	grid->AddIntToken((int)(eTokenGridInt::hasthumb), cached);
 
 	// Fanart
 	cached = false;
 	if(!ArtUri().empty()) {
 		std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
-		if (cached)	grid->AddStringToken("art", art);
+		if (cached)	grid->AddStringToken((int)(eTokenGridStr::art), art.c_str());
 	}
-	grid->AddIntToken("hasart", cached);
+	grid->AddIntToken((int)(eTokenGridInt::hasart), cached);
 
 	if(m_eType == MediaType::UNDEF || m_eType == MediaType::MOVIE || m_eType == MediaType::PHOTO) {
-		grid->AddIntToken("isdirectory", true);
+		grid->AddIntToken((int)(eTokenGridInt::isdirectory), true);
 	}
-	
+	/*
+	int actloopIndex = grid->GetLoopIndex("roles");
+	int i = 0;
 	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
-		map<string, string> roles;
-		roles["actor"] = *it;
-		grid->AddLoopToken("actor[roles]", roles);
+		grid->AddLoopToken(actloopIndex, i, (int)(eTokenGridActorLst::roles), it->c_str());		
+		i++;
 	}
 
+	int genloopIndex = grid->GetLoopIndex("genres");
+	i = 0;
 	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-		map<string, string> genres;
-		genres.insert(std::pair<string, string>("genres[genre]", *it));
-		grid->AddLoopToken("genres", genres);
+		grid->AddLoopToken(genloopIndex, i, (int)(eTokenGridGenresLst::genres), it->c_str());		
+		i++;
 	}
-
+*/
 	if(m_eType == MediaType::SHOW) {
-		grid->AddIntToken("isshow", true);
-		grid->AddStringToken("summary", m_sSummary);
-		grid->AddIntToken("leafCount", m_iLeafCount);
-		grid->AddIntToken("viewedLeafCount", m_iViewedLeafCount);
-		grid->AddIntToken("childCount", m_iChildCount);
-		grid->AddIntToken("rating", m_fRating*10);
-		grid->AddStringToken("ratingstring", Poco::format("%.1f", m_fRating));
-		grid->AddStringToken("studio", m_sStudio);
+		grid->AddIntToken((int)(eTokenGridInt::isshow), true);
+		grid->AddStringToken((int)(eTokenGridStr::summary), m_sSummary.c_str());
+		grid->AddIntToken((int)(eTokenGridInt::leafCount), m_iLeafCount);
+		grid->AddIntToken((int)(eTokenGridInt::viewedLeafCount), m_iViewedLeafCount);
+		grid->AddIntToken((int)(eTokenGridInt::childCount), m_iChildCount);
+		grid->AddIntToken((int)(eTokenGridInt::rating), m_fRating*10);
+		grid->AddStringToken((int)(eTokenGridStr::ratingstring), Poco::format("%.1f", m_fRating).c_str());
+		grid->AddStringToken((int)(eTokenGridStr::studio), m_sStudio.c_str());
 
-		grid->AddIntToken("year", m_iYear);
+		grid->AddIntToken((int)(eTokenGridInt::year), m_iYear);
 	}
 
 	if(m_eType == MediaType::SEASON) {
-		grid->AddIntToken("isseason", true);
+		grid->AddIntToken((int)(eTokenGridInt::isseason), true);
 		
 		std::string summary = m_sParentSummary;
 		if(m_sParentSummary.empty() && m_pParent)
 			summary = m_pParent->m_sSummary;
 			
-		grid->AddStringToken("summary", summary);
-		grid->AddIntToken("season", m_iIndex);
-		grid->AddIntToken("leafCount", m_iLeafCount);
-		grid->AddIntToken("viewedLeafCount", m_iViewedLeafCount);
+		grid->AddStringToken((int)(eTokenGridStr::summary), summary.c_str());
+		grid->AddIntToken((int)(eTokenGridInt::season), m_iIndex);
+		grid->AddIntToken((int)(eTokenGridInt::leafCount), m_iLeafCount);
+		grid->AddIntToken((int)(eTokenGridInt::viewedLeafCount), m_iViewedLeafCount);
 		
 		std::string seriesTitle = m_sParentTitle;
 		if(seriesTitle.empty() && m_pParent)
 			seriesTitle = m_pParent->m_sParentTitle;
 		
-		grid->AddStringToken("seriestitle", seriesTitle);
-		grid->AddIntToken("year", m_pParent->m_iParentYear);
+		grid->AddStringToken((int)(eTokenGridStr::seriestitle), seriesTitle.c_str());
+		grid->AddIntToken((int)(eTokenGridInt::year), m_pParent->m_iParentYear);
 	}
 
 	// Banner, Seriesbanner
@@ -149,8 +152,8 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 		cached = false;
 		std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);
 		if(cached) {
-			grid->AddIntToken("hasbanner", cached);
-			grid->AddStringToken("banner", banner);
+			grid->AddIntToken((int)(eTokenGridInt::hasbanner), cached);
+			grid->AddStringToken((int)(eTokenGridStr::banner), banner.c_str());
 		}
 	}
 }

@@ -5,15 +5,16 @@
 #include "Directory.h"
 #include "plex.h"
 #include "pictureCache.h"
+#include "tokendefinitions.h"
 
 cBrowserGrid::cBrowserGrid(std::shared_ptr<skindesignerapi::cOsdView> rootView) : cViewGridNavigator(rootView)
 {
-	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verBackground));
-	m_pHeader = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verHeader));
-	m_pfooter = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verFooter));
-	m_pInfopane = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verInfopane));
-	m_pWatch = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verWatch));
-	m_pScrollbar = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement(eViewElementsRoot::verScrollbar));
+	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement((int)eViewElementsRoot::background));
+	m_pHeader = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement((int)eViewElementsRoot::header));
+	m_pfooter = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement((int)eViewElementsRoot::footer));
+	m_pInfopane = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement((int)eViewElementsRoot::infopane));
+	m_pWatch = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement((int)eViewElementsRoot::watch));
+	m_pScrollbar = std::shared_ptr<skindesignerapi::cViewElement>(rootView->GetViewElement((int)eViewElementsRoot::scrollbar));
 	m_lastsecond = 0;
 
 	m_pService = NULL;
@@ -23,13 +24,13 @@ cBrowserGrid::cBrowserGrid(std::shared_ptr<skindesignerapi::cOsdView> rootView) 
 
 	Config *conf = &Config::GetInstance();
 	if(conf->DefaultViewMode == ViewMode::Cover) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid(eViewGrids::vgCover) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid((int)eViewGrids::cover) ));
 		SetGridDimensions(conf->CoverGridRows, conf->CoverGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::Detail) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid(eViewGrids::vgDetail) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid((int)eViewGrids::detail) ));
 		SetGridDimensions(conf->DetailGridRows, conf->DetailGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::List) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid(eViewGrids::vgList) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(rootView->GetViewGrid((int)eViewGrids::list) ));
 		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
 	}
 
@@ -74,13 +75,13 @@ void cBrowserGrid::SwitchView(ViewMode mode)
 	Config *conf = &Config::GetInstance();
 	conf->DefaultViewMode = mode;
 	if(conf->DefaultViewMode == ViewMode::Cover) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgCover) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid((int)eViewGrids::cover) ));
 		SetGridDimensions(conf->CoverGridRows, conf->CoverGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::Detail) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgDetail) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid((int)eViewGrids::detail) ));
 		SetGridDimensions(conf->DetailGridRows, conf->DetailGridColumns);
 	} else if(conf->DefaultViewMode == ViewMode::List) {
-		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid(eViewGrids::vgList) ));
+		SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(m_pRootView->GetViewGrid((int)eViewGrids::list) ));
 		SetGridDimensions(conf->ListGridRows, conf->ListGridColumns);
 	}
 
@@ -119,29 +120,29 @@ void cBrowserGrid::SwitchGrid(int index)
 
 	m_pHeader->Clear();
 	m_pHeader->ClearTokens();
-	m_pHeader->AddIntToken("columns", m_columns);
-	m_pHeader->AddIntToken("rows", m_rows);
-	m_pHeader->AddIntToken("totalcount", m_vElements.size());
+	m_pHeader->AddIntToken((int)eTokenGridInt::columns, m_columns);
+	m_pHeader->AddIntToken((int)eTokenGridInt::rows, m_rows);
+	m_pHeader->AddIntToken((int)eTokenGridInt::totalcount, m_vElements.size());
 
 	if(plexclient::plexgdm::GetInstance().GetFirstServer()) {
 		if(m_viewEntryIndex < (int)Config::GetInstance().m_viewentries.size()) {
 			ViewEntry entry = Config::GetInstance().m_viewentries[index];
-			m_pHeader->AddStringToken("tabname", tr(entry.Name.c_str()));
+			m_pHeader->AddStringToken((int)eTokenGridStr::tabname, tr(entry.Name.c_str()));
 			m_pService = std::shared_ptr<plexclient::Plexservice>(new plexclient::Plexservice( plexclient::plexgdm::GetInstance().GetFirstServer(), entry.PlexPath ) );
 			m_pContainer = m_pService->GetSection(m_pService->StartUri);
 			m_bServersAreRoot = false;
 			m_vServerElements.clear();
 		} else {
 			//Server View
-			m_pHeader->AddStringToken("tabname", tr("Library"));
+			m_pHeader->AddStringToken((int)eTokenGridStr::tabname, tr("Library"));
 			m_pService = NULL;
 			m_pContainer = NULL;
 			m_bServersAreRoot = true;
 			SetServerElements();
 		}
 	} else {
-		m_pHeader->AddStringToken("tabname", tr("No Plex Media Server found."));
-		m_pInfopane->AddStringToken("title", tr("No Plex Media Server found."));
+		m_pHeader->AddStringToken((int)eTokenGridStr::tabname, tr("No Plex Media Server found."));
+		m_pInfopane->AddStringToken((int)eTokenGridStr::title, tr("No Plex Media Server found."));
 		m_pService = NULL;
 		m_pContainer = NULL;
 	}
@@ -149,7 +150,7 @@ void cBrowserGrid::SwitchGrid(int index)
 	auto selObj = SelectedObject();
 	if(selObj) {
 		selObj->AddTokens(m_pHeader, false);
-		m_pHeader->AddIntToken("position", selObj->AbsolutePosition);
+		m_pHeader->AddIntToken((int)eTokenGridInt::position, selObj->AbsolutePosition);
 	}
 	
 	DrawBackground();
@@ -272,9 +273,9 @@ void cBrowserGrid::DrawBackground()
 		m_pBackground->AddStringToken("selecteditembackground", path);
 	}
 	*/
-	m_pBackground->AddIntToken("isdirectory", 1);
-	m_pBackground->AddStringToken("currentdirectorybackground", "/path");
-	m_pBackground->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
+	m_pBackground->AddIntToken((int)eTokenBackgroundInt::isdirectory, 1);
+	m_pBackground->AddStringToken((int)eTokenBackgroundStr::currentdirectorybackground, "/path");
+	m_pBackground->AddIntToken((int)eTokenBackgroundInt::viewmode, Config::GetInstance().DefaultViewMode);
 }
 
 void cBrowserGrid::DrawInfopane()
@@ -282,10 +283,10 @@ void cBrowserGrid::DrawInfopane()
 	m_pInfopane->Clear();
 	if(SelectedObject()) {
 		SelectedObject()->AddTokens(m_pInfopane, true);
-		m_pInfopane->AddIntToken("columns", m_columns);
-		m_pInfopane->AddIntToken("rows", m_rows);
-		m_pInfopane->AddIntToken("totalcount", m_vElements.size());
-		m_pInfopane->AddIntToken("position", SelectedObject()->AbsolutePosition);
+		m_pInfopane->AddIntToken((int)eTokenGridInt::columns, m_columns);
+		m_pInfopane->AddIntToken((int)eTokenGridInt::rows, m_rows);
+		m_pInfopane->AddIntToken((int)eTokenGridInt::totalcount, m_vElements.size());
+		m_pInfopane->AddIntToken((int)eTokenGridInt::position, SelectedObject()->AbsolutePosition);
 	}
 	m_pInfopane->Display();
 }
@@ -321,41 +322,37 @@ void cBrowserGrid::DrawFooter()
 	m_pfooter->Clear();
 	m_pfooter->ClearTokens();
 
-	m_pfooter->AddStringToken("red", textRed);
-	m_pfooter->AddStringToken("green", textGreen);
-	m_pfooter->AddStringToken("yellow", textYellow);
-	m_pfooter->AddStringToken("blue", textBlue);
+	m_pfooter->AddStringToken((int)eTokenFooterStr::red, textRed.c_str());
+	m_pfooter->AddStringToken((int)eTokenFooterStr::green, textGreen.c_str());
+	m_pfooter->AddStringToken((int)eTokenFooterStr::yellow, textYellow.c_str());
+	m_pfooter->AddStringToken((int)eTokenFooterStr::blue, textBlue.c_str());
 
-	for (int button = 1; button < 5; button++) {
-		string red = *cString::sprintf("red%d", button);
-		string green = *cString::sprintf("green%d", button);
-		string yellow = *cString::sprintf("yellow%d", button);
-		string blue = *cString::sprintf("blue%d", button);
-		bool isRed = false;
-		bool isGreen = false;
-		bool isYellow = false;
-		bool isBlue = false;
-		switch (colorKeys[button-1]) {
-		case 0:
-			isRed = true;
-			break;
-		case 1:
-			isGreen = true;
-			break;
-		case 2:
-			isYellow = true;
-			break;
-		case 3:
-			isBlue = true;
-			break;
-		default:
-			break;
-		}
-		m_pfooter->AddIntToken(red, isRed);
-		m_pfooter->AddIntToken(green, isGreen);
-		m_pfooter->AddIntToken(yellow, isYellow);
-		m_pfooter->AddIntToken(blue, isBlue);
-	}
+    for (int button = 0; button < 4; button++) {
+        bool isRed = false;
+        bool isGreen = false;
+        bool isYellow = false;
+        bool isBlue = false;
+        switch (colorKeys[button]) {
+            case 0:
+                isRed = true;
+                break;
+            case 1:
+                isGreen = true;
+                break;
+            case 2:
+                isYellow = true;
+                break;
+            case 3:
+                isBlue = true;
+                break;
+            default:
+                break;
+        }
+        m_pfooter->AddIntToken(0  + button, isRed);
+        m_pfooter->AddIntToken(4  + button, isGreen);
+        m_pfooter->AddIntToken(8  + button, isYellow);
+        m_pfooter->AddIntToken(12 + button, isBlue);
+    }
 
 	m_pfooter->Display();
 }
@@ -378,8 +375,8 @@ void cBrowserGrid::DrawScrollbar()
 	m_pScrollbar->Clear();
 	m_pScrollbar->ClearTokens();
 	
-	m_pScrollbar->AddIntToken("height", scrollBarHeight);
-	m_pScrollbar->AddIntToken("offset", offset);
+	m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::height, scrollBarHeight);
+	m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::offset, offset);
 	m_pScrollbar->Display();
 }
 
@@ -420,19 +417,19 @@ bool cBrowserGrid::DrawTime()
 
 	m_pWatch->Clear();
 	m_pWatch->ClearTokens();
-	m_pWatch->AddIntToken("sec", sec);
-	m_pWatch->AddIntToken("min", min);
-	m_pWatch->AddIntToken("hour", hour);
-	m_pWatch->AddIntToken("hmins", hourMinutes);
-	m_pWatch->AddIntToken("year", now->tm_year + 1900);
-	m_pWatch->AddIntToken("day", now->tm_mday);
-	m_pWatch->AddStringToken("time", *TimeString(t));
-	m_pWatch->AddStringToken("monthname", monthname);
-	m_pWatch->AddStringToken("monthnameshort", monthshort);
-	m_pWatch->AddStringToken("month", *cString::sprintf("%02d", now->tm_mon + 1));
-	m_pWatch->AddStringToken("dayleadingzero", *cString::sprintf("%02d", now->tm_mday));
-	m_pWatch->AddStringToken("dayname", *WeekDayNameFull(now->tm_wday));
-	m_pWatch->AddStringToken("daynameshort", *WeekDayName(now->tm_wday));
+	m_pWatch->AddIntToken((int)eTokenTimeInt::sec, sec);
+	m_pWatch->AddIntToken((int)eTokenTimeInt::min, min);
+	m_pWatch->AddIntToken((int)eTokenTimeInt::hour, hour);
+	m_pWatch->AddIntToken((int)eTokenTimeInt::hmins, hourMinutes);
+	m_pWatch->AddIntToken((int)eTokenTimeInt::year, now->tm_year + 1900);
+	m_pWatch->AddIntToken((int)eTokenTimeInt::day, now->tm_mday);
+	m_pWatch->AddStringToken((int)eTokenTimeStr::time, *TimeString(t));
+	m_pWatch->AddStringToken((int)eTokenTimeStr::monthname, monthname);
+	m_pWatch->AddStringToken((int)eTokenTimeStr::monthnameshort, monthshort);
+	m_pWatch->AddStringToken((int)eTokenTimeStr::month, *cString::sprintf("%02d", now->tm_mon + 1));
+	m_pWatch->AddStringToken((int)eTokenTimeStr::dayleadingzero, *cString::sprintf("%02d", now->tm_mday));
+	m_pWatch->AddStringToken((int)eTokenTimeStr::dayname, *WeekDayNameFull(now->tm_wday));
+	m_pWatch->AddStringToken((int)eTokenTimeStr::daynameshort, *WeekDayName(now->tm_wday));
 	m_pWatch->Display();
 
 	m_lastsecond = sec;
@@ -456,8 +453,8 @@ cDummyElement::cDummyElement(std::string title)
 void cDummyElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
-	grid->AddIntToken("isdummy", 1);
-	grid->AddStringToken("title", m_title);
+	grid->AddIntToken((int)eTokenGridInt::isdummy, 1);
+	grid->AddStringToken((int)eTokenGridStr::title, m_title.c_str());
 }
 
 std::string cDummyElement::GetTitle()
@@ -479,13 +476,13 @@ cServerElement::cServerElement(plexclient::PlexServer* server, std::string start
 void cServerElement::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
-	grid->AddIntToken("isserver", 1);
-	grid->AddStringToken("title", m_pServer->GetServerName());
-	grid->AddStringToken("serverstartpointname", m_sStartName);
-	grid->AddStringToken("serverip", m_pServer->GetHost());
-	grid->AddIntToken("serverport", m_pServer->GetPort());
-	grid->AddStringToken("serverversion", m_pServer->GetVersion());
-	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
+	grid->AddIntToken((int)eTokenGridInt::isserver, 1);
+	grid->AddStringToken((int)eTokenGridStr::title, m_pServer->GetServerName().c_str());
+	grid->AddStringToken((int)eTokenGridStr::serverstartpointname, m_sStartName.c_str());
+	grid->AddStringToken((int)eTokenGridStr::serverip, m_pServer->GetHost().c_str());
+	grid->AddIntToken((int)eTokenGridInt::serverport, m_pServer->GetPort());
+	grid->AddStringToken((int)eTokenGridStr::serverversion, m_pServer->GetVersion().c_str());
+	grid->AddIntToken((int)eTokenGridInt::viewmode, Config::GetInstance().DefaultViewMode);
 }
 
 std::string cServerElement::GetTitle()

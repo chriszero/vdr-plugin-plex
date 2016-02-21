@@ -15,7 +15,7 @@ LIBS += $(shell pkg-config --libs libskindesignerapi)
 
 ### Configuration (edit this for your needs)
 
-CONFIG := #-DDEBUG			# uncomment to build DEBUG
+#CONFIG := -DDEBUG			# uncomment to build DEBUG
 DISABLESKINDESIGNER ?= 0
 
 ### The version number of this plugin (taken from the main source file):
@@ -40,7 +40,7 @@ export CFLAGS	= $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
 
 #CXXFLAGS += -std=gnu++0x
-CXXFLAGS += -std=c++11
+export CXXFLAGS += -std=c++11
 
 ### The version number of VDR's plugin API:
 

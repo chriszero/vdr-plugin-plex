@@ -1,4 +1,5 @@
 #include "Media.h"
+#include "tokendefinitions.h"
 
 namespace plexclient
 {
@@ -50,16 +51,16 @@ Media::Media(Poco::XML::Node* pNode)
 #ifdef SKINDESIGNER
 void Media::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid)
 {
-	grid->AddStringToken("videoResolution", m_sVideoResolution);
-	grid->AddIntToken("bitrate", m_iBitrate);
-	grid->AddIntToken("width", m_iWidth);
-	grid->AddIntToken("height", m_iHeight);
-	grid->AddIntToken("audioChannels", m_iAudioChannels);
-	grid->AddStringToken("aspectRatio", m_sAspectRatio);
-	grid->AddStringToken("audioCodec", m_sAudioCodec);
-	grid->AddStringToken("videoCodec", m_sVideoCodec);
-	grid->AddStringToken("container", m_sContainer);
-	grid->AddStringToken("videoFrameRate", m_VideoFrameRate);
+	grid->AddStringToken((int)(eTokenGridStr::videoResolution), m_sVideoResolution.c_str());
+	grid->AddIntToken((int)(eTokenGridInt::bitrate), m_iBitrate);
+	grid->AddIntToken((int)(eTokenGridInt::width), m_iWidth);
+	grid->AddIntToken((int)(eTokenGridInt::height), m_iHeight);
+	grid->AddIntToken((int)(eTokenGridInt::audioChannels), m_iAudioChannels);
+	grid->AddStringToken((int)(eTokenGridStr::aspectRatio), m_sAspectRatio.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::audioCodec), m_sAudioCodec.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::videoCodec), m_sVideoCodec.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::container), m_sContainer.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::videoFrameRate), m_VideoFrameRate.c_str());
 }
 #endif
 

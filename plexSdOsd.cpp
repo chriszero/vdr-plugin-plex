@@ -7,14 +7,15 @@
 
 cMutex cPlexSdOsd::RedrawMutex;
 
-cPlexSdOsd::cPlexSdOsd()
+cPlexSdOsd::cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct) : cSkindesignerOsdObject(plugStruct)
 {
 	m_pRootView = NULL;
 }
 
 cPlexSdOsd::~cPlexSdOsd()
 {
-	m_pRootView->Deactivate(true);
+	if(m_pRootView)
+		m_pRootView->Deactivate(true);
 	if(m_pBrowserGrid)
 		m_pBrowserGrid->Clear();
 	if(m_pMessage)
@@ -24,33 +25,30 @@ cPlexSdOsd::~cPlexSdOsd()
 
 bool cPlexSdOsd::SdSupport()
 {
-	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
-	if (skinDesignerAvailable) {
-
-		skindesignerapi::cOsdView *rootView = GetOsdView(eViews::viRootView);
+	if (SkindesignerAvailable()) {
+		skindesignerapi::cOsdView *rootView = GetOsdView();
 		if (!rootView) {
-			esyslog("[plex]: used skindesigner skin does not support plex");
-			return false;
+				esyslog("[plex]: used skindesigner skin does not support plex");
+				return false;
 		}
 	}
-	return skinDesignerAvailable;
+	return true;
 }
 
 void cPlexSdOsd::Show(void)
 {
-	bool skinDesignerAvailable = InitSkindesignerInterface("plex");
-	if (!skinDesignerAvailable) {
+	if (!SkindesignerAvailable()) {
 		return;
 	}
 
-	m_pRootView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView(eViews::viRootView));
+	m_pRootView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView((int)eViews::rootView));
 	if (!m_pRootView) {
 		esyslog("[plex]: used skindesigner skin does not support plex");
 		return;
 	}
 
 	m_pBrowserGrid = std::shared_ptr<cBrowserGrid>(new cBrowserGrid(m_pRootView));
-	m_pMessage = std::shared_ptr<skindesignerapi::cViewElement>(m_pRootView->GetViewElement(eViewElementsRoot::verMessage));
+	m_pMessage = std::shared_ptr<skindesignerapi::cViewElement>(m_pRootView->GetViewElement((int)eViewElementsRoot::message));
 	m_messageDisplayed = false;
 	Flush();
 }
@@ -167,8 +165,135 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 void cPlexSdOsd::DrawMessage(std::string message)
 {
 	m_pMessage->ClearTokens();
-	m_pMessage->AddStringToken("message", message);
-	m_pMessage->AddIntToken("displaymessage", true);
+	m_pMessage->AddStringToken((int)eTokenMessageStr::message, message.c_str());
+	m_pMessage->AddIntToken((int)eTokenMessageInt::displaymessage, true);
 	m_pMessage->Display();
 	m_pRootView->Display();
+}
+
+void cPlexSdOsd::DefineTokens(eViewElementsRoot ve, skindesignerapi::cTokenContainer* tk)
+{
+	switch(ve) {
+		case eViewElementsRoot::background:
+			tk->DefineIntToken("{viewmode}", (int)eTokenBackgroundInt::viewmode);
+			tk->DefineIntToken("{isdirectory}", (int)eTokenBackgroundInt::isdirectory);
+			tk->DefineStringToken("{selecteditembackground}", (int)eTokenBackgroundStr::selecteditembackground);
+			tk->DefineStringToken("{currentdirectorybackground}", (int)eTokenBackgroundStr::currentdirectorybackground);
+			break;
+		case eViewElementsRoot::infopane:
+		case eViewElementsRoot::header:
+			DefineGridTokens(tk);
+			tk->DefineStringToken("{tabname}", (int)eTokenGridStr::tabname);
+			break;
+		case eViewElementsRoot::footer:
+			tk->DefineIntToken("{red1}", (int)eTokenFooterInt::red1);
+			tk->DefineIntToken("{red2}", (int)eTokenFooterInt::red2);
+			tk->DefineIntToken("{red3}", (int)eTokenFooterInt::red3);
+			tk->DefineIntToken("{red4}", (int)eTokenFooterInt::red4);
+			tk->DefineIntToken("{green1}", (int)eTokenFooterInt::green1);
+			tk->DefineIntToken("{green2}", (int)eTokenFooterInt::green2);
+			tk->DefineIntToken("{green3}", (int)eTokenFooterInt::green3);
+			tk->DefineIntToken("{green4}", (int)eTokenFooterInt::green4);
+			tk->DefineIntToken("{yellow1}", (int)eTokenFooterInt::yellow1);
+			tk->DefineIntToken("{yellow2}", (int)eTokenFooterInt::yellow2);
+			tk->DefineIntToken("{yellow3}", (int)eTokenFooterInt::yellow3);
+			tk->DefineIntToken("{yellow4}", (int)eTokenFooterInt::yellow4);
+			tk->DefineIntToken("{blue1}", (int)eTokenFooterInt::blue1);
+			tk->DefineIntToken("{blue2}", (int)eTokenFooterInt::blue2);
+			tk->DefineIntToken("{blue3}", (int)eTokenFooterInt::blue3);
+			tk->DefineIntToken("{blue4}", (int)eTokenFooterInt::blue4);
+			tk->DefineStringToken("{red}", (int)eTokenFooterStr::red);
+			tk->DefineStringToken("{green}", (int)eTokenFooterStr::green);
+			tk->DefineStringToken("{yellow}", (int)eTokenFooterStr::yellow);
+			tk->DefineStringToken("{blue}", (int)eTokenFooterStr::blue);
+			break;
+		case eViewElementsRoot::watch:
+			tk->DefineIntToken("{sec}", (int)eTokenTimeInt::sec);
+			tk->DefineIntToken("{min}", (int)eTokenTimeInt::min);
+			tk->DefineIntToken("{hour}", (int)eTokenTimeInt::hour);
+			tk->DefineIntToken("{hmins}", (int)eTokenTimeInt::hmins);
+			tk->DefineIntToken("{day}", (int)eTokenTimeInt::day);
+			tk->DefineIntToken("{year}", (int)eTokenTimeInt::year);
+			tk->DefineStringToken("{time}", (int)eTokenTimeStr::time);
+			tk->DefineStringToken("{dayname}", (int)eTokenTimeStr::dayname);
+			tk->DefineStringToken("{daynameshort}", (int)eTokenTimeStr::daynameshort);
+			tk->DefineStringToken("{dayleadingzero}", (int)eTokenTimeStr::dayleadingzero);
+			tk->DefineStringToken("{month}", (int)eTokenTimeStr::month);
+			tk->DefineStringToken("{monthname}", (int)eTokenTimeStr::monthname);
+			tk->DefineStringToken("{monthnameshort}", (int)eTokenTimeStr::monthnameshort);
+			break;
+		case eViewElementsRoot::message:
+			tk->DefineIntToken("{displaymessage}", (int)eTokenMessageInt::displaymessage);
+			tk->DefineStringToken("{message}", (int)eTokenMessageStr::message);
+			break;
+		case eViewElementsRoot::scrollbar:
+			tk->DefineIntToken("{height}", (int)eTokenScrollbarInt::height);
+			tk->DefineIntToken("{offset}", (int)eTokenScrollbarInt::offset);
+		default:
+			break;
+	}
+}
+
+void cPlexSdOsd::DefineGridTokens(skindesignerapi::cTokenContainer* tk)
+{
+	tk->DefineIntToken("{viewmode}", (int)eTokenGridInt::viewmode);
+	tk->DefineIntToken("{viewgroup}", (int)eTokenGridInt::viewgroup);
+	tk->DefineIntToken("{viewCount}", (int)eTokenGridInt::viewCount);
+	tk->DefineIntToken("{viewoffset}", (int)eTokenGridInt::viewoffset);
+	tk->DefineIntToken("{viewoffsetpercent}", (int)eTokenGridInt::viewoffsetpercent);
+	tk->DefineIntToken("{duration}", (int)eTokenGridInt::duration);
+	tk->DefineIntToken("{year}", (int)eTokenGridInt::year);
+	tk->DefineIntToken("{hasthumb}", (int)eTokenGridInt::hasthumb);
+	tk->DefineIntToken("{hasart}", (int)eTokenGridInt::hasart);
+	tk->DefineIntToken("{ismovie}", (int)eTokenGridInt::ismovie);
+	tk->DefineIntToken("{isepisode}", (int)eTokenGridInt::isepisode);
+	tk->DefineIntToken("{isdirectory}", (int)eTokenGridInt::isdirectory);
+	tk->DefineIntToken("{isshow}", (int)eTokenGridInt::isshow);
+	tk->DefineIntToken("{isseason}", (int)eTokenGridInt::isseason);
+	tk->DefineIntToken("{originallyAvailableYear}", (int)eTokenGridInt::originallyAvailableYear);
+	tk->DefineIntToken("{originallyAvailableMonth}", (int)eTokenGridInt::originallyAvailableMonth);
+	tk->DefineIntToken("{originallyAvailableDay}", (int)eTokenGridInt::originallyAvailableDay);
+	tk->DefineIntToken("{season}", (int)eTokenGridInt::season);
+	tk->DefineIntToken("{episode}", (int)eTokenGridInt::episode);
+	tk->DefineIntToken("{leafCount}", (int)eTokenGridInt::leafCount);
+	tk->DefineIntToken("{viewedLeafCount}", (int)eTokenGridInt::viewedLeafCount);
+	tk->DefineIntToken("{childCount}", (int)eTokenGridInt::childCount);
+	tk->DefineIntToken("{rating}", (int)eTokenGridInt::rating);
+	tk->DefineIntToken("{hasseriesthumb}", (int)eTokenGridInt::hasseriesthumb);
+	tk->DefineIntToken("{hasbanner}", (int)eTokenGridInt::hasbanner);
+	tk->DefineIntToken("{columns}", (int)eTokenGridInt::columns);
+	tk->DefineIntToken("{rows}", (int)eTokenGridInt::rows);
+	tk->DefineIntToken("{position}", (int)eTokenGridInt::position);
+	tk->DefineIntToken("{totalcount}", (int)eTokenGridInt::totalcount);
+	tk->DefineIntToken("{bitrate}", (int)eTokenGridInt::bitrate);
+	tk->DefineIntToken("{width}", (int)eTokenGridInt::width);
+	tk->DefineIntToken("{height}", (int)eTokenGridInt::height);
+	tk->DefineIntToken("{audioChannels}", (int)eTokenGridInt::audioChannels);
+	tk->DefineIntToken("{isdummy}", (int)eTokenGridInt::isdummy);
+	tk->DefineIntToken("{isserver}", (int)eTokenGridInt::isserver);
+	tk->DefineIntToken("{serverport}", (int)eTokenGridInt::serverport);
+
+	tk->DefineStringToken("{title}", (int)eTokenGridStr::title);
+	tk->DefineStringToken("{orginaltitle}", (int)eTokenGridStr::orginaltitle);
+	tk->DefineStringToken("{summary}", (int)eTokenGridStr::summary);
+	tk->DefineStringToken("{contentrating}", (int)eTokenGridStr::contentrating);
+	tk->DefineStringToken("{ratingstring}", (int)eTokenGridStr::ratingstring);
+	tk->DefineStringToken("{studio}", (int)eTokenGridStr::studio);
+	tk->DefineStringToken("{thumb}", (int)eTokenGridStr::thumb);
+	tk->DefineStringToken("{art}", (int)eTokenGridStr::art);
+	tk->DefineStringToken("{seriestitle}", (int)eTokenGridStr::seriestitle);
+	tk->DefineStringToken("{seriesthumb}", (int)eTokenGridStr::seriesthumb);
+	tk->DefineStringToken("{banner}", (int)eTokenGridStr::banner);
+	tk->DefineStringToken("{videoResolution}", (int)eTokenGridStr::videoResolution);
+	tk->DefineStringToken("{aspectRatio}", (int)eTokenGridStr::aspectRatio);
+	tk->DefineStringToken("{audioCodec}", (int)eTokenGridStr::audioCodec);
+	tk->DefineStringToken("{videoCodec}", (int)eTokenGridStr::videoCodec);
+	tk->DefineStringToken("{container}", (int)eTokenGridStr::container);
+	tk->DefineStringToken("{videoFrameRate}", (int)eTokenGridStr::videoFrameRate);
+	tk->DefineStringToken("{serverstartpointname}", (int)eTokenGridStr::serverstartpointname);
+	tk->DefineStringToken("{serverip}", (int)eTokenGridStr::serverip);
+	tk->DefineStringToken("{serverversion}", (int)eTokenGridStr::serverversion);
+
+	tk->DefineLoopToken("{roles[actor]}", (int)eTokenGridActorLst::roles);
+	tk->DefineLoopToken("{genres[genre]}", (int)eTokenGridGenresLst::genres);
 }

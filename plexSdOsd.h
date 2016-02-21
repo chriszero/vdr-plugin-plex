@@ -17,35 +17,9 @@
 #include "hlsPlayerControl.h"
 
 #include "browserGrid.h"
+#include "tokendefinitions.h"
 #include  <libskindesignerapi/osdelements.h>
 #include  <libskindesignerapi/skindesignerosdbase.h>
-
-enum eViews {
-	viRootView,
-	viDetailView
-};
-
-enum eViewElementsRoot {
-	verBackground,
-	verHeader,
-	verFooter,
-	verInfopane,
-	verWatch,
-	verMessage,
-	verScrollbar
-};
-
-enum eViewGrids {
-	vgCover,
-	vgDetail,
-	vgList
-};
-
-enum eViewElementsDetail {
-    vedBackground,
-    vedHeader,
-    vedFooter
-};
 
 class cPlexSdOsd : public skindesignerapi::cSkindesignerOsdObject
 {	
@@ -63,13 +37,15 @@ private:
 	void DrawMessage(std::string message);
 	
 public:
-	cPlexSdOsd();
+	cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct);
 	~cPlexSdOsd();
 	virtual void Show(void);
   	virtual eOSState ProcessKey(eKeys Key);
 	
 	bool SdSupport();
 	static cMutex RedrawMutex;
+	static void DefineTokens(eViewElementsRoot ve, skindesignerapi::cTokenContainer *tk);
+	static void DefineGridTokens(skindesignerapi::cTokenContainer *tk);
 };
 
 #endif // CPLEXSDOSD_H

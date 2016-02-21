@@ -44,6 +44,9 @@
 	<viewelement name="header">
 	</viewelement>
 	
+	<viewelement name="infopane">
+	</viewelement>
+	
 	<!-- Tokens available for scrollbar
 		{height}	height of the position marker of the scrollbar in percent
 		{offset}	offset for the position marker from the top of the scrollbar in percent
@@ -55,9 +58,6 @@
 			<drawrectangle x="0" y="{areaheight} / 100 * {offset}" width="{areawidth}" height="{areaheight} / 100 * {height}" color="{clrGreen}" />
 		</area>
 	-->
-	</viewelement>
-	
-	<viewelement name="infopane">
 	</viewelement>
 	
 	<!-- Tokens available in browser

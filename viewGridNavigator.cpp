@@ -2,6 +2,7 @@
 #include <iostream>
 #include "plexSdOsd.h"
 #include "pictureCache.h"
+#include "tokendefinitions.h"
 
 unsigned int cGridElement::AbsoluteGridIdCounter = 0;
 
@@ -44,8 +45,8 @@ void cViewGridNavigator::ReDraw(cGridElement* element)
 		double x, y;
 		element->GetPosition(x, y);
 		element->AddTokens(m_pGrid);
-		m_pGrid->AddIntToken("columns", m_columns);
-		m_pGrid->AddIntToken("rows", m_rows);
+		m_pGrid->AddIntToken((int)eTokenGridInt::columns, m_columns);
+		m_pGrid->AddIntToken((int)eTokenGridInt::rows, m_rows);
 		double width = 1.0 / m_columns;
 		double height = 1.0 / m_rows;
 		m_pGrid->SetGrid(element->GridElementId(), x, y, width, height);
@@ -116,10 +117,10 @@ void cViewGridNavigator::SetGridElementData(cGridElement *obj)
 		obj->SetPosition(x, y);
 		obj->AddTokens(m_pGrid, true, std::bind(&cViewGridNavigator::ReDraw, this, std::placeholders::_1));
 		// set GridDimensions
-		m_pGrid->AddIntToken("columns", m_columns);
-		m_pGrid->AddIntToken("rows", m_rows);
-		m_pGrid->AddIntToken("position", obj->AbsolutePosition);
-		m_pGrid->AddIntToken("totalcount", m_vElements.size());
+		m_pGrid->AddIntToken((int)eTokenGridInt::columns, m_columns);
+		m_pGrid->AddIntToken((int)eTokenGridInt::rows, m_rows);
+		m_pGrid->AddIntToken((int)eTokenGridInt::position, obj->AbsolutePosition);
+		m_pGrid->AddIntToken((int)eTokenGridInt::totalcount, m_vElements.size());
 		m_pGrid->SetGrid(obj->GridElementId(), x, y, width, height);
 		obj->InitFinished();
 	} else {

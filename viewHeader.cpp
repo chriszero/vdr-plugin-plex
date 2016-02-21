@@ -1,4 +1,5 @@
 #include "viewHeader.h"
+#include "tokendefinitions.h"
 
 cViewHeader::cViewHeader(skindesignerapi::cViewElement* viewElem)
 {
@@ -17,27 +18,6 @@ void cViewHeader::Draw(cGridElement* elem)
 	
 	elem->AddTokens(m_pViewElem, false);
 	
-	switch(m_eCurrentTab) {
-	case ePlexMenuTab::pmtOnDeck:
-		m_pViewElem->AddIntToken("istab1active", 1);
-		m_pViewElem->AddIntToken("istab2active", 0);
-		m_pViewElem->AddIntToken("istab3active", 0);
-		m_pViewElem->AddStringToken("tab1name", tr("On Deck"));
-		break;
-	case ePlexMenuTab::pmtRecentlyAdded:
-		m_pViewElem->AddIntToken("istab1active", 0);
-		m_pViewElem->AddIntToken("istab2active", 1);
-		m_pViewElem->AddIntToken("istab3active", 0);
-		m_pViewElem->AddStringToken("tab2name", tr("Recently Added"));
-		break;
-	case ePlexMenuTab::pmtLibrary:
-		m_pViewElem->AddIntToken("istab1active", 0);
-		m_pViewElem->AddIntToken("istab2active", 0);
-		m_pViewElem->AddIntToken("istab3active", 1);
-		m_pViewElem->AddStringToken("tab3name", tr("Library"));
-		break;
-	}
-
 	m_pViewElem->Display();
 }
 

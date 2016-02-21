@@ -3,6 +3,7 @@
 #include "plex.h"
 #include "plexOsd.h"
 #include "services.h"
+#include "tokendefinitions.h"
 
 #include <Poco/Net/SSLManager.h>
 #include <Poco/SharedPtr.h>
@@ -31,9 +32,6 @@ bool cMyPlugin::PlayingFile = false;
 */
 cMyPlugin::cMyPlugin(void)
 {
-#ifdef SKINDESIGNER
-	m_pSdCheck = NULL;
-#endif
 }
 
 /**
@@ -69,34 +67,57 @@ const char *cMyPlugin::Description(void)
 bool cMyPlugin::Start(void)
 {
 #ifdef SKINDESIGNER
-	skindesignerapi::cPluginStructure reg;
-	reg.name = "plex";
-	reg.libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
+	m_pPlugStruct = new skindesignerapi::cPluginStructure();
+	m_pPlugStruct->name = "plex";
+	m_pPlugStruct->libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
+	
+	m_pPlugStruct->RegisterRootView("root.xml");
+	skindesignerapi::cTokenContainer *tkBackground = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::background, tkBackground);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::background, "background", tkBackground);
+	
+	skindesignerapi::cTokenContainer *tkHeader = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::header, tkHeader);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::header, "header", tkHeader);
+	
+	skindesignerapi::cTokenContainer *tkFooter = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::footer, tkFooter);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::footer, "footer", tkFooter);
+	
+	skindesignerapi::cTokenContainer *tkInfopane = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::infopane, tkInfopane);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::infopane, "infopane", tkInfopane);
+	
+	skindesignerapi::cTokenContainer *tkWatch = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::watch, tkWatch);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::watch, "watch", tkWatch);
+	
+	skindesignerapi::cTokenContainer *tkMessage = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::message, tkMessage);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::message, "message", tkMessage);
+	
+	skindesignerapi::cTokenContainer *tkScrollbar = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineTokens(eViewElementsRoot::scrollbar, tkScrollbar);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::scrollbar, "scrollbar", tkScrollbar);
+	
+	skindesignerapi::cTokenContainer *tkGridCover = new skindesignerapi::cTokenContainer();
+	skindesignerapi::cTokenContainer *tkGridDetail = new skindesignerapi::cTokenContainer();
+	skindesignerapi::cTokenContainer *tkGridList = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineGridTokens(tkGridCover);
+	cPlexSdOsd::DefineGridTokens(tkGridDetail);
+	cPlexSdOsd::DefineGridTokens(tkGridList);
+	m_pPlugStruct->RegisterViewGrid((int)eViews::rootView, (int)eViewGrids::cover, "coverbrowser", tkGridCover);
+	m_pPlugStruct->RegisterViewGrid((int)eViews::rootView, (int)eViewGrids::detail, "detailbrowser", tkGridDetail);
+	m_pPlugStruct->RegisterViewGrid((int)eViews::rootView, (int)eViewGrids::list, "listbrowser", tkGridList);
 
-	reg.SetView(viRootView, "root.xml");
-	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgCover, "coverbrowser");
-	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgList, "listbrowser");
-	reg.SetViewGrid(eViews::viRootView, eViewGrids::vgDetail, "detailbrowser");
-	reg.SetViewElement(viRootView, verHeader, "header");
-	reg.SetViewElement(viRootView, verBackground, "background");
-	reg.SetViewElement(viRootView, verInfopane, "infopane");
-	reg.SetViewElement(viRootView, verFooter, "footer");
-	reg.SetViewElement(viRootView, verWatch, "time");
-	reg.SetViewElement(viRootView, verMessage, "message");
-	reg.SetViewElement(viRootView, verScrollbar, "scrollbar");
-	/*
-		reg.SetSubView(viRootView, viDetailView, "detail.xml");
-		reg.SetViewElement(viDetailView, vedBackground, "background");
-		reg.SetViewElement(viDetailView, vedHeader, "header");
-		reg.SetViewElement(viDetailView, vedFooter, "footer");
-	*/
-
-	//reg.SetMenu(meRoot, "streamselect.xml");
-	if (skindesignerapi::SkindesignerAPI::RegisterPlugin(&reg)) {
-		m_pSdCheck = new cPlexSdOsd();
-		cMyPlugin::bSkindesigner = m_pSdCheck->SdSupport();
+	
+	if (!skindesignerapi::SkindesignerAPI::RegisterPlugin(m_pPlugStruct)) {
+		esyslog("[plex]: skindesigner not available");
+		bSkindesigner = false;
 	} else {
-		esyslog("[plex]: %s skindesigner not available", __FUNCTION__);
+		dsyslog("[plex]: successfully registered at skindesigner, id %d", m_pPlugStruct->id);
+		m_pTestOsd = new cPlexSdOsd(m_pPlugStruct);
+		bSkindesigner = true;
 	}
 #endif
 	return true;
@@ -153,7 +174,7 @@ cOsdObject *cMyPlugin::MainMenuAction(void)
 {
 	//dsyslog("[plex]%s:\n", __FUNCTION__);
 #ifdef SKINDESIGNER
-	if(m_pSdCheck && m_pSdCheck->SdSupport()) return new cPlexSdOsd();
+	if(bSkindesigner && m_pTestOsd->SdSupport()) return new cPlexSdOsd(m_pPlugStruct);
 	else return cPlexMenu::ProcessMenu();
 #else
 	return cPlexMenu::ProcessMenu();

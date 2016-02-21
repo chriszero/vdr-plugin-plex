@@ -6,6 +6,7 @@
 
 #include <vdr/tools.h>
 #include "PlexHelper.h"
+#include "tokendefinitions.h"
 
 namespace plexclient
 {
@@ -231,64 +232,65 @@ bool Video::SetWatched()
 void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
-	grid->AddIntToken("viewmode", Config::GetInstance().DefaultViewMode);
-	grid->AddStringToken("title", m_sTitle);
-	grid->AddStringToken("orginaltitle", m_sOriginalTitle);
-	grid->AddStringToken("summary", m_sSummary);
-	grid->AddStringToken("contentrating", m_sContentRating);
-	grid->AddIntToken("rating", m_dRating*10);
-	grid->AddStringToken("ratingstring", Poco::format("%.1f", m_dRating));
-	grid->AddStringToken("studio", m_sStudio);
-	grid->AddIntToken("viewCount", m_iViewCount);
-	grid->AddIntToken("viewoffset", m_lViewoffset/1000/60);
+	grid->AddIntToken((int)(eTokenGridInt::viewmode), Config::GetInstance().DefaultViewMode);
+	grid->AddStringToken((int)(eTokenGridStr::title), m_sTitle.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::orginaltitle), m_sOriginalTitle.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::summary), m_sSummary.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::contentrating), m_sContentRating.c_str());
+	grid->AddIntToken((int)(eTokenGridInt::rating), m_dRating*10);
+	grid->AddStringToken((int)(eTokenGridStr::ratingstring), Poco::format("%.1f", m_dRating).c_str());
+	grid->AddStringToken((int)(eTokenGridStr::studio), m_sStudio.c_str());
+	grid->AddIntToken((int)(eTokenGridInt::viewCount), m_iViewCount);
+	grid->AddIntToken((int)(eTokenGridInt::viewoffset), m_lViewoffset/1000/60);
 	if(m_iDuration > 0) // avoid division by zero
-		grid->AddIntToken("viewoffsetpercent", 100.0 / m_iDuration * m_lViewoffset);
+		grid->AddIntToken((int)(eTokenGridInt::viewoffsetpercent), 100.0 / m_iDuration * m_lViewoffset);
 	else 
-		grid->AddIntToken("viewoffsetpercent", 0);
-	grid->AddIntToken("duration", m_iDuration/1000/60);
-	grid->AddIntToken("year", m_iYear);
-	grid->AddIntToken("viewgroup", m_pParent->m_eViewGroup);
+		grid->AddIntToken((int)(eTokenGridInt::viewoffsetpercent), 0);
+	grid->AddIntToken((int)(eTokenGridInt::duration), m_iDuration/1000/60);
+	grid->AddIntToken((int)(eTokenGridInt::year), m_iYear);
+	grid->AddIntToken((int)(eTokenGridInt::viewgroup), m_pParent->m_eViewGroup);
 
 	// Thumb, Cover, Episodepicture
 	bool cached = false;
 	std::string thumb = cPictureCache::GetInstance().GetPath(ThumbUri(), Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
-	grid->AddIntToken("hasthumb", cached);
-	if (cached)	grid->AddStringToken("thumb", thumb);
+	grid->AddIntToken((int)(eTokenGridInt::hasthumb), cached);
+	if (cached)	grid->AddStringToken((int)(eTokenGridStr::thumb), thumb.c_str());
 
 	// Fanart
 	cached = false;
 	std::string art = cPictureCache::GetInstance().GetPath(ArtUri(), Config::GetInstance().ArtWidth(), Config::GetInstance().ArtHeight(), cached);
-	grid->AddIntToken("hasart", cached);
-	if (cached)	grid->AddStringToken("art", art);
+	grid->AddIntToken((int)(eTokenGridInt::hasart), cached);
+	if (cached)	grid->AddStringToken((int)(eTokenGridStr::art), art.c_str());
 
 	if(m_tType == MediaType::MOVIE || m_tType == MediaType::CLIP) {
-		grid->AddIntToken("ismovie", true);
+		grid->AddIntToken((int)(eTokenGridInt::ismovie), true);
 	}
-	
+/*
+	int actloopIndex = grid->GetLoopIndex("roles");
+	int i = 0;
 	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
-		map<string, string> roles;
-		roles["actor"] = *it;
-		grid->AddLoopToken("actor[roles]", roles);
+		grid->AddLoopToken(actloopIndex, i, (int)(eTokenGridActorLst::roles), it->c_str());		
+		i++;
 	}
 
+	int genloopIndex = grid->GetLoopIndex("genres");
+	i = 0;
 	for(auto it = m_vGenre.begin(); it != m_vGenre.end(); it++) {
-		map<string, string> genres;
-		genres.insert(std::pair<string, string>("genres[genre]", *it));
-		grid->AddLoopToken("genres", genres);
+		grid->AddLoopToken(genloopIndex, i, (int)(eTokenGridGenresLst::genres), it->c_str());		
+		i++;
 	}
-	
-	
-	grid->AddIntToken("originallyAvailableYear", m_tOriginallyAvailableAt.year());
-	grid->AddIntToken("originallyAvailableMonth", m_tOriginallyAvailableAt.month());
-	grid->AddIntToken("originallyAvailableDay", m_tOriginallyAvailableAt.day());
+	*/
+	grid->AddIntToken((int)(eTokenGridInt::originallyAvailableYear), m_tOriginallyAvailableAt.year());
+	grid->AddIntToken((int)(eTokenGridInt::originallyAvailableMonth), m_tOriginallyAvailableAt.month());
+	grid->AddIntToken((int)(eTokenGridInt::originallyAvailableDay), m_tOriginallyAvailableAt.day());
 
 	if(m_tType == MediaType::EPISODE) {
-		grid->AddIntToken("isepisode", true);
+		grid->AddIntToken((int)(eTokenGridInt::isepisode), true);
 		std::string seriesTitle = m_sGrandparentTitle;
 		if(seriesTitle.empty() && m_pParent) seriesTitle = m_pParent->m_sGrandparentTitle;
-		grid->AddStringToken("seriestitle", seriesTitle);
-		grid->AddIntToken("season", m_iParentIndex);
-		grid->AddIntToken("episode", m_iIndex);
+		grid->AddStringToken((int)(eTokenGridStr::seriestitle), seriesTitle.c_str());
+		grid->AddIntToken((int)(eTokenGridInt::season), m_iParentIndex);
+		grid->AddIntToken((int)(eTokenGridInt::episode), m_iIndex);
 
 		// Seriescover, Seasoncover
 		cached = false;
@@ -298,17 +300,17 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 		}
 		if(!grandparentthumbUri.empty()) {
 			std::string grandparentThumb = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + grandparentthumbUri, Config::GetInstance().ThumbWidth(), Config::GetInstance().ThumbHeight(), cached, OnCached, this);
-			if (cached)	grid->AddStringToken("seriesthumb", grandparentThumb);
+			if (cached)	grid->AddStringToken((int)(eTokenGridStr::seriesthumb), grandparentThumb.c_str());
 		}
-		grid->AddIntToken("hasseriesthumb", cached);
+		grid->AddIntToken((int)(eTokenGridInt::hasseriesthumb), cached);
 
 		// Banner, Seriesbanner
 		if(m_pParent && !m_pParent->m_sBanner.empty()) {
 			cached = false;
 			std::string banner = cPictureCache::GetInstance().GetPath(m_pServer->GetUri() + m_pParent->m_sBanner, Config::GetInstance().BannerWidth(), Config::GetInstance().BannerHeight(), cached, OnCached, this);
 			if(cached) {
-				grid->AddIntToken("hasbanner", cached);
-				grid->AddStringToken("banner", banner);
+				grid->AddIntToken((int)(eTokenGridInt::hasbanner), cached);
+				grid->AddStringToken((int)(eTokenGridStr::banner), banner.c_str());
 			}
 		}
 	}
