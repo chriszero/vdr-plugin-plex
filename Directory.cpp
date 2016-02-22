@@ -99,7 +99,12 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 	if(m_eType == MediaType::UNDEF || m_eType == MediaType::MOVIE || m_eType == MediaType::PHOTO) {
 		grid->AddIntToken((int)(eTokenGridInt::isdirectory), true);
 	}
-	/*
+
+	vector<int> loopInfo;
+	loopInfo.push_back(m_vRole.size());
+	loopInfo.push_back(m_vGenre.size());
+	grid->SetLoop(loopInfo);
+
 	int actloopIndex = grid->GetLoopIndex("roles");
 	int i = 0;
 	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
@@ -113,7 +118,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 		grid->AddLoopToken(genloopIndex, i, (int)(eTokenGridGenresLst::genres), it->c_str());		
 		i++;
 	}
-*/
+
 	if(m_eType == MediaType::SHOW) {
 		grid->AddIntToken((int)(eTokenGridInt::isshow), true);
 		grid->AddStringToken((int)(eTokenGridStr::summary), m_sSummary.c_str());

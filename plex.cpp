@@ -90,7 +90,7 @@ bool cMyPlugin::Start(void)
 	
 	skindesignerapi::cTokenContainer *tkWatch = new skindesignerapi::cTokenContainer();
 	cPlexSdOsd::DefineTokens(eViewElementsRoot::watch, tkWatch);
-	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::watch, "watch", tkWatch);
+	m_pPlugStruct->RegisterViewElement((int)eViews::rootView, (int)eViewElementsRoot::watch, "time", tkWatch);
 	
 	skindesignerapi::cTokenContainer *tkMessage = new skindesignerapi::cTokenContainer();
 	cPlexSdOsd::DefineTokens(eViewElementsRoot::message, tkMessage);

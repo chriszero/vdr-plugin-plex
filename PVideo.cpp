@@ -265,7 +265,12 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	if(m_tType == MediaType::MOVIE || m_tType == MediaType::CLIP) {
 		grid->AddIntToken((int)(eTokenGridInt::ismovie), true);
 	}
-/*
+	
+	vector<int> loopInfo;
+	loopInfo.push_back(m_vRole.size());
+	loopInfo.push_back(m_vGenre.size());
+	grid->SetLoop(loopInfo);
+	
 	int actloopIndex = grid->GetLoopIndex("roles");
 	int i = 0;
 	for(auto it = m_vRole.begin(); it != m_vRole.end(); it++) {
@@ -279,7 +284,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 		grid->AddLoopToken(genloopIndex, i, (int)(eTokenGridGenresLst::genres), it->c_str());		
 		i++;
 	}
-	*/
+
 	grid->AddIntToken((int)(eTokenGridInt::originallyAvailableYear), m_tOriginallyAvailableAt.year());
 	grid->AddIntToken((int)(eTokenGridInt::originallyAvailableMonth), m_tOriginallyAvailableAt.month());
 	grid->AddIntToken((int)(eTokenGridInt::originallyAvailableDay), m_tOriginallyAvailableAt.day());
