@@ -50,13 +50,20 @@ void cPlexSdOsd::Show(void)
 	m_pBrowserGrid = std::shared_ptr<cBrowserGrid>(new cBrowserGrid(m_pRootView));
 	m_pMessage = std::shared_ptr<skindesignerapi::cViewElement>(m_pRootView->GetViewElement((int)eViewElementsRoot::message));
 	m_messageDisplayed = false;
+	m_detailsActive = false;
 	Flush();
 }
 
 void cPlexSdOsd::Flush()
 {
-	m_pBrowserGrid->DrawGrid();
-	m_pBrowserGrid->Flush();
+	if(m_detailsActive) {
+		m_pDetailGrid->Draw();
+		m_pDetailGrid->Flush();
+	}
+	else {
+		m_pBrowserGrid->DrawGrid();
+		m_pBrowserGrid->Flush();
+	}
 }
 
 eOSState cPlexSdOsd::ProcessKey(eKeys Key)
@@ -97,6 +104,50 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		default:
 			break;
 		}
+	} else if(m_detailsActive) {
+		switch (Key & ~k_Repeat) {
+		case kUp:
+			if(m_pDetailGrid->NavigateUp()) Flush();
+			break;
+		case kDown:
+			if(m_pDetailGrid->NavigateDown()) Flush();
+			break;
+		case kLeft:
+			if(m_pDetailGrid->NavigateLeft()) Flush();
+			break;
+		case kRight:
+			if(m_pDetailGrid->NavigateRight()) Flush();
+			break;
+		case kOk:
+			state = m_pDetailGrid->NavigateSelect();
+			Flush();
+			break;
+		case kBack:
+			state = m_pDetailGrid->NavigateBack();
+			m_pDetailGrid->Clear();
+			m_pDetailsView->Deactivate(true);
+			m_pDetailGrid = nullptr;
+			m_pDetailsView = nullptr;
+			m_detailsActive = false;
+			m_pRootView->Activate();
+			break;
+		case kBlue:
+				vid = m_pDetailGrid->GetVideo();
+				state = eOSState::osUser1;
+			break;
+		case kRed:
+				if(m_pDetailGrid->GetVideo()) {
+					if(m_pDetailGrid->GetVideo()->m_iViewCount > 0) m_pDetailGrid->GetVideo()->SetUnwatched();
+					else m_pDetailGrid->GetVideo()->SetWatched();
+					m_pDetailGrid->GetVideo()->UpdateFromServer();
+					Flush();
+				}
+			break;
+		case kGreen:
+		case kYellow:
+		default:
+			break;
+		}
 	} else {
 
 		switch (Key & ~k_Repeat) {
@@ -115,6 +166,9 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		case kOk:
 			// Play movie or change dir
 			state = m_pBrowserGrid->NavigateSelect();
+			if(state == eOSState::osUser1) {
+				vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+			}
 			Flush();
 			break;
 		case kBack:
@@ -134,9 +188,13 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 				Flush();
 			}
 			break;
-		case kGreen:
-			m_pBrowserGrid->PrevTab();
-			Flush();
+		case kGreen: // Show Details OSD
+			vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+			if(vid) {
+				vid->UpdateFromServer();
+				ShowDetails(vid);
+				//Flush();
+			}
 			break;
 		case kYellow:
 			m_pBrowserGrid->NextTab();
@@ -149,7 +207,6 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 	}
 
 	if(state == eOSState::osUser1) {
-		vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
 		if(vid->m_iMyPlayOffset == 0 && vid->m_lViewoffset > 0 ) {
 			cString message = cString::sprintf(tr("'Ok' to start from %ld minutes, 'Back' to start from beginning."), vid->m_lViewoffset / 60000);
 			DrawMessage(std::string(message));
@@ -160,6 +217,20 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 		}
 	}
 	return state;
+}
+
+void cPlexSdOsd::ShowDetails(plexclient::Video *vid)
+{
+	if(m_detailsActive) return;
+	
+	m_pRootView->Deactivate(true);
+	m_pDetailsView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView((int)eViews::detailView));
+	m_pDetailGrid = std::shared_ptr<cDetailView>(new cDetailView(m_pDetailsView, vid));
+	
+	m_pDetailGrid->Draw();
+	m_pDetailGrid->Flush();
+	m_detailsActive = true;
+	
 }
 
 void cPlexSdOsd::DrawMessage(std::string message)
@@ -186,41 +257,10 @@ void cPlexSdOsd::DefineTokens(eViewElementsRoot ve, skindesignerapi::cTokenConta
 			tk->DefineStringToken("{tabname}", (int)eTokenGridStr::tabname);
 			break;
 		case eViewElementsRoot::footer:
-			tk->DefineIntToken("{red1}", (int)eTokenFooterInt::red1);
-			tk->DefineIntToken("{red2}", (int)eTokenFooterInt::red2);
-			tk->DefineIntToken("{red3}", (int)eTokenFooterInt::red3);
-			tk->DefineIntToken("{red4}", (int)eTokenFooterInt::red4);
-			tk->DefineIntToken("{green1}", (int)eTokenFooterInt::green1);
-			tk->DefineIntToken("{green2}", (int)eTokenFooterInt::green2);
-			tk->DefineIntToken("{green3}", (int)eTokenFooterInt::green3);
-			tk->DefineIntToken("{green4}", (int)eTokenFooterInt::green4);
-			tk->DefineIntToken("{yellow1}", (int)eTokenFooterInt::yellow1);
-			tk->DefineIntToken("{yellow2}", (int)eTokenFooterInt::yellow2);
-			tk->DefineIntToken("{yellow3}", (int)eTokenFooterInt::yellow3);
-			tk->DefineIntToken("{yellow4}", (int)eTokenFooterInt::yellow4);
-			tk->DefineIntToken("{blue1}", (int)eTokenFooterInt::blue1);
-			tk->DefineIntToken("{blue2}", (int)eTokenFooterInt::blue2);
-			tk->DefineIntToken("{blue3}", (int)eTokenFooterInt::blue3);
-			tk->DefineIntToken("{blue4}", (int)eTokenFooterInt::blue4);
-			tk->DefineStringToken("{red}", (int)eTokenFooterStr::red);
-			tk->DefineStringToken("{green}", (int)eTokenFooterStr::green);
-			tk->DefineStringToken("{yellow}", (int)eTokenFooterStr::yellow);
-			tk->DefineStringToken("{blue}", (int)eTokenFooterStr::blue);
+			DefineFooterTokens(tk);
 			break;
 		case eViewElementsRoot::watch:
-			tk->DefineIntToken("{sec}", (int)eTokenTimeInt::sec);
-			tk->DefineIntToken("{min}", (int)eTokenTimeInt::min);
-			tk->DefineIntToken("{hour}", (int)eTokenTimeInt::hour);
-			tk->DefineIntToken("{hmins}", (int)eTokenTimeInt::hmins);
-			tk->DefineIntToken("{day}", (int)eTokenTimeInt::day);
-			tk->DefineIntToken("{year}", (int)eTokenTimeInt::year);
-			tk->DefineStringToken("{time}", (int)eTokenTimeStr::time);
-			tk->DefineStringToken("{dayname}", (int)eTokenTimeStr::dayname);
-			tk->DefineStringToken("{daynameshort}", (int)eTokenTimeStr::daynameshort);
-			tk->DefineStringToken("{dayleadingzero}", (int)eTokenTimeStr::dayleadingzero);
-			tk->DefineStringToken("{month}", (int)eTokenTimeStr::month);
-			tk->DefineStringToken("{monthname}", (int)eTokenTimeStr::monthname);
-			tk->DefineStringToken("{monthnameshort}", (int)eTokenTimeStr::monthnameshort);
+			DefineWatchTokens(tk);
 			break;
 		case eViewElementsRoot::message:
 			tk->DefineIntToken("{displaymessage}", (int)eTokenMessageInt::displaymessage);
@@ -250,6 +290,7 @@ void cPlexSdOsd::DefineGridTokens(skindesignerapi::cTokenContainer* tk)
 	tk->DefineIntToken("{isdirectory}", (int)eTokenGridInt::isdirectory);
 	tk->DefineIntToken("{isshow}", (int)eTokenGridInt::isshow);
 	tk->DefineIntToken("{isseason}", (int)eTokenGridInt::isseason);
+	tk->DefineIntToken("{isclip}", (int)eTokenGridInt::isclip);
 	tk->DefineIntToken("{originallyAvailableYear}", (int)eTokenGridInt::originallyAvailableYear);
 	tk->DefineIntToken("{originallyAvailableMonth}", (int)eTokenGridInt::originallyAvailableMonth);
 	tk->DefineIntToken("{originallyAvailableDay}", (int)eTokenGridInt::originallyAvailableDay);
@@ -296,4 +337,73 @@ void cPlexSdOsd::DefineGridTokens(skindesignerapi::cTokenContainer* tk)
 
 	tk->DefineLoopToken("{roles[actor]}", (int)eTokenGridActorLst::roles);
 	tk->DefineLoopToken("{genres[genre]}", (int)eTokenGridGenresLst::genres);
+}
+
+void cPlexSdOsd::DefineFooterTokens(skindesignerapi::cTokenContainer *tk)
+{
+	tk->DefineIntToken("{red1}", (int)eTokenFooterInt::red1);
+	tk->DefineIntToken("{red2}", (int)eTokenFooterInt::red2);
+	tk->DefineIntToken("{red3}", (int)eTokenFooterInt::red3);
+	tk->DefineIntToken("{red4}", (int)eTokenFooterInt::red4);
+	tk->DefineIntToken("{green1}", (int)eTokenFooterInt::green1);
+	tk->DefineIntToken("{green2}", (int)eTokenFooterInt::green2);
+	tk->DefineIntToken("{green3}", (int)eTokenFooterInt::green3);
+	tk->DefineIntToken("{green4}", (int)eTokenFooterInt::green4);
+	tk->DefineIntToken("{yellow1}", (int)eTokenFooterInt::yellow1);
+	tk->DefineIntToken("{yellow2}", (int)eTokenFooterInt::yellow2);
+	tk->DefineIntToken("{yellow3}", (int)eTokenFooterInt::yellow3);
+	tk->DefineIntToken("{yellow4}", (int)eTokenFooterInt::yellow4);
+	tk->DefineIntToken("{blue1}", (int)eTokenFooterInt::blue1);
+	tk->DefineIntToken("{blue2}", (int)eTokenFooterInt::blue2);
+	tk->DefineIntToken("{blue3}", (int)eTokenFooterInt::blue3);
+	tk->DefineIntToken("{blue4}", (int)eTokenFooterInt::blue4);
+	tk->DefineStringToken("{red}", (int)eTokenFooterStr::red);
+	tk->DefineStringToken("{green}", (int)eTokenFooterStr::green);
+	tk->DefineStringToken("{yellow}", (int)eTokenFooterStr::yellow);
+	tk->DefineStringToken("{blue}", (int)eTokenFooterStr::blue);
+}
+
+void cPlexSdOsd::DefineWatchTokens(skindesignerapi::cTokenContainer *tk)
+{
+	tk->DefineIntToken("{sec}", (int)eTokenTimeInt::sec);
+	tk->DefineIntToken("{min}", (int)eTokenTimeInt::min);
+	tk->DefineIntToken("{hour}", (int)eTokenTimeInt::hour);
+	tk->DefineIntToken("{hmins}", (int)eTokenTimeInt::hmins);
+	tk->DefineIntToken("{day}", (int)eTokenTimeInt::day);
+	tk->DefineIntToken("{year}", (int)eTokenTimeInt::year);
+	tk->DefineStringToken("{time}", (int)eTokenTimeStr::time);
+	tk->DefineStringToken("{dayname}", (int)eTokenTimeStr::dayname);
+	tk->DefineStringToken("{daynameshort}", (int)eTokenTimeStr::daynameshort);
+	tk->DefineStringToken("{dayleadingzero}", (int)eTokenTimeStr::dayleadingzero);
+	tk->DefineStringToken("{month}", (int)eTokenTimeStr::month);
+	tk->DefineStringToken("{monthname}", (int)eTokenTimeStr::monthname);
+	tk->DefineStringToken("{monthnameshort}", (int)eTokenTimeStr::monthnameshort);
+}
+
+void cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail ve, skindesignerapi::cTokenContainer *tk)
+{
+	switch(ve) {
+		case eViewElementsDetail::background:
+			tk->DefineIntToken("{hasfanart}", (int)eTokenDetailBackgroundInt::hasfanart);
+			tk->DefineIntToken("{hascover}", (int)eTokenDetailBackgroundInt::hascover);
+			tk->DefineStringToken("{fanartpath}", (int)eTokenDetailBackgroundStr::fanartpath);
+			tk->DefineStringToken("{coverpath}", (int)eTokenDetailBackgroundStr::coverpath);
+			break;
+		case eViewElementsDetail::footer:
+			DefineFooterTokens(tk);
+			break;
+		case eViewElementsDetail::info:
+			DefineGridTokens(tk);
+			break;
+		case eViewElementsDetail::message:
+			tk->DefineIntToken("{displaymessage}", (int)eTokenMessageInt::displaymessage);
+			tk->DefineStringToken("{message}", (int)eTokenMessageStr::message);
+			break;
+		case eViewElementsDetail::scrollbar:
+			tk->DefineIntToken("{height}", (int)eTokenScrollbarInt::height);
+			tk->DefineIntToken("{offset}", (int)eTokenScrollbarInt::offset);
+			break;
+		default:
+		break;
+	}
 }

@@ -6,6 +6,14 @@ enum class eViews {
 	detailView
 };
 
+enum class eViewElementsDetail {
+	background,
+	footer,
+	info,
+	message,
+	scrollbar
+};
+
 enum class eViewElementsRoot {
 	background,
 	header,
@@ -19,13 +27,11 @@ enum class eViewElementsRoot {
 enum class eViewGrids {
 	cover,
 	detail,
-	list
+	list,
 };
 
-enum class eViewElementsDetail {
-	background,
-	header,
-	footer
+enum class eViewDetailViewGrids {
+	extras
 };
 
 enum class eTokenGridInt {
@@ -43,6 +49,7 @@ enum class eTokenGridInt {
 	isdirectory,
 	isshow,
 	isseason,
+	isclip,
 	originallyAvailableYear,
 	originallyAvailableMonth,
 	originallyAvailableDay,
@@ -120,6 +127,16 @@ enum class eTokenBackgroundInt {
 enum class eTokenBackgroundStr {
 	selecteditembackground = 0,
 	currentdirectorybackground
+};
+
+enum class eTokenDetailBackgroundInt {
+	hasfanart = 0,
+	hascover
+};
+
+enum class eTokenDetailBackgroundStr {
+	fanartpath = 0,
+	coverpath
 };
 
 enum class eTokenTimeInt {

@@ -17,6 +17,7 @@
 #include "hlsPlayerControl.h"
 
 #include "browserGrid.h"
+#include "detailView.h"
 #include "tokendefinitions.h"
 #include  <libskindesignerapi/osdelements.h>
 #include  <libskindesignerapi/skindesignerosdbase.h>
@@ -25,16 +26,21 @@ class cPlexSdOsd : public skindesignerapi::cSkindesignerOsdObject
 {	
 private:	
 	std::shared_ptr<cBrowserGrid> m_pBrowserGrid;
+	std::shared_ptr<cDetailView> m_pDetailGrid;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pMessage;
 	bool m_messageDisplayed;
+	bool m_detailsActive;
 
 	std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
+	std::shared_ptr<skindesignerapi::cOsdView> m_pDetailsView;
 	
 	void Flush();
 	//void SwitchGrid(ePlexMenuTab currentTab);
 	void DrawBackground();
 	void DrawFooter();
 	void DrawMessage(std::string message);
+	
+	void ShowDetails(plexclient::Video *vid);
 	
 public:
 	cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct);
@@ -46,6 +52,9 @@ public:
 	static cMutex RedrawMutex;
 	static void DefineTokens(eViewElementsRoot ve, skindesignerapi::cTokenContainer *tk);
 	static void DefineGridTokens(skindesignerapi::cTokenContainer *tk);
+	static void DefineFooterTokens(skindesignerapi::cTokenContainer *tk);
+	static void DefineWatchTokens(skindesignerapi::cTokenContainer *tk);
+	static void DefineDetailsTokens(eViewElementsDetail ve, skindesignerapi::cTokenContainer *tk);
 };
 
 #endif // CPLEXSDOSD_H

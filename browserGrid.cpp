@@ -301,12 +301,9 @@ void cBrowserGrid::DrawFooter()
 	} else if(m_viewEntryIndex + 1 == (int)Config::GetInstance().m_viewentries.size() + 1) {
 		nextTab = Config::GetInstance().m_viewentries[0].Name.c_str();
 	}
-	cString prevTab = "Library";
-	if(m_viewEntryIndex - 1 >= 0) {
-		prevTab = Config::GetInstance().m_viewentries[m_viewEntryIndex - 1].Name.c_str();
-	}
+	cString details = "Details";
 
-	string textGreen = tr(prevTab);
+	string textGreen = tr(details);
 	string textYellow = tr(nextTab);
 	string textRed = "";
 	string textBlue = tr("Switch View");

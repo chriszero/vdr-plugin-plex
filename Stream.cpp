@@ -27,9 +27,9 @@ Stream::Stream(Poco::XML::Node* pNode)
 
 std::string Stream::GetSetStreamQuery()
 {
-	if(m_eStreamType == sAUDIO)	return Poco::format("audioStreamID=%d", m_iID);
-	else if(m_eStreamType == sSUBTITLE && m_iID >= 0)	return Poco::format("subtitleStreamID=%d", m_iID);
-	else if(m_eStreamType == sSUBTITLE && m_iID < 0)	return "subtitleStreamID=";
+	if(m_eStreamType == StreamType::sAUDIO)	return Poco::format("audioStreamID=%d", m_iID);
+	else if(m_eStreamType == StreamType::sSUBTITLE && m_iID >= 0)	return Poco::format("subtitleStreamID=%d", m_iID);
+	else if(m_eStreamType == StreamType::sSUBTITLE && m_iID < 0)	return "subtitleStreamID=";
 	else return "";
 }
 

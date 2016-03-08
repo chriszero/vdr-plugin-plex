@@ -47,6 +47,7 @@ class Video: private XmlObject
 private:
 	MediaContainer* m_pParent;
 	void Parse(Poco::XML::Node* pNode);
+	void ParseExtras(Poco::XML::Node* pNode);
 
 public:
 	Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
@@ -87,6 +88,8 @@ public:
 	int m_iMyPlayOffset;
 	int m_iIndex;
 	int m_iParentIndex;
+	std::vector<Video> m_vExtras;
+	ExtraType m_eExtraType;
 
 	virtual std::string GetTitle();
 	bool SetStream(Stream* stream);

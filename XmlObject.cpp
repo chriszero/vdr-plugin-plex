@@ -82,24 +82,24 @@ Poco::DateTime XmlObject::GetNodeValueAsDateTime(Poco::XML::Node* pNode)
 
 MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 {
-	MediaType type = UNDEF;
+	MediaType type = MediaType::UNDEF;
 
 	if(pNode != 0) {
 		std::string sType = pNode->nodeValue();
 		if (Poco::icompare(sType, "photo") == 0) {
-			type = PHOTO;
+			type = MediaType::PHOTO;
 		} else if (Poco::icompare(sType, "movie") == 0) {
-			type = MOVIE;
+			type = MediaType::MOVIE;
 		} else if (Poco::icompare(sType, "music") == 0) {
-			type = MUSIC;
+			type = MediaType::MUSIC;
 		} else if (Poco::icompare(sType, "show") == 0) {
-			type = SHOW;
+			type = MediaType::SHOW;
 		} else if (Poco::icompare(sType, "season") == 0) {
-			type = SEASON;
+			type = MediaType::SEASON;
 		} else if (Poco::icompare(sType, "episode") == 0) {
-			type = EPISODE;
+			type = MediaType::EPISODE;
 		} else if (Poco::icompare(sType, "clip") == 0) {
-			type = CLIP;
+			type = MediaType::CLIP;
 		}
 	}
 	return type;
@@ -107,22 +107,60 @@ MediaType XmlObject::GetNodeValueAsMediaType(Poco::XML::Node* pNode)
 
 StreamType XmlObject::GetNodeValueAsStreamType(Poco::XML::Node* pNode)
 {
-	StreamType type = sUNDEF;
+	StreamType type = StreamType::sUNDEF;
 
 	if(pNode != 0) {
 		int iType = GetNodeValueAsInt(pNode);
 		switch(iType) {
 		case 1:
-			type = sVIDEO;
+			type = StreamType::sVIDEO;
 			break;
 		case 2:
-			type = sAUDIO;
+			type = StreamType::sAUDIO;
 			break;
 		case 3:
-			type = sSUBTITLE;
+			type = StreamType::sSUBTITLE;
 			break;
 		default:
-			type = sUNDEF;
+			type = StreamType::sUNDEF;
+			break;
+		}
+	}
+	return type;
+}
+
+PlaylistType XmlObject::GetNodeValueAsPlaylistType(Poco::XML::Node* pNode)
+{
+	PlaylistType type = PlaylistType::Undef;
+
+	if(pNode != 0) {
+		std::string sType = pNode->nodeValue();
+		if (Poco::icompare(sType, "photo") == 0) {
+			type = PlaylistType::Photo;
+		} else if (Poco::icompare(sType, "video") == 0) {
+			type = PlaylistType::Video;
+		} else if (Poco::icompare(sType, "audio") == 0) {
+			type = PlaylistType::Audio;
+		}
+	}
+	return type;
+}
+
+ExtraType XmlObject::GetNodeValueAsExtraType(Poco::XML::Node* pNode)
+{
+	ExtraType type = ExtraType::Unkown;
+
+	if(pNode != 0) {
+		int iType = GetNodeValueAsInt(pNode);
+		switch(iType) {
+		case 1:
+			type = ExtraType::Trailer;
+			break;
+		case 5:
+			type = ExtraType::BehindTheScenes;
+			break;
+		default:
+			type = ExtraType::Unkown;
 			break;
 		}
 	}

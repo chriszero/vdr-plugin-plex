@@ -48,7 +48,6 @@ protected:
 	int m_startIndex;
 	int m_endIndex;
 
-	void GenerateServerElements();
 	void FilterElements(int scrollOffset);
 	void SetGridElementData(cGridElement *obj);
 	void SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid> grid);

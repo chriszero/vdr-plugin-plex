@@ -109,7 +109,32 @@ bool cMyPlugin::Start(void)
 	m_pPlugStruct->RegisterViewGrid((int)eViews::rootView, (int)eViewGrids::cover, "coverbrowser", tkGridCover);
 	m_pPlugStruct->RegisterViewGrid((int)eViews::rootView, (int)eViewGrids::detail, "detailbrowser", tkGridDetail);
 	m_pPlugStruct->RegisterViewGrid((int)eViews::rootView, (int)eViewGrids::list, "listbrowser", tkGridList);
-
+	
+	// DetailsView
+	m_pPlugStruct->RegisterSubView((int)eViews::detailView, "detail.xml");
+	skindesignerapi::cTokenContainer *tkBackgroundDetail = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail::background, tkBackgroundDetail);
+	m_pPlugStruct->RegisterViewElement((int)eViews::detailView, (int)eViewElementsDetail::background, "background", tkBackgroundDetail);
+	
+	skindesignerapi::cTokenContainer *tkDetailInfo = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail::info, tkDetailInfo);
+	m_pPlugStruct->RegisterViewElement((int)eViews::detailView, (int)eViewElementsDetail::info, "info", tkDetailInfo);
+	
+	skindesignerapi::cTokenContainer *tkDetailFooter = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail::footer, tkDetailFooter);
+	m_pPlugStruct->RegisterViewElement((int)eViews::detailView, (int)eViewElementsDetail::footer, "footer", tkDetailFooter);
+	
+	skindesignerapi::cTokenContainer *tkDetailScrollbar = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail::scrollbar, tkDetailScrollbar);
+	m_pPlugStruct->RegisterViewElement((int)eViews::detailView, (int)eViewElementsDetail::scrollbar, "scrollbar", tkDetailScrollbar);
+	
+	skindesignerapi::cTokenContainer *tkDetailMessage = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail::message, tkDetailMessage);
+	m_pPlugStruct->RegisterViewElement((int)eViews::detailView, (int)eViewElementsDetail::message, "message", tkDetailMessage);
+	
+	skindesignerapi::cTokenContainer *tkDetailExtraGrid = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineGridTokens(tkDetailExtraGrid);
+	m_pPlugStruct->RegisterViewGrid((int)eViews::detailView, (int)eViewDetailViewGrids::extras, "extragrid", tkDetailExtraGrid);
 	
 	if (!skindesignerapi::SkindesignerAPI::RegisterPlugin(m_pPlugStruct)) {
 		esyslog("[plex]: skindesigner not available");

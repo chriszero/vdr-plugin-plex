@@ -20,7 +20,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 	Parse(pNode);
 
 	m_pParent = parent;
-	if (m_iParentIndex < 0) {
+	if (m_iParentIndex < 0 && m_pParent) {
 		m_iParentIndex = parent->m_iParentIndex;
 	}
 }
@@ -28,7 +28,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 bool Video::UpdateFromServer()
 {
 	try {
-		Poco::URI fileuri(Poco::format("%s/library/metadata/%d", m_pServer->GetUri(), m_iRatingKey));
+		Poco::URI fileuri(Poco::format("%s/library/metadata/%d?includeExtras=1", m_pServer->GetUri(), m_iRatingKey));
 		Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, fileuri.getPathAndQuery(), Poco::Net::HTTPMessage::HTTP_1_1);
 		PlexHelper::AddHttpHeader(request);
 
@@ -101,6 +101,7 @@ void Video::Parse(Poco::XML::Node* pNode)
 			m_tAddedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("addedAt"));
 			m_tUpdatedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("updatedAt"));
 			m_tOriginallyAvailableAt = GetNodeValueAsDateTime(pAttribs->getNamedItem("originallyAvailableAt"));
+			m_eExtraType = GetNodeValueAsExtraType(pAttribs->getNamedItem("extraType"));
 
 			pAttribs->release();
 
@@ -135,7 +136,22 @@ void Video::Parse(Poco::XML::Node* pNode)
 			Poco::XML::AutoPtr<Poco::XML::NamedNodeMap> pAttribs = pChildNode->attributes();
 			m_sCollection = GetNodeValue(pAttribs->getNamedItem("tag"));
 			pAttribs->release();
+		} else if(Poco::icompare(pChildNode->nodeName(), "Extras") == 0) {
+			ParseExtras(pChildNode);
 		}
+		pChildNode = it.nextNode();
+	}
+}
+
+void Video::ParseExtras(Poco::XML::Node* pNode)
+{
+	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
+	Poco::XML::Node* pChildNode = it.nextNode();
+
+	while(pChildNode) {
+		if(Poco::icompare(pChildNode->nodeName(), "Video") == 0) {
+				m_vExtras.push_back(Video(pChildNode, m_pServer, NULL));
+			}
 		pChildNode = it.nextNode();
 	}
 }
@@ -149,14 +165,14 @@ std::string Video::GetTitle()
 		seriesTitle = m_pParent->m_sGrandparentTitle;
 	
 	switch(m_tType) {
-	case MOVIE:
+	case MediaType::MOVIE:
 		if(m_iYear > 0) {
 			res = Poco::format("%s (%d)", m_sTitle, m_iYear);
 		} else {
 			res = m_sTitle;
 		}
 		break;
-	case EPISODE:
+	case MediaType::EPISODE:
 		res = Poco::format("%s - %02dx%02d - %s", seriesTitle, m_iParentIndex, m_iIndex, m_sTitle);
 		break;
 	default:
@@ -248,7 +264,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 		grid->AddIntToken((int)(eTokenGridInt::viewoffsetpercent), 0);
 	grid->AddIntToken((int)(eTokenGridInt::duration), m_iDuration/1000/60);
 	grid->AddIntToken((int)(eTokenGridInt::year), m_iYear);
-	grid->AddIntToken((int)(eTokenGridInt::viewgroup), m_pParent->m_eViewGroup);
+	if(m_pParent)	grid->AddIntToken((int)(eTokenGridInt::viewgroup), (int)m_pParent->m_eViewGroup);
 
 	// Thumb, Cover, Episodepicture
 	bool cached = false;
@@ -262,8 +278,10 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddIntToken((int)(eTokenGridInt::hasart), cached);
 	if (cached)	grid->AddStringToken((int)(eTokenGridStr::art), art.c_str());
 
-	if(m_tType == MediaType::MOVIE || m_tType == MediaType::CLIP) {
+	if(m_tType == MediaType::MOVIE) {
 		grid->AddIntToken((int)(eTokenGridInt::ismovie), true);
+	} else if (m_tType == MediaType::CLIP) {
+		grid->AddIntToken((int)(eTokenGridInt::isclip), true);
 	}
 	
 	vector<int> loopInfo;

@@ -57,6 +57,9 @@ public:
 	
 	int DetailGridColumns;
 	int DetailGridRows;
+
+	int ExtrasGridColumns;
+	int ExtrasGridRows;
 	
 	ViewMode DefaultViewMode;
 	

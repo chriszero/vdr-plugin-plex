@@ -484,7 +484,7 @@ void cHlsPlayer::SetAudioAndSubtitleTracks(void)
 		std::vector<plexclient::Stream> streams = m_Video.m_Media.m_vStreams;
 		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
 			plexclient::Stream *pStream = &(*it);
-			if(pStream->m_eStreamType == plexclient::sAUDIO) {
+			if(pStream->m_eStreamType == plexclient::StreamType::sAUDIO) {
 				DeviceSetAvailableTrack(ttDolby, pStream->m_iIndex, pStream->m_iIndex + AudioIndexOffset, pStream->m_sLanguage.c_str(), pStream->m_sCodec.c_str());
 			}
 		}
@@ -668,7 +668,7 @@ void cHlsPlayer::SetAudioTrack(eTrackType Type __attribute__((unused)), const tT
 		std::vector<plexclient::Stream> streams = m_Video.m_Media.m_vStreams;
 		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
 			plexclient::Stream *pStream = &(*it);
-			if(pStream->m_eStreamType == plexclient::sAUDIO && pStream->m_iIndex + AudioIndexOffset == TrackId->id) {
+			if(pStream->m_eStreamType == plexclient::StreamType::sAUDIO && pStream->m_iIndex + AudioIndexOffset == TrackId->id) {
 				streamId = pStream->m_iID;
 				break;
 			}

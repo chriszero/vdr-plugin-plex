@@ -65,7 +65,7 @@ std::string Directory::GetTitle()
 		seriesTitle = m_pParent->m_sParentTitle;
 			
 	switch(m_eType) {
-	case SEASON:			
+	case MediaType::SEASON:			
 		return Poco::format(tr("%s - Season %d"), seriesTitle, m_iIndex);
 	default:
 		return m_sTitle;
@@ -78,7 +78,7 @@ void Directory::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bo
 	if(clear) grid->ClearTokens();
 	grid->AddIntToken((int)(eTokenGridInt::viewmode), Config::GetInstance().DefaultViewMode);
 	grid->AddStringToken((int)(eTokenGridStr::title), m_sTitle.c_str());
-	grid->AddIntToken((int)(eTokenGridInt::viewgroup), m_pParent->m_eViewGroup);
+	grid->AddIntToken((int)(eTokenGridInt::viewgroup), (int)m_pParent->m_eViewGroup);
 
 	// Thumb, Cover, Episodepicture
 	bool cached = false;

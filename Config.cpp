@@ -17,6 +17,8 @@ Config::Config() {
 	ListGridRows = 12;
 	DetailGridColumns = 1;
 	DetailGridRows = 4;
+	ExtrasGridColumns = 4;
+	ExtrasGridRows = 1;
 	
 	UseMpv = false;
   UseAc3 = true;

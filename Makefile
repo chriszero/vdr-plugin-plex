@@ -94,7 +94,8 @@ OBJS = $(PLUGIN).o \
 	Stream.o \
 	Media.o \
 	plexOsd.o \
-	device.o
+	device.o \
+	playlist.o
 
 ifneq ($(DISABLESKINDESIGNER),1)
 OBJS += plexSdOsd.o \

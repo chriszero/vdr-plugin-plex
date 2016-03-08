@@ -50,6 +50,8 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 				m_vVideos.push_back(Video(pNode, m_pServer, this));
 			} else if(Poco::icompare(pNode->nodeName(), "Device") == 0) {
 				m_vDevices.push_back(Device(pNode, this));
+			} else if(Poco::icompare(pNode->nodeName(), "Playlist") == 0) {
+				m_vPlaylists.push_back(Playlist(pNode, this));
 			}
 
 			pNode = it.nextNode();

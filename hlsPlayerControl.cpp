@@ -332,7 +332,7 @@ void cStreamSelectMenu::CreateMenu()
 		Add(new cOsdItem(tr("Audiostreams"), osUnknown, false));
 		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
 			plexclient::Stream *pStream = &(*it);
-			if(pStream->m_eStreamType == plexclient::sAUDIO) {
+			if(pStream->m_eStreamType == plexclient::StreamType::sAUDIO) {
 				// Audio
 				cString item = cString::sprintf(tr("%s%s - %s %d Channels"), pStream->m_bSelected ? "[*] ":"", pStream->m_sLanguage.c_str(), pStream->m_sCodecId.c_str(), pStream->m_iChannels);
 				Add(new cPlexOsdItem(item, pStream));
@@ -341,12 +341,12 @@ void cStreamSelectMenu::CreateMenu()
 
 		Add(new cOsdItem(tr("Subtitlestreams"), osUnknown, false));
 		plexclient::Stream stre;
-		stre.m_eStreamType = plexclient::sSUBTITLE;
+		stre.m_eStreamType = plexclient::StreamType::sSUBTITLE;
 		stre.m_iID = -1;
 		Add(new cPlexOsdItem(tr("None"), &stre));
 		for(std::vector<plexclient::Stream>::iterator it = streams.begin(); it != streams.end(); ++it) {
 			plexclient::Stream *pStream = &(*it);
-			if(pStream->m_eStreamType == plexclient::sSUBTITLE) {
+			if(pStream->m_eStreamType == plexclient::StreamType::sSUBTITLE) {
 				// Subtitle
 				cString item = cString::sprintf("%s%s", pStream->m_bSelected ? "[*] ":"", pStream->m_sLanguage.c_str());
 				Add(new cPlexOsdItem(item, pStream));
