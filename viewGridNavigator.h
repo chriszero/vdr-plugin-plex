@@ -55,7 +55,7 @@ protected:
 public:
 	cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView);
 	void SetGridDimensions(int rows, int columns);
-	virtual void Flush() { m_pGrid->Display(); };
+	virtual void Flush() { m_pGrid->Display(); m_pRootView->Display(); };
 	virtual void Clear() = 0;
 	virtual bool NavigateLeft();
 	virtual bool NavigateRight();

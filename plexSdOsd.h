@@ -46,7 +46,9 @@ public:
 	cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct);
 	~cPlexSdOsd();
 	virtual void Show(void);
-  	virtual eOSState ProcessKey(eKeys Key);
+	virtual eOSState ProcessKey(eKeys Key);
+	eOSState ProcessKeyDetailView(eKeys Key);
+	eOSState ProcessKeyBrowserView(eKeys Key);
 	
 	bool SdSupport();
 	static cMutex RedrawMutex;

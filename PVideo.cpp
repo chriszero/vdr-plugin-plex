@@ -55,6 +55,7 @@ bool Video::UpdateFromServer()
 			while(pNode) {
 				if(Poco::icompare(pNode->nodeName(), "Video") == 0) {
 					Parse(pNode);
+					break;
 				}
 
 				pNode = it.nextNode();

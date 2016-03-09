@@ -27,6 +27,8 @@ void cDetailView::Flush()
 	m_pfooter->Display();
 	m_pGrid->Display();
 	m_pScrollbar->Display();
+	
+	m_pRootView->Display();
 }
 
 void cDetailView::Draw()
@@ -76,16 +78,13 @@ void cDetailView::DrawBackground()
 
 void cDetailView::DrawFooter()
 {
-	string textGreen = "";
+	string textRed = tr("Play");
+	string textGreen = tr("Rewind");
 	string textYellow = "";
-	string textRed = "";
-	string textBlue = "Play";
+	string textBlue = "";
 
-	if(auto vid = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
-		if(vid->m_iViewCount > 0) textRed = tr("Unscrobble");
-		else textRed = tr("Scrobble");
-	}
-
+	if(m_pVideo->m_iViewCount > 0) textYellow = tr("Unscrobble");
+	else textYellow = tr("Scrobble");
 
 	int colorKeys[4] = { Setup.ColorKey0, Setup.ColorKey1, Setup.ColorKey2, Setup.ColorKey3 };
 
@@ -167,6 +166,6 @@ eOSState cDetailView::NavigateSelect()
 
 eOSState cDetailView::NavigateBack()
 {
-	if(m_setIterator) return eOSState::osContinue;;
+	if(m_setIterator) return eOSState::osContinue;
 	return eOSState::osBack;
 }

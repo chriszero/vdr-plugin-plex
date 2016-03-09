@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2016-02-13 20:52+0100\n"
-"PO-Revision-Date: 2016-01-14 20:20+0200\n"
+"POT-Creation-Date: 2016-03-09 21:22+0100\n"
+"PO-Revision-Date: 2016-03-09 21:24+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: chriszero\n"
 "Language: de\n"
@@ -100,6 +100,12 @@ msgstr "Ungesehen"
 msgid "Scrobble"
 msgstr "Gesehen"
 
+msgid "Play"
+msgstr "Wiedergeben"
+
+msgid "Rewind"
+msgstr "Anfang"
+
 msgid "Skip Back"
 msgstr "Vorspringen"
 
@@ -139,10 +145,6 @@ msgstr "Durchsuche Plex - %s"
 
 msgid "Browse Plex"
 msgstr "Durchsuche Plex"
-
-#, c-format
-msgid "'Ok' to start from %ld minutes, 'Back' to start from beginning."
-msgstr "'Ok' um von %ld weiter zu schauen, 'Zurück' um von Beginn an zu starten."
 
 msgid "All Movies"
 msgstr "Alle Filme"
@@ -218,6 +220,9 @@ msgstr "Kürzlich angesehene Folgen"
 
 msgid "Recently Viewed Shows"
 msgstr "Kürzlich angesehene Serien"
+
+#~ msgid "'Ok' to start from %ld minutes, 'Back' to start from beginning."
+#~ msgstr "'Ok' um von %ld weiter zu schauen, 'Zurück' um von Beginn an zu starten."
 
 #~ msgid "%s - Video Channels"
 #~ msgstr "%s - Video Kanäle"

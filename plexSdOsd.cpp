@@ -69,43 +69,38 @@ void cPlexSdOsd::Flush()
 eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
-	plexclient::Video* vid = NULL;
-
-	if (m_pBrowserGrid->DrawTime())
-		m_pBrowserGrid->Flush();
-
-	//check if some plexservers are online
-	if(plexclient::plexgdm::GetInstance().GetFirstServer() == NULL ||
-	   (plexclient::plexgdm::GetInstance().GetFirstServer() && plexclient::plexgdm::GetInstance().GetFirstServer()->Offline)
-	  ) {
-		DrawMessage(std::string(tr("No Plex Media Server found.")));
 		
-		switch (Key & ~k_Repeat) {
-		case kOk:
-		case kBack:
-			return eOSState::osEnd;
-			break;
-		default:
-			return eOSState::osContinue;
+	if(m_detailsActive) {
+		state = ProcessKeyDetailView(Key);
+	} else {
+		//check if some plexservers are online
+		if(plexclient::plexgdm::GetInstance().GetFirstServer() == NULL ||
+			(plexclient::plexgdm::GetInstance().GetFirstServer() && plexclient::plexgdm::GetInstance().GetFirstServer()->Offline)
+			) {
+				DrawMessage(std::string(tr("No Plex Media Server found.")));
+				switch (Key & ~k_Repeat) {
+					case kOk:
+					case kBack:
+						return eOSState::osEnd;
+						break;
+					default:
+						return eOSState::osContinue;
+			}
 		}
+		if (m_pBrowserGrid->DrawTime()) m_pBrowserGrid->Flush();
+		state = ProcessKeyBrowserView(Key);
 	}
+	
+	return state;
+}
 
-	if(m_messageDisplayed) {
-		vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
-		switch (Key & ~k_Repeat) {
-		case kOk:
-			vid->m_iMyPlayOffset = vid->m_lViewoffset/1000;
-			m_messageDisplayed = false;
-			state = eOSState::osUser1;
-			break;
-		case kBack:
-			vid->m_lViewoffset = 0;
-			state = eOSState::osUser1;
-		default:
-			break;
-		}
-	} else if(m_detailsActive) {
-		switch (Key & ~k_Repeat) {
+
+eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
+{
+	eOSState state = eOSState::osContinue;
+	plexclient::Video* vid = NULL;
+		
+	switch (Key & ~k_Repeat) {
 		case kUp:
 			if(m_pDetailGrid->NavigateUp()) Flush();
 			break;
@@ -120,37 +115,55 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 			break;
 		case kOk:
 			state = m_pDetailGrid->NavigateSelect();
+			vid = dynamic_cast<plexclient::Video*>(m_pDetailGrid->SelectedObject());
 			Flush();
 			break;
 		case kBack:
-			state = m_pDetailGrid->NavigateBack();
+			state = eOSState::osContinue;
 			m_pDetailGrid->Clear();
 			m_pDetailsView->Deactivate(true);
 			m_pDetailGrid = nullptr;
 			m_pDetailsView = nullptr;
 			m_detailsActive = false;
 			m_pRootView->Activate();
+			Flush();
 			break;
-		case kBlue:
-				vid = m_pDetailGrid->GetVideo();
-				state = eOSState::osUser1;
-			break;
-		case kRed:
-				if(m_pDetailGrid->GetVideo()) {
-					if(m_pDetailGrid->GetVideo()->m_iViewCount > 0) m_pDetailGrid->GetVideo()->SetUnwatched();
-					else m_pDetailGrid->GetVideo()->SetWatched();
-					m_pDetailGrid->GetVideo()->UpdateFromServer();
-					Flush();
-				}
+		case kYellow:
+			if(m_pDetailGrid->GetVideo()) {
+				if(m_pDetailGrid->GetVideo()->m_iViewCount > 0) m_pDetailGrid->GetVideo()->SetUnwatched();
+				else m_pDetailGrid->GetVideo()->SetWatched();
+				m_pDetailGrid->GetVideo()->UpdateFromServer();
+				Flush();
+			}
 			break;
 		case kGreen:
-		case kYellow:
+			 vid = m_pDetailGrid->GetVideo();
+			 state = eOSState::osUser1;
+			 break;
+		case kRed:
+				vid = m_pDetailGrid->GetVideo();
+				vid->m_iMyPlayOffset = vid->m_lViewoffset/1000;
+				state = eOSState::osUser1;
+			break;
+		case kBlue:
 		default:
 			break;
-		}
-	} else {
+	}
+	
+	if(state == eOSState::osUser1 && vid) {
+			cMyPlugin::PlayFile(*vid);
+			state = eOSState::osEnd;
+	}
+	
+	return state;
+}
 
-		switch (Key & ~k_Repeat) {
+eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
+{
+	eOSState state = eOSState::osContinue;
+	plexclient::Video* vid = NULL;
+	
+	switch (Key & ~k_Repeat) {
 		case kUp:
 			if(m_pBrowserGrid->NavigateUp()) Flush();
 			break;
@@ -168,6 +181,7 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 			state = m_pBrowserGrid->NavigateSelect();
 			if(state == eOSState::osUser1) {
 				vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+				vid->m_iMyPlayOffset = vid->m_lViewoffset/1000;
 			}
 			Flush();
 			break;
@@ -193,7 +207,6 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 			if(vid) {
 				vid->UpdateFromServer();
 				ShowDetails(vid);
-				//Flush();
 			}
 			break;
 		case kYellow:
@@ -202,20 +215,13 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 			break;
 		default:
 			break;
-		}
-
 	}
-
-	if(state == eOSState::osUser1) {
-		if(vid->m_iMyPlayOffset == 0 && vid->m_lViewoffset > 0 ) {
-			cString message = cString::sprintf(tr("'Ok' to start from %ld minutes, 'Back' to start from beginning."), vid->m_lViewoffset / 60000);
-			DrawMessage(std::string(message));
-			m_messageDisplayed = true;
-		} else {
-			cMyPlugin::PlayFile(*vid);
-			state = eOSState::osEnd;
-		}
+	
+	if(state == eOSState::osUser1 && vid) {
+		cMyPlugin::PlayFile(*vid);
+		state = eOSState::osEnd;
 	}
+	
 	return state;
 }
 
@@ -227,10 +233,10 @@ void cPlexSdOsd::ShowDetails(plexclient::Video *vid)
 	m_pDetailsView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView((int)eViews::detailView));
 	m_pDetailGrid = std::shared_ptr<cDetailView>(new cDetailView(m_pDetailsView, vid));
 	
+	m_pDetailsView->Activate();
 	m_pDetailGrid->Draw();
-	m_pDetailGrid->Flush();
+	m_pDetailGrid->Flush();	
 	m_detailsActive = true;
-	
 }
 
 void cPlexSdOsd::DrawMessage(std::string message)

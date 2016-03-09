@@ -14,7 +14,7 @@ public:
 	cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, plexclient::Video *video);
 	
 	void Draw();
-	void Flush();
+	virtual void Flush();
 	virtual eOSState NavigateSelect();
 	virtual eOSState NavigateBack();
 	plexclient::Video* GetVideo() { return m_pVideo; };
