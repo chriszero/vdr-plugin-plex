@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE displayplugin SYSTEM "../../../dtd/displayplugin.dtd">
+
+<displayplugin x="0" y="0" width="100%" height="100%" fadetime="0" scaletvx="0" scaletvy="0" scaletvwidth="100%" scaletvheight="100%">
+	
+	<!-- Available Variables message:
+	{displaymessage}			bool: message displayed?
+    {message}                   string: message to display
+    -->
+	<viewelement name="message">
+    </viewelement>
+	
+	<!-- Tokens available in background
+		{hasfanart}	bool
+		{hascover}	bool
+		{fanartpath} string/path
+		{coverpath}	string/path
+    -->
+	<viewelement name="background">
+    </viewelement>
+	
+	<!-- Tokens available in info
+	{title}                 	string, Name of the element
+	{viewgroup}					int: {UNDEF = 0, MOVIE = 1, SHOW = 2, SEASON = 3, EPISODE = 4, MUSIC, PHOTO};
+		
+	Following tokens are avaliable if the item is a directory or video
+	{year}						Year of production
+	{hasthumb}					bool
+		{thumb}					string, Image/Cover
+	{hasart}					bool
+		{art}					string, Fanart
+			
+	If the item is a video following tokens are avaliable
+	The item is a video if one of the following tokens are set: {ismovie}, {isepisode} {isclip}
+	{contentrating}		string, FSK, PEGI -> eg. de/16
+	{rating}			int, starrating 0.0 - 10.0 multiplied by 10 -> 0 - 100
+	{ratingstring}		string, rating formated as double %.1f
+	{viewoffset}		int, minutes, last viewed position
+	{viewoffsetpercent} last viewed position as percent value 0 - 100
+	{duration}			int, minutes, total duration
+	{orginaltitle}		original title
+	{summary}			Description, plot, summary
+	{studio}			Studio
+	{viewCount}			Unseen if less than 1
+	
+	{originallyAvailableYear}		Year of release/first aired
+	{originallyAvailableMonth}	Month of release/first aired
+	{originallyAvailableDay}		Day of release/first aired
+	
+	{roles[actor]}		looptoken
+	{genres[genre]}	looptoken
+	
+	{videoResolution}	string (sd, 720, 1080)
+	{bitrate}			int
+	{width}				int
+	{height}			int
+	{audioChannels}		int
+	{aspectRatio}		string (1.33, 1.78, 1.85, 2.35)
+	{audioCodec}		string (aac, mp3, mp2, ac3, dca) hint: dca==DTS
+	{videoCodec}		string (mpeg4, msmpeg4, h264)
+	{container}			string (avi, mp4, mkv)
+	{videoFrameRate}	string (PAL, NTSC, 24p)
+	
+	{ismovie}
+	{isepisode}
+		{seriestitle}		Title of the series/show
+		{season}			int, Season
+		{episode}			int, Episode, season based
+		{hasbanner}		bool, Bannerstyle
+			{banner}		Image path
+		{hasseriesthumb}	bool, seriesthumb (seasoncover, seriescover)
+			{seriesthumb}	Image path
+    
+	-->
+	<viewelement name="info">
+	</viewelement>
+	
+	<!-- Tokens available for scrollbar
+		{height}	height of the position marker of the scrollbar in percent
+		{offset}	offset for the position marker from the top of the scrollbar in percent
+	-->
+	<viewelement name="scrollbar">
+	<!-- example:
+		<area x="66%" y="15%" width="9%" height="75%" layer="4">
+			<drawrectangle x="0" y="2" width="{areawidth}-2" height="{areaheight}" color="{clrRed}" />
+			<drawrectangle x="0" y="{areaheight} / 100 * {offset}" width="{areawidth}" height="{areaheight} / 100 * {height}" color="{clrGreen}" />
+		</area>
+	-->
+	</viewelement>
+	
+	<!--
+	Same tokens as in grids from root-view
+	but element are usually from type "clip" so the available information are the following:
+	
+	{title}                 	string, Name of the element
+	{extraType}								int, 1 = trailer, 5 = Behind the Scenes(?)
+	{duration}			int, minutes, total duration
+	{originallyAvailableYear}		Year of release/first aired
+	{originallyAvailableMonth}	Month of release/first aired
+	{originallyAvailableDay}		Day of release/first aired
+	-->
+  <grid name="extragrid">
+	</grid>
+	
+
+	
+	<!-- Available Variables Footer:
+    {red1}                    true if red button is button 1
+    {red2}                    true if red button is button 2
+    {red3}                    true if red button is button 3
+    {red4}                    true if red button is button 4
+    {green1}                  true if green button is button 1
+    {green2}                  true if green button is button 2
+    {green3}                  true if green button is button 3
+    {green4}                  true if green button is button 4
+    {yellow1}                 true if yellow button is button 1
+    {yellow2}                 true if yellow button is button 2
+    {yellow3}                 true if yellow button is button 3
+    {yellow4}                 true if yellow button is button 4
+    {blue1}                   true if blue button is button 1
+    {blue2}                   true if blue button is button 2
+    {blue3}                   true if blue button is button 3
+    {blue4}                   true if blue button is button 4
+    {red}                     label of red button
+    {green}                   label of green button
+    {yellow}                  label of yellow button
+    {blue}                    label of blue button
+    -->
+    <viewelement name="footer">
+    </viewelement>
+	
+</displayplugin>
