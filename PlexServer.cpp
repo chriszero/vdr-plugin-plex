@@ -134,15 +134,25 @@ std::istream& PlexServer::MakeRequest(Poco::Net::HTTPResponse& response, bool& o
 		// Add PlexToken to Header
 		request.add("X-Plex-Token", GetAuthToken());
 	}
+	bool excep = false;
 	try {
 		GetClientSession()->sendRequest(request);
 	} catch (Poco::TimeoutException &exc) {
 		esyslog("[plex] Timeout: %s", path.c_str());
 		ok = false;
+		excep = true;
+	} catch (Poco::Exception &exc) {
+		esyslog("[plex] Oops Exception: %s", exc.displayText().c_str());
+		ok = false;
+		excep = true;
 	}
-	std::istream& stream = GetClientSession()->receiveResponse(response);
-	ok = response.getStatus() == 200;
-	return stream;
+	if(!excep) { 
+		std::istream& stream = GetClientSession()->receiveResponse(response);
+		ok = response.getStatus() == 200;
+		return stream;
+	}
+	static std::stringstream* ss;
+	return *ss;
 	
 }
 

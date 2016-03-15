@@ -117,7 +117,10 @@ void Plexservice::UpdateResources()
 	} catch (Poco::Net::NetException &exc) {
 		std::cout << exc.displayText() << std::endl;
 		return;
-	}
+	} catch (Poco::Exception &exc) {
+		std::cout << exc.displayText() << std::endl;
+		return;
+	} 
 
 	for(std::vector<Device>::iterator d_it = pContainer->m_vDevices.begin(); d_it != pContainer->m_vDevices.end(); ++d_it) {
 
