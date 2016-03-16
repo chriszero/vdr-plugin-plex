@@ -39,7 +39,6 @@ void cViewGridNavigator::ReDraw(cGridElement* element)
 	if(element) {
 		cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 		if (!element->IsVisible()) {
-			std::cout << "ReDraw element not visible" << std::endl;
 			return;
 		}
 		double x, y;

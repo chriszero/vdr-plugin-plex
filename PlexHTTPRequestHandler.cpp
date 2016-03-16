@@ -234,7 +234,6 @@ void PlayerRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, 
 				std::string key = query["key"];
 
 				std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
-				std::cout << fullUrl << std::endl;
 				auto Cont = Plexservice::GetMediaContainer(fullUrl);
 				
 				// Check for video

@@ -115,10 +115,10 @@ void Plexservice::UpdateResources()
 		pContainer = std::shared_ptr<MediaContainer>(new MediaContainer(&rs));
 
 	} catch (Poco::Net::NetException &exc) {
-		std::cout << exc.displayText() << std::endl;
+		esyslog("[plex] UpdateResources, NetException: %s", exc.displayText().c_str());
 		return;
 	} catch (Poco::Exception &exc) {
-		std::cout << exc.displayText() << std::endl;
+		esyslog("[plex] UpdateResources, Exception: %s", exc.displayText().c_str());
 		return;
 	} 
 
@@ -240,7 +240,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetMediaContainer(std::string fullU
 		return 0;
 		//Poco::StreamCopier::copyStream(rs, std::cout);
 	} catch (Poco::Net::NetException &exc) {
-		std::cout << exc.displayText() << std::endl;
+		esyslog("[plex] GetMediaContainer, NetException: %s", exc.displayText().c_str());
 		return 0;
 	}
 }
