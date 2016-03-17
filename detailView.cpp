@@ -14,7 +14,7 @@ cDetailView::cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, 
 
 	m_pGrid = NULL;
 	SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(detailView->GetViewGrid((int)eViewDetailViewGrids::extras)));
-	SetGridDimensions(Config::GetInstance().ExtrasGridColumns, Config::GetInstance().ExtrasGridRows);
+	SetGridDimensions(Config::GetInstance().ExtrasGridRows, Config::GetInstance().ExtrasGridColumns);
 }
 
 void cDetailView::Flush()

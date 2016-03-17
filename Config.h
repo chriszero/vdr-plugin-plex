@@ -118,6 +118,8 @@ class cMyMenuSetupPage:public cMenuSetupPage
 	int DetailGridRows;
 	int ListGridColumns;
 	int ListGridRows;
+	int ExtrasGridColumns;
+	int ExtrasGridRows;
 	int DefaultViewMode;
 	int UseMpv;
 	int ScrollByPage;

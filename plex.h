@@ -47,6 +47,7 @@ class cMyPlugin:public cPlugin
 private:
 #ifdef SKINDESIGNER
 	skindesignerapi::cPluginStructure *m_pPlugStruct;
+	skindesignerapi::cPluginStructure *m_pPlugStructReplay;
 	cPlexSdOsd *m_pTestOsd;
 	static bool bSkindesigner;
 #endif

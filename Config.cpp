@@ -107,6 +107,8 @@ bool Config::Parse(const char *name, const char *value)
 	else if (strcasecmp(name, "DetailGridRows") == 0) 	Config::GetInstance().DetailGridRows = atoi(value);
 	else if (strcasecmp(name, "ListGridColumns") == 0) 	Config::GetInstance().ListGridColumns = atoi(value);
 	else if (strcasecmp(name, "ListGridRows") == 0) 	Config::GetInstance().ListGridRows = atoi(value);
+	else if (strcasecmp(name, "ExtrasGridColumns") == 0) 	Config::GetInstance().ExtrasGridColumns = atoi(value);
+	else if (strcasecmp(name, "ExtrasGridRows") == 0) 	Config::GetInstance().ExtrasGridRows = atoi(value);
 	else if (strcasecmp(name, "UseMpv") == 0) 	Config::GetInstance().UseMpv = atoi(value) ? true : false;
 	else if (strcasecmp(name, "ScrollByPage") == 0) 	Config::GetInstance().ScrollByPage = atoi(value) ? true : false;
 	else if (strcasecmp(name, "ScrollAllAround") == 0) 	Config::GetInstance().ScrollAllAround = atoi(value) ? true : false;
@@ -157,6 +159,8 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	DetailGridRows = Config::GetInstance().DetailGridRows;
 	ListGridColumns = Config::GetInstance().ListGridColumns;
 	ListGridRows = Config::GetInstance().ListGridRows;
+	ExtrasGridColumns = Config::GetInstance().ExtrasGridColumns;
+	ExtrasGridRows = Config::GetInstance().ExtrasGridRows;
 	UseMpv = Config::GetInstance().UseMpv;
 	ScrollByPage = Config::GetInstance().ScrollByPage;
 	ScrollAllAround = Config::GetInstance().ScrollAllAround;
@@ -192,6 +196,9 @@ cMyMenuSetupPage::cMyMenuSetupPage(void)
 	Add(new cMenuEditIntItem(tr("List Grid Columns"), &ListGridColumns));
 	Add(new cMenuEditIntItem(tr("List Grid Rows"), &ListGridRows));
 	
+	Add(new cMenuEditIntItem(tr("Extras Grid Columns"), &ExtrasGridColumns));
+	Add(new cMenuEditIntItem(tr("Extras Grid Rows"), &ExtrasGridRows));
+	
 	cMenuEditStrItem* devUUID = new cMenuEditStrItem(tr("Current UUID"), Uuid, STRING_SIZE);
 	devUUID->SetSelectable(false);
 	Add(devUUID);
@@ -216,6 +223,8 @@ void cMyMenuSetupPage::Store(void)
 	Config::GetInstance().DetailGridRows = DetailGridRows;
 	Config::GetInstance().ListGridColumns = ListGridColumns;
 	Config::GetInstance().ListGridRows = ListGridRows;
+	Config::GetInstance().ExtrasGridColumns = ExtrasGridColumns;
+	Config::GetInstance().ExtrasGridRows = ExtrasGridRows;
 	Config::GetInstance().DefaultViewMode = (ViewMode)DefaultViewMode;
 	Config::GetInstance().UseMpv = UseMpv;
 	Config::GetInstance().ScrollByPage = ScrollByPage;
@@ -238,6 +247,8 @@ void cMyMenuSetupPage::Store(void)
 	SetupStore("DetailGridRows", Config::GetInstance().DetailGridRows);
 	SetupStore("ListGridColumns", Config::GetInstance().ListGridColumns);
 	SetupStore("ListGridRows", Config::GetInstance().ListGridRows);
+	SetupStore("ExtrasGridColumns", Config::GetInstance().ExtrasGridColumns);
+	SetupStore("ExtrasGridRows", Config::GetInstance().ExtrasGridRows);
 	SetupStore("DefaultViewMode", Config::GetInstance().DefaultViewMode);
 	SetupStore("UseMpv", Config::GetInstance().UseMpv);
 	SetupStore("ScrollByPage", Config::GetInstance().ScrollByPage);

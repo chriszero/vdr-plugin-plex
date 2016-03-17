@@ -103,7 +103,8 @@ OBJS += plexSdOsd.o \
 	browserGrid.o \
 	viewHeader.o \
 	detailView.o \
-	pictureCache.o 
+	pictureCache.o \
+	displayReplaySD.o
 endif
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp

@@ -70,7 +70,7 @@ bool cMyPlugin::Start(void)
 	m_pPlugStruct = new skindesignerapi::cPluginStructure();
 	m_pPlugStruct->name = "plex";
 	m_pPlugStruct->libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
-	
+		
 	m_pPlugStruct->RegisterRootView("root.xml");
 	skindesignerapi::cTokenContainer *tkBackground = new skindesignerapi::cTokenContainer();
 	cPlexSdOsd::DefineTokens(eViewElementsRoot::background, tkBackground);
@@ -135,6 +135,12 @@ bool cMyPlugin::Start(void)
 	skindesignerapi::cTokenContainer *tkDetailExtraGrid = new skindesignerapi::cTokenContainer();
 	cPlexSdOsd::DefineGridTokens(tkDetailExtraGrid);
 	m_pPlugStruct->RegisterViewGrid((int)eViews::detailView, (int)eViewDetailViewGrids::extras, "extragrid", tkDetailExtraGrid);
+	
+	
+	m_pPlugStructReplay = new skindesignerapi::cPluginStructure();
+	m_pPlugStructReplay->name = "plexreplay";
+	m_pPlugStructReplay->libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
+	m_pPlugStructReplay->RegisterRootView("root.xml");
 	
 	if (!skindesignerapi::SkindesignerAPI::RegisterPlugin(m_pPlugStruct)) {
 		esyslog("[plex]: skindesigner not available");
