@@ -15,6 +15,20 @@ cDetailView::cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, 
 	m_pGrid = NULL;
 	SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>(detailView->GetViewGrid((int)eViewDetailViewGrids::extras)));
 	SetGridDimensions(Config::GetInstance().ExtrasGridRows, Config::GetInstance().ExtrasGridColumns);
+	
+	m_vElements.clear();
+	
+	int pos = 0;
+	for(auto it = m_pVideo->m_vExtras.begin(); it != m_pVideo->m_vExtras.end(); ++it) {
+		plexclient::Video *elem = &(*it);
+		elem->AbsolutePosition = pos++;;
+		m_vElements.push_back(elem);
+	}
+
+	m_startIndex = 0;
+
+	m_setIterator = true;
+	FilterElements(0);
 }
 
 void cDetailView::Flush()
@@ -34,20 +48,6 @@ void cDetailView::Flush()
 void cDetailView::Draw()
 {
 	// Draw Grid
-	m_vElements.clear();
-	
-	int pos = 0;
-	for(auto it = m_pVideo->m_vExtras.begin(); it != m_pVideo->m_vExtras.end(); ++it) {
-		plexclient::Video *elem = &(*it);
-		elem->AbsolutePosition = pos++;;
-		m_vElements.push_back(elem);
-	}
-
-	m_startIndex = 0;
-
-//	m_pGrid->Clear();
-	m_setIterator = true;
-	FilterElements(0);
 	
 	DrawBackground();
 	DrawFooter();
