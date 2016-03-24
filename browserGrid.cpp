@@ -361,7 +361,7 @@ void cBrowserGrid::DrawScrollbar()
 		return;
 	
 	int currentRow = SelectedObject()->AbsolutePosition / m_columns;
-	int totalRows = m_vElements.size() / m_columns;
+	int totalRows = ceil((double) m_vElements.size() / m_columns);
 	
 	int scrollBarHeight = 100.0 / totalRows * m_rows;  
 

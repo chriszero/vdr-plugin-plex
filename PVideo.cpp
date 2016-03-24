@@ -45,6 +45,7 @@ bool Video::UpdateFromServer()
 			m_vGenre.clear();
 			m_vRole.clear();
 			m_vWriter.clear();
+			m_vExtras.clear();
 
 			InputSource src(rs);
 			DOMParser parser;
