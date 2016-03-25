@@ -135,23 +135,26 @@ void cDetailView::DrawInfo()
 
 void cDetailView::DrawScrollbar()
 {
-	if (m_vElements.size() == 0)
-		return;
-	
-	int currentRow = SelectedObject()->AbsolutePosition / m_columns;
-	int totalRows = ceil((double) m_vElements.size() / m_columns);
-	
-	int scrollBarHeight = 100.0 / totalRows * m_rows;  
-
-	int offset = 100.0 / totalRows * currentRow;
-	if(offset >= 100 - scrollBarHeight) {
-		offset = 100.0 - scrollBarHeight;
-	}
 	m_pScrollbar->Clear();
 	m_pScrollbar->ClearTokens();
 	
-	m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::height, scrollBarHeight);
-	m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::offset, offset);
+	if (m_vElements.size() > 0) {
+		int currentRow = SelectedObject()->AbsolutePosition / m_columns;
+		int totalRows = ceil((double) m_vElements.size() / m_columns);
+		
+		int scrollBarHeight = 100.0 / totalRows * m_rows;  
+
+		int offset = 100.0 / totalRows * currentRow;
+		if(offset >= 100 - scrollBarHeight) {
+			offset = 100.0 - scrollBarHeight;
+		}
+		m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::height, scrollBarHeight);
+		m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::offset, offset);
+		m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::hasscrollbar, true);
+	} else {
+		m_pScrollbar->AddIntToken((int)eTokenScrollbarInt::hasscrollbar, false);
+	}
+	
 	m_pScrollbar->Display();
 }
 

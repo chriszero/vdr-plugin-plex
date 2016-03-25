@@ -50,6 +50,7 @@
 	<!-- Tokens available for scrollbar
 		{height}	height of the position marker of the scrollbar in percent
 		{offset}	offset for the position marker from the top of the scrollbar in percent
+		{hasscrollbar} bool
 	-->
 	<viewelement name="scrollbar">
 	<!-- example:

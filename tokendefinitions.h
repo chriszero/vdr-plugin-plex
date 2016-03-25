@@ -116,7 +116,8 @@ enum class eTokenMessageStr {
 
 enum class eTokenScrollbarInt {
 	height = 0,
-	offset
+	offset,
+	hasscrollbar
 };
 
 enum class eTokenBackgroundInt {
@@ -184,5 +185,34 @@ enum class eTokenFooterStr {
 	blue
 };
 
+enum class eTokenProgressbarInt {
+	
+};
+
+enum class eTokenProgressbarStr {
+	
+};
+
+/*<TranscodeSession key="jhul52ltx5lpiudi" 
+ * throttled="0" 
+ * progress="2.9000000953674316" 
+ * speed="3.2999999523162842" 
+ * duration="8886000" 
+ * remaining="2677" 
+ * context="streaming" 
+ * videoDecision="copy" 
+ * audioDecision="transcode" 
+ * subtitleDecision="transcode" 
+ * protocol="http" 
+ * container="mkv" 
+ * videoCodec="h264" 
+ * audioCodec="aac" 
+ * audioChannels="2" 
+ * width="1920" 
+ * height="808" />
+ */
+enum class eTokenTranscodeinfoStr {
+	
+};
 
 #endif //__TOKENDEFINITIONS_H

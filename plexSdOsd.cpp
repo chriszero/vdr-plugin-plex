@@ -275,6 +275,7 @@ void cPlexSdOsd::DefineTokens(eViewElementsRoot ve, skindesignerapi::cTokenConta
 		case eViewElementsRoot::scrollbar:
 			tk->DefineIntToken("{height}", (int)eTokenScrollbarInt::height);
 			tk->DefineIntToken("{offset}", (int)eTokenScrollbarInt::offset);
+			tk->DefineIntToken("{hasscrollbar}", (int)eTokenScrollbarInt::hasscrollbar);
 		default:
 			break;
 	}
@@ -408,6 +409,7 @@ void cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail ve, skindesignerapi::cT
 		case eViewElementsDetail::scrollbar:
 			tk->DefineIntToken("{height}", (int)eTokenScrollbarInt::height);
 			tk->DefineIntToken("{offset}", (int)eTokenScrollbarInt::offset);
+			tk->DefineIntToken("{hasscrollbar}", (int)eTokenScrollbarInt::hasscrollbar);
 			break;
 		default:
 		break;
