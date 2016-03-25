@@ -37,6 +37,7 @@ class cViewGridNavigator
 protected:
 	int m_rows;
 	int m_columns;
+	bool m_bHidden;
 	
 	std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
 	std::shared_ptr<skindesignerapi::cViewGrid> m_pGrid;
@@ -65,6 +66,8 @@ public:
 	virtual eOSState NavigateBack() = 0;
 	virtual void ReDraw(cGridElement* element);
 	cGridElement* SelectedObject();
+	virtual void Deactivate(bool hide);
+	virtual void Activate();
 };
 
 #endif // cViewGridNAVIGATOR_H

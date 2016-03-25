@@ -36,6 +36,7 @@ void cViewGridNavigator::SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>
 
 void cViewGridNavigator::ReDraw(cGridElement* element)
 {
+	if(m_bHidden) return;
 	if(element) {
 		cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 		if (!element->IsVisible()) {
@@ -257,4 +258,20 @@ bool cViewGridNavigator::NavigateRight()
 	m_pGrid->SetCurrent((*next)->GridElementId(), true);
 	m_activeElementIter = next;
 	return true;
+}
+
+void cViewGridNavigator::Deactivate(bool hide)
+{
+	if (m_pRootView) {
+		m_pRootView->Deactivate(hide);
+		m_bHidden = hide;
+	}
+}
+
+void cViewGridNavigator::Activate()
+{
+	if (m_pRootView) {
+		m_pRootView->Activate();
+		m_bHidden = false;
+	}
 }

@@ -121,11 +121,11 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 		case kBack:
 			state = eOSState::osContinue;
 			m_pDetailGrid->Clear();
-			m_pDetailsView->Deactivate(true);
+			m_pDetailGrid->Deactivate(true);
 			m_pDetailGrid = nullptr;
 			m_pDetailsView = nullptr;
 			m_detailsActive = false;
-			m_pRootView->Activate();
+			m_pBrowserGrid->Activate();
 			Flush();
 			break;
 		case kYellow:
@@ -229,11 +229,11 @@ void cPlexSdOsd::ShowDetails(plexclient::Video *vid)
 {
 	if(m_detailsActive) return;
 	
-	m_pRootView->Deactivate(true);
+	m_pBrowserGrid->Deactivate(true);
 	m_pDetailsView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView((int)eViews::detailView));
 	m_pDetailGrid = std::shared_ptr<cDetailView>(new cDetailView(m_pDetailsView, vid));
 	
-	m_pDetailsView->Activate();
+	m_pDetailGrid->Activate();
 	m_pDetailGrid->Draw();
 	m_pDetailGrid->Flush();	
 	m_detailsActive = true;
