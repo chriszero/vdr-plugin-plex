@@ -359,7 +359,7 @@ void cBrowserGrid::DrawScrollbar()
 	m_pScrollbar->Clear();
 	m_pScrollbar->ClearTokens();
 	
-	if (m_vElements.size() > 0) {
+	if ((int)m_vElements.size() > (m_columns * m_rows)) {
 		int currentRow = SelectedObject()->AbsolutePosition / m_columns;
 		int totalRows = ceil((double) m_vElements.size() / m_columns);
 		
