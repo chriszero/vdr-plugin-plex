@@ -116,8 +116,6 @@ void cBrowserGrid::NextViewMode()
 
 void cBrowserGrid::SwitchGrid(int index)
 {
-	cPictureCache::GetInstance().RemoveAll();
-
 	m_pHeader->Clear();
 	m_pHeader->ClearTokens();
 	m_pHeader->AddIntToken((int)eTokenGridInt::columns, m_columns);

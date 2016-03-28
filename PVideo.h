@@ -104,6 +104,7 @@ public:
 #ifdef SKINDESIGNER
 	// gridElement
 	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+	
 #endif
 };
 

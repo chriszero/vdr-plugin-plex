@@ -66,14 +66,14 @@ class PlexServer
 		m_authToken = token;
 	}
 	
-	std::istream& MakeRequest(Poco::Net::HTTPResponse& response, bool& ok, std::string path, const std::map<std::string, std::string>& queryParameters = std::map<std::string, std::string>());
+	std::shared_ptr<Poco::Net::HTTPClientSession> MakeRequest(bool& ok, std::string path, const std::map<std::string, std::string>& queryParameters = std::map<std::string, std::string>());
 	
 	std::string GetHost();
 	int GetPort();
 	
 	std::string GetUri();
 	
-	Poco::Net::HTTPClientSession* GetClientSession();
+	std::shared_ptr<Poco::Net::HTTPClientSession> GetClientSession();
 
 	void DiscoverSettings();
 	bool Offline;
@@ -99,8 +99,6 @@ private:
 	std::string m_authToken;
 	long m_nUpdated;
 	std::string m_sVersion;
-	Poco::Net::HTTPClientSession* m_httpSession;
-
 };
 
 }

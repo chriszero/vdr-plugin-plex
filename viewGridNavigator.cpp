@@ -21,6 +21,7 @@ cViewGridNavigator::cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView
 	m_endIndex = 0;
 	m_newDimensions = true;
 	m_setIterator = true;
+	m_bEnableRedraw = false;
 
 	m_pGrid = NULL;
 	m_pRootView = rootView;
@@ -36,7 +37,7 @@ void cViewGridNavigator::SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid>
 
 void cViewGridNavigator::ReDraw(cGridElement* element)
 {
-	if(m_bHidden) return;
+	if(m_bHidden || !m_bEnableRedraw) return;
 	if(element) {
 		cMutexLock MutexLock(&cPlexSdOsd::RedrawMutex);
 		if (!element->IsVisible()) {
@@ -73,6 +74,7 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 	
 	int i = 0;
 	int pos = 0;
+	m_bEnableRedraw = false;
 	for(auto it = m_vElements.begin(); it != m_vElements.end(); ++it) {
 
 		if(i >= m_startIndex && i < m_endIndex) {
@@ -86,16 +88,14 @@ void cViewGridNavigator::FilterElements(int scrollOffset)
 				m_setIterator = false;
 			}
 		} else {
-			m_pGrid->Delete((*it)->GridElementId());
+			if((*it)->Position > -1) m_pGrid->Delete((*it)->GridElementId());
 			(*it)->Dirty();
 			(*it)->Position = -1;
 			(*it)->SetPosition(-1,-1);
-			// Remove Queued Downloads
-			cPictureCache::GetInstance().Remove(*it);
 		}
 		i++;
 	}
-
+	m_bEnableRedraw = true;
 	m_newDimensions = false;
 }
 

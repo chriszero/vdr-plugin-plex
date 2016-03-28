@@ -20,7 +20,6 @@ cPlexSdOsd::~cPlexSdOsd()
 		m_pBrowserGrid->Clear();
 	if(m_pMessage)
 		m_pMessage->Clear();
-	cPictureCache::GetInstance().RemoveAll();
 }
 
 bool cPlexSdOsd::SdSupport()

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <deque>
 #include <string>
+#include <future>
 
 #include <vdr/thread.h>
 #include <vdr/plugin.h>
@@ -19,7 +20,7 @@ enum ImageResolution {
 	HD1080
 };
 
-class cPictureCache : public cThread
+class cPictureCache
 {
 private:
 	struct CacheInfo {
@@ -35,33 +36,28 @@ private:
 		int height;
 		std::function<void(cGridElement*)> onCached;
 		cGridElement* calle;
+		bool downloaded;
 	};
 	cPictureCache();
-	std::deque<CacheInfo> m_qImagesToLoad;
+	std::map<std::string, bool> m_mCached;
+	std::vector<std::future<void>> m_vFutures;
 	volatile bool m_bAllInvalidated;
 
 	std::string FileName(std::string uri, int width);
 	std::string TranscodeUri(std::string uri, int width, int height);
 
-	bool DownloadFileAndSave(std::string uri, std::string localFile);
+	static bool DownloadFileAndSave(std::string uri, std::string localFile);
+	bool Cached(std::string uri, int width);
 
 	std::string m_cacheDir;
-
-protected:
-	virtual void Action();
 
 public:
 	static cPictureCache& GetInstance() {
 		static cPictureCache instance;
 		return instance;
 	}
-	void Stop();
 
-	bool Cached(std::string uri, int width);
 	std::string GetPath(std::string uri, int width, int height, bool& cached, std::function<void(cGridElement*)> OnCached = NULL, cGridElement* calle = NULL);
-	void Remove(cGridElement* element);
-	void Remove(std::string uri);
-	void RemoveAll();
 };
 
 #endif // CPICTURECACHE_H

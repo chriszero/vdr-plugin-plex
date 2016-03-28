@@ -135,12 +135,7 @@ bool cMyPlugin::Start(void)
 	skindesignerapi::cTokenContainer *tkDetailExtraGrid = new skindesignerapi::cTokenContainer();
 	cPlexSdOsd::DefineGridTokens(tkDetailExtraGrid);
 	m_pPlugStruct->RegisterViewGrid((int)eViews::detailView, (int)eViewDetailViewGrids::extras, "extragrid", tkDetailExtraGrid);
-	
-	
-	m_pPlugStructReplay = new skindesignerapi::cPluginStructure();
-	m_pPlugStructReplay->name = "plexreplay";
-	m_pPlugStructReplay->libskindesignerAPIVersion = LIBSKINDESIGNERAPIVERSION;
-	m_pPlugStructReplay->RegisterRootView("root.xml");
+
 	
 	if (!skindesignerapi::SkindesignerAPI::RegisterPlugin(m_pPlugStruct)) {
 		esyslog("[plex]: skindesigner not available");
@@ -184,9 +179,6 @@ bool cMyPlugin::Initialize(void)
 	plexclient::plexgdm::GetInstance().Start();
 	plexclient::ControlServer::GetInstance().Start();
 
-#ifdef SKINDESIGNER
-	cPictureCache::GetInstance().Start();
-#endif
 	return true;
 }
 

@@ -28,42 +28,18 @@ cPictureCache::cPictureCache()
 	m_bAllInvalidated = false;
 }
 
-void cPictureCache::Action()
-{
-	while(Running()) {
-		while (m_qImagesToLoad.size() > 0) {
-			CacheInfo info = m_qImagesToLoad.front();
-			m_qImagesToLoad.pop_front();
-
-			std::string transcodeUri = TranscodeUri(info.uri, info.width, info.height);
-			std::string file = FileName(info.uri, info.width);
-			bool ok = true;
-			if(!Cached(info.uri, info.width)) {
-				ok = DownloadFileAndSave(transcodeUri, file);
-			}
-			if(ok) {
-				LOCK_THREAD;
-				if (!m_bAllInvalidated && info.onCached && info.calle && info.calle->IsVisible()) {
-					info.onCached(info.calle);
-				}
-			}
-			cCondWait::SleepMs(5);
-		}
-		cCondWait::SleepMs(100);
-	}
-}
-
 bool cPictureCache::DownloadFileAndSave(std::string Uri, std::string localFile)
 {
 	try {
 		Poco::URI fileUri(Uri);
 		plexclient::PlexServer* pServer = plexclient::plexgdm::GetInstance().GetServer(fileUri.getHost(), fileUri.getPort());
-
-		Poco::Net::HTTPResponse response;
+		
 		bool ok;
-		std::istream &rs = pServer->MakeRequest(response, ok, fileUri.getPathAndQuery());
-
-		if (!ok)
+		auto cSession = pServer->MakeRequest(ok, fileUri.getPathAndQuery());
+		Poco::Net::HTTPResponse response;
+		std::istream &rs = cSession->receiveResponse(response);
+		
+		if (!ok || response.getStatus() != 200)
 			return false;
 
 		std::string type = response.getContentType();
@@ -96,9 +72,9 @@ bool cPictureCache::DownloadFileAndSave(std::string Uri, std::string localFile)
 		outFile.close();
 		return true;
 	} catch (Poco::Exception &exc) {
+		std::cout << exc.displayText() << std::endl;
 		return false;
 	}
-
 }
 
 std::string cPictureCache::FileName(std::string uri, int width)
@@ -138,7 +114,13 @@ std::string cPictureCache::TranscodeUri(std::string uri, int width, int height)
 
 bool cPictureCache::Cached(std::string uri, int width)
 {
-	return Poco::File(FileName(uri, width) + ".jpg").exists() || Poco::File(FileName(uri, width) + ".png").exists();
+	bool cached = true;
+	try {
+		cached = m_mCached.at(FileName(uri, width));
+	} catch (std::out_of_range) { }
+	
+	bool onDisk = Poco::File(FileName(uri, width) + ".jpg").exists() || Poco::File(FileName(uri, width) + ".png").exists();
+	return onDisk && cached;
 }
 
 std::string cPictureCache::GetPath(std::string uri, int width, int height, bool& cached, std::function<void(cGridElement*)> OnCached, cGridElement* calle)
@@ -152,44 +134,34 @@ std::string cPictureCache::GetPath(std::string uri, int width, int height, bool&
 		} else if(Poco::File(FileName(uri, width) + ".png").exists()) {
 			file += ".png";
 		}
-		
 		return file;
 	} else {
-		CacheInfo info(uri, width, height, OnCached, calle);
-		m_qImagesToLoad.push_back(info);
+
+		try {
+			m_mCached.at(file);
+			return file;
+		} catch (std::out_of_range) { } 
+		
+			std::string transcodeUri = TranscodeUri(uri, width, height);
+			std::string file = FileName(uri, width);
+			
+			m_mCached[file] = false;
+			
+			m_vFutures.push_back(std::async(std::launch::async, 
+				[&] (std::string tsUri, std::string fn, std::function<void(cGridElement*)> onCached, cGridElement* ca) {
+					bool ok = DownloadFileAndSave(tsUri, fn);
+					if(ok) {
+						m_mCached[fn] = true;
+					}
+					if (ok && onCached && ca && ca->IsVisible()) {
+						onCached(ca);
+					}
+					return;
+				}, 
+				transcodeUri, file, OnCached, calle) );
 	}
 
 	return file;
 }
 
-void cPictureCache::Stop()
-{
-	Cancel();
-}
 
-void cPictureCache::Remove(cGridElement* element)
-{
-	if(!element) return;
-	if (auto video = dynamic_cast<plexclient::Video*>(element)) {
-		Remove(video->ThumbUri());
-		Remove(video->ArtUri());
-	}
-}
-
-void cPictureCache::Remove(std::string uri)
-{
-	LOCK_THREAD;
-	for(std::deque<CacheInfo>::iterator it = m_qImagesToLoad.begin() ; it != m_qImagesToLoad.end(); ++it) {
-		if(it->uri == uri) {
-			m_qImagesToLoad.erase(it);
-			return;
-		}
-	}
-}
-
-void cPictureCache::RemoveAll()
-{
-	LOCK_THREAD;
-	m_bAllInvalidated = true;
-	m_qImagesToLoad.clear();
-}

@@ -162,10 +162,11 @@ std::shared_ptr<MediaContainer> Plexservice::GetSection(std::string section, boo
 
 		dsyslog("[plex] URI: %s%s", pServer->GetUri().c_str(), uri.c_str());
 		
-		Poco::Net::HTTPResponse response;
 		bool ok;
-		std::istream &rs = pServer->MakeRequest(response, ok, uri);
-		if(ok) {
+		auto cSession = pServer->MakeRequest(ok, uri);
+		Poco::Net::HTTPResponse response;
+		std::istream& rs = cSession->receiveResponse(response);
+		if(ok && response.getStatus() == 200) {
 			std::shared_ptr<MediaContainer> pAllsections(new MediaContainer(&rs, pServer));
 			return pAllsections;
 		}
@@ -230,10 +231,11 @@ std::shared_ptr<MediaContainer> Plexservice::GetMediaContainer(std::string fullU
 
 		pServer = plexgdm::GetInstance().GetServer(fileuri.getHost(), fileuri.getPort());
 		
-		Poco::Net::HTTPResponse response;
 		bool ok;
-		std::istream &rs = pServer->MakeRequest(response, ok, fileuri.getPathAndQuery());
-		if(ok) {
+		auto cSession = pServer->MakeRequest(ok, fileuri.getPathAndQuery());
+		Poco::Net::HTTPResponse response;
+		std::istream &rs = cSession->receiveResponse(response);
+		if(ok && response.getStatus() == 200) {
 			std::shared_ptr<MediaContainer> pAllsections = std::shared_ptr<MediaContainer>(new MediaContainer(&rs, pServer));
 			return pAllsections;
 		}

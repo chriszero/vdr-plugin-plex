@@ -38,6 +38,7 @@ protected:
 	int m_rows;
 	int m_columns;
 	bool m_bHidden;
+	bool m_bEnableRedraw;
 	
 	std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
 	std::shared_ptr<skindesignerapi::cViewGrid> m_pGrid;

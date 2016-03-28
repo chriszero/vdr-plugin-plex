@@ -211,10 +211,11 @@ bool Video::SetUnwatched()
 	try {
 		std::string uri = Poco::format("/:/unscrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
 
-		Poco::Net::HTTPResponse resp;
 		bool ok;
-		m_pServer->MakeRequest(resp, ok, uri);
-
+		auto cSession = m_pServer->MakeRequest(ok, uri);
+		Poco::Net::HTTPResponse resp;
+		cSession->receiveResponse(resp);
+		
 		if(resp.getStatus() == 200) {
 			dsyslog("[plex]: Set Unwatched: %s", uri.c_str());
 			return true;
@@ -231,9 +232,8 @@ bool Video::SetWatched()
 	try {
 		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
 		
-		Poco::Net::HTTPResponse resp;
 		bool ok;
-		m_pServer->MakeRequest(resp, ok, uri);
+		auto cSession = m_pServer->MakeRequest(ok, uri);
 
 		if(ok) {
 			dsyslog("[plex]: Set Watched: %s", uri.c_str());
