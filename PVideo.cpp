@@ -284,6 +284,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 		grid->AddIntToken((int)(eTokenGridInt::ismovie), true);
 	} else if (m_tType == MediaType::CLIP) {
 		grid->AddIntToken((int)(eTokenGridInt::isclip), true);
+		grid->AddIntToken((int)eTokenGridInt::extratype, (int)m_eExtraType);
 	}
 	
 	vector<int> loopInfo;

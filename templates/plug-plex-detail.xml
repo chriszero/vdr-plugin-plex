@@ -94,7 +94,7 @@
 	but element are usually from type "clip" so the available information are the following:
 	
 	{title}                 	string, Name of the element
-	{extraType}								int, 1 = trailer, 5 = Behind the Scenes(?)
+	{extratype}								int, 1 = trailer, 5 = Behind the Scenes(?)
 	{duration}			int, minutes, total duration
 	{originallyAvailableYear}		Year of release/first aired
 	{originallyAvailableMonth}	Month of release/first aired

@@ -71,7 +71,8 @@ enum class eTokenGridInt {
 	audioChannels,
 	isdummy,
 	isserver,
-	serverport
+	serverport,
+	extratype
 };
 
 enum class eTokenGridStr {

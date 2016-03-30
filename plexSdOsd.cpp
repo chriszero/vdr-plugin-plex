@@ -319,6 +319,7 @@ void cPlexSdOsd::DefineGridTokens(skindesignerapi::cTokenContainer* tk)
 	tk->DefineIntToken("{isdummy}", (int)eTokenGridInt::isdummy);
 	tk->DefineIntToken("{isserver}", (int)eTokenGridInt::isserver);
 	tk->DefineIntToken("{serverport}", (int)eTokenGridInt::serverport);
+	tk->DefineIntToken("{extratype}", (int)eTokenGridInt::extratype);
 
 	tk->DefineStringToken("{title}", (int)eTokenGridStr::title);
 	tk->DefineStringToken("{orginaltitle}", (int)eTokenGridStr::orginaltitle);
