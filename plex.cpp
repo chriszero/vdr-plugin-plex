@@ -265,15 +265,15 @@ void cMyPlugin::PlayFile(plexclient::Video Vid)
 
 		Mpv_PlayFile req;
 		Mpv_SetTitle reqTitle;
-		char* file;
+		std::string file;
 		if(Config::GetInstance().UsePlexAccount && Vid.m_pServer->IsLocal() == false) {
-			file = (char*)plexclient::Plexservice::GetUniversalTranscodeUrl(&Vid, Vid.m_iMyPlayOffset, NULL, true).c_str();
+			file = plexclient::Plexservice::GetUniversalTranscodeUrl(&Vid, Vid.m_iMyPlayOffset, NULL, true);
 		}
 		else {
-			 file = (char*)(Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey).c_str();
+			 file = (Vid.m_pServer->GetUri() + Vid.m_Media.m_sPartKey);
 		}
-		
-		req.Filename = file;
+
+		req.Filename = (char*)file.c_str();
 		mpvPlugin->Service(MPV_PLAY_FILE, &req);
 
 		reqTitle.Title = (char*)Vid.GetTitle().c_str();
