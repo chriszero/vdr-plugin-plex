@@ -11,7 +11,8 @@ enum class eViewElementsDetail {
 	footer,
 	info,
 	message,
-	scrollbar
+	scrollbar,
+	watch
 };
 
 enum class eViewElementsRoot {

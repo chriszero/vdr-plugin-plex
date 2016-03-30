@@ -135,6 +135,10 @@ bool cMyPlugin::Start(void)
 	skindesignerapi::cTokenContainer *tkDetailExtraGrid = new skindesignerapi::cTokenContainer();
 	cPlexSdOsd::DefineGridTokens(tkDetailExtraGrid);
 	m_pPlugStruct->RegisterViewGrid((int)eViews::detailView, (int)eViewDetailViewGrids::extras, "extragrid", tkDetailExtraGrid);
+	
+	skindesignerapi::cTokenContainer *tkDetailWatch = new skindesignerapi::cTokenContainer();
+	cPlexSdOsd::DefineWatchTokens(tkDetailWatch);
+	m_pPlugStruct->RegisterViewElement((int)eViews::detailView, (int)eViewElementsDetail::watch, "time", tkDetailWatch);
 
 	
 	if (!skindesignerapi::SkindesignerAPI::RegisterPlugin(m_pPlugStruct)) {

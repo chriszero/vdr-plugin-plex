@@ -86,7 +86,6 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 						return eOSState::osContinue;
 			}
 		}
-		if (m_pBrowserGrid->DrawTime()) m_pBrowserGrid->Flush();
 		state = ProcessKeyBrowserView(Key);
 	}
 	
@@ -98,7 +97,7 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
 	plexclient::Video* vid = NULL;
-		
+	
 	switch (Key & ~k_Repeat) {
 		case kUp:
 			if(m_pDetailGrid->NavigateUp()) Flush();
@@ -153,6 +152,8 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 			cMyPlugin::PlayFile(*vid);
 			state = eOSState::osEnd;
 	}
+	
+	if (state != osEnd && m_pDetailGrid->DrawTime()) m_pDetailGrid->Flush();
 	
 	return state;
 }
@@ -220,6 +221,8 @@ eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
 		cMyPlugin::PlayFile(*vid);
 		state = eOSState::osEnd;
 	}
+	
+	if (state != osEnd && m_pBrowserGrid->DrawTime()) m_pBrowserGrid->Flush();
 	
 	return state;
 }

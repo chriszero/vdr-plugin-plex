@@ -19,15 +19,18 @@ public:
 	virtual eOSState NavigateBack();
 	plexclient::Video* GetVideo() { return m_pVideo; };
 	virtual void Clear();
+	bool DrawTime();
 	
 private:
 	std::shared_ptr<skindesignerapi::cViewElement> m_pBackground;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pfooter;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pInfo;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar;
+	std::shared_ptr<skindesignerapi::cViewElement> m_pWatch;
 	
 	plexclient::Video *m_pVideo;
 	bool m_drawall;
+	int m_lastsecond;
 
 	void DrawBackground();
 	void DrawFooter();
