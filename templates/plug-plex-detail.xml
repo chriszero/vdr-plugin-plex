@@ -40,6 +40,7 @@
 	{duration}			int, minutes, total duration
 	{orginaltitle}		original title
 	{summary}			Description, plot, summary
+	{tagline}			Tagline
 	{studio}			Studio
 	{viewCount}			Unseen if less than 1
 	

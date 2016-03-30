@@ -79,6 +79,7 @@ enum class eTokenGridStr {
 	title = 0,
 	orginaltitle,
 	summary,
+	tagline,
 	contentrating,
 	ratingstring,
 	studio,

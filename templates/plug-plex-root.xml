@@ -119,6 +119,7 @@
 	{viewoffsetpercent} last viewed position as percent value 0 - 100
 	{duration}			int, minutes, total duration
 	{orginaltitle}		original title
+	{tagline}			Tagline 
 	{summary}			Description, plot, summary
 	{studio}			Studio
 	{viewCount}			Unseen if less than 1

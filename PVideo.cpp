@@ -91,6 +91,7 @@ void Video::Parse(Poco::XML::Node* pNode)
 			m_sGrandparentTitle = GetNodeValue(pAttribs->getNamedItem("grandparentTitle"));
 			m_sContentRating = GetNodeValue(pAttribs->getNamedItem("contentRating"));
 			m_sSummary = GetNodeValue(pAttribs->getNamedItem("summary"));
+			m_sTagline = GetNodeValue(pAttribs->getNamedItem("tagline"));
 			m_lViewoffset = GetNodeValueAsLong(pAttribs->getNamedItem("viewOffset"));
 			m_tLastViewedAt = GetNodeValueAsTimeStamp(pAttribs->getNamedItem("lastViewedAt"));
 			m_iYear = GetNodeValueAsInt(pAttribs->getNamedItem("year"));
@@ -254,6 +255,7 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 	grid->AddStringToken((int)(eTokenGridStr::title), m_sTitle.c_str());
 	grid->AddStringToken((int)(eTokenGridStr::orginaltitle), m_sOriginalTitle.c_str());
 	grid->AddStringToken((int)(eTokenGridStr::summary), m_sSummary.c_str());
+	grid->AddStringToken((int)(eTokenGridStr::tagline), m_sTagline.c_str());
 	grid->AddStringToken((int)(eTokenGridStr::contentrating), m_sContentRating.c_str());
 	grid->AddIntToken((int)(eTokenGridInt::rating), m_dRating*10);
 	grid->AddStringToken((int)(eTokenGridStr::ratingstring), Poco::format("%.1f", m_dRating).c_str());

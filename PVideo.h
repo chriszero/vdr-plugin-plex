@@ -63,6 +63,7 @@ public:
 	std::string m_sGrandparentTitle;
 	std::string m_sContentRating;
 	std::string m_sSummary;
+	std::string m_sTagline;
 	long m_lViewoffset;
 	Poco::Timestamp m_tLastViewedAt;
 	int m_iYear;

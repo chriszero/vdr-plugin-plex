@@ -324,6 +324,7 @@ void cPlexSdOsd::DefineGridTokens(skindesignerapi::cTokenContainer* tk)
 	tk->DefineStringToken("{title}", (int)eTokenGridStr::title);
 	tk->DefineStringToken("{orginaltitle}", (int)eTokenGridStr::orginaltitle);
 	tk->DefineStringToken("{summary}", (int)eTokenGridStr::summary);
+	tk->DefineStringToken("{tagline}", (int)eTokenGridStr::tagline);
 	tk->DefineStringToken("{contentrating}", (int)eTokenGridStr::contentrating);
 	tk->DefineStringToken("{ratingstring}", (int)eTokenGridStr::ratingstring);
 	tk->DefineStringToken("{studio}", (int)eTokenGridStr::studio);
