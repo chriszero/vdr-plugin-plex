@@ -153,7 +153,7 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 			state = eOSState::osEnd;
 	}
 	
-	if (state != osEnd && m_pDetailGrid->DrawTime()) m_pDetailGrid->Flush();
+	if (state != osEnd && m_pDetailsView && m_pDetailGrid->DrawTime()) m_pDetailGrid->Flush();
 	
 	return state;
 }
