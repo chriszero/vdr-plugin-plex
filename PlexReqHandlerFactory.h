@@ -9,18 +9,17 @@
 
 #include "Config.h"
 
-namespace plexclient
-{
+namespace plexclient {
 
-class PlexReqHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
-{
-public:
-	PlexReqHandlerFactory();
-	~PlexReqHandlerFactory();
+    class PlexReqHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory {
+    public:
+        PlexReqHandlerFactory();
 
-public:
-	virtual Poco::Net::HTTPRequestHandler* createRequestHandler(const Poco::Net::HTTPServerRequest& request);
-};
+        ~PlexReqHandlerFactory();
+
+    public:
+        virtual Poco::Net::HTTPRequestHandler *createRequestHandler(const Poco::Net::HTTPServerRequest &request);
+    };
 
 }
 

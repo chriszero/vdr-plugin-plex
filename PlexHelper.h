@@ -3,17 +3,16 @@
 
 #include <Poco/Net/HTTPRequest.h>
 
-namespace plexclient
-{
+namespace plexclient {
 
-class PlexHelper
-{
-public:
-	static void AddHttpHeader(Poco::Net::HTTPRequest& request);
-private:
-	PlexHelper() {};
+    class PlexHelper {
+    public:
+        static void AddHttpHeader(Poco::Net::HTTPRequest &request);
 
-};
+    private:
+        PlexHelper() { };
+
+    };
 
 }
 

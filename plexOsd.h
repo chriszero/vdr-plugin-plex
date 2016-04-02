@@ -26,31 +26,34 @@ enum menuShow {
  *	Plex Browser
  */
 
-class cPlexBrowser :public cOsdMenu
-{
+class cPlexBrowser : public cOsdMenu {
 private:
-	std::shared_ptr<plexclient::Plexservice> pService;
-	std::shared_ptr<plexclient::MediaContainer> pCont;
-	std::vector<plexclient::cVideo> *v_Vid;
-	std::vector<plexclient::Directory> *v_Dir;
-	std::vector<std::string> m_vStack;
-	std::string m_sSection;
-	std::string m_sActualPos;
-	/// Create a browser menu for current directory
-	void CreateMenu();
-	/// Handle menu level up
-	eOSState LevelUp(void);
-	/// Handle menu item selection
-	eOSState ProcessSelected();
+    std::shared_ptr<plexclient::Plexservice> pService;
+    std::shared_ptr<plexclient::MediaContainer> pCont;
+    std::vector<plexclient::cVideo> *v_Vid;
+    std::vector<plexclient::Directory> *v_Dir;
+    std::vector<std::string> m_vStack;
+    std::string m_sSection;
+    std::string m_sActualPos;
 
-	static std::shared_ptr<plexclient::Plexservice> pLastService;
-	static int lastCurrentItem;
+    /// Create a browser menu for current directory
+    void CreateMenu();
+
+    /// Handle menu level up
+    eOSState LevelUp(void);
+
+    /// Handle menu item selection
+    eOSState ProcessSelected();
+
+    static std::shared_ptr<plexclient::Plexservice> pLastService;
+    static int lastCurrentItem;
 
 public:
-	cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service);
-	virtual eOSState ProcessKey(eKeys);
+    cPlexBrowser(const char *title, std::shared_ptr<plexclient::Plexservice> Service);
 
-	static cPlexBrowser* RecoverLastState();
+    virtual eOSState ProcessKey(eKeys);
+
+    static cPlexBrowser *RecoverLastState();
 
 };
 
@@ -58,14 +61,15 @@ public:
 /**
 **	Play plugin menu class.
 */
-class cPlexMenu:public cOsdMenu
-{
+class cPlexMenu : public cOsdMenu {
 public:
-	cPlexMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
-	virtual eOSState ProcessKey(eKeys);
-	
-	static cOsdMenu* ProcessMenu();
-	static menuShow eShow;
+    cPlexMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
+
+    virtual eOSState ProcessKey(eKeys);
+
+    static cOsdMenu *ProcessMenu();
+
+    static menuShow eShow;
 };
 
 #endif // CPLEXOSD_H

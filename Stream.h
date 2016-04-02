@@ -26,29 +26,28 @@ using Poco::XML::Node;
 using Poco::XML::AutoPtr;
 using Poco::Exception;
 
-namespace plexclient
-{
+namespace plexclient {
 
-class Stream: XmlObject
-{
-public:
-	Stream(Poco::XML::Node* pNode);
-	Stream() {};
+    class Stream : XmlObject {
+    public:
+        Stream(Poco::XML::Node *pNode);
 
-public:
-	bool m_bSelected;
-	int m_iID;
-	int m_iStreamType;
-	int m_iIndex;
-	int m_iChannels;
-	std::string m_sCodec;
-	std::string m_sCodecId;
-	std::string m_sLanguage;
-	std::string m_sLanguageCode;
-	StreamType m_eStreamType;
-	
-	std::string GetSetStreamQuery();
-};
+        Stream() { };
+
+    public:
+        bool m_bSelected;
+        int m_iID;
+        int m_iStreamType;
+        int m_iIndex;
+        int m_iChannels;
+        std::string m_sCodec;
+        std::string m_sCodecId;
+        std::string m_sLanguage;
+        std::string m_sLanguageCode;
+        StreamType m_eStreamType;
+
+        std::string GetSetStreamQuery();
+    };
 
 }
 

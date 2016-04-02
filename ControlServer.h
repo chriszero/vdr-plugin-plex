@@ -12,29 +12,28 @@
 
 #include <vdr/thread.h>
 
-namespace plexclient
-{
+namespace plexclient {
 
-class ControlServer : public cThread
-{
+    class ControlServer : public cThread {
 
-public:
-	static ControlServer& GetInstance() {
-		static ControlServer instance;
-		return instance;
-	}
-	void Stop();
+    public:
+        static ControlServer &GetInstance() {
+            static ControlServer instance;
+            return instance;
+        }
 
-protected:
-	void Action();
+        void Stop();
 
-private:
-	ControlServer();
+    protected:
+        void Action();
 
-	Poco::Net::ServerSocket *m_pSvs;
-	Poco::Net::HTTPServer *m_pSrv;
+    private:
+        ControlServer();
 
-};
+        Poco::Net::ServerSocket *m_pSvs;
+        Poco::Net::HTTPServer *m_pSrv;
+
+    };
 
 }
 

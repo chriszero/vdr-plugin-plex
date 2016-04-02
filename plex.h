@@ -18,9 +18,11 @@
 #include "hlsPlayerControl.h"
 
 #ifdef SKINDESIGNER
-	#include <libskindesignerapi/skindesignerapi.h>
-	#include "plexSdOsd.h"
-	#include "pictureCache.h"
+
+#include <libskindesignerapi/skindesignerapi.h>
+#include "plexSdOsd.h"
+#include "pictureCache.h"
+
 #endif
 
 #include <iostream>
@@ -35,41 +37,52 @@
 /// for the distribution archive.
 static const char *const VERSION = "0.3.0"
 #ifdef GIT_REV
-                                   "-GIT" GIT_REV
+"-GIT" GIT_REV
 #endif
-                                   ;
+;
 static const char *const DESCRIPTION = "Plex for VDR Plugin";
 static const char *const MAINMENUENTRY = "Plex for VDR";
 
 
-class cMyPlugin:public cPlugin
-{
+class cMyPlugin : public cPlugin {
 private:
 #ifdef SKINDESIGNER
-	skindesignerapi::cPluginStructure *m_pPlugStruct;
-	cPlexSdOsd *m_pTestOsd;
-	static bool bSkindesigner;
+    skindesignerapi::cPluginStructure *m_pPlugStruct;
+    cPlexSdOsd *m_pTestOsd;
+    static bool bSkindesigner;
 #endif
-	
-public:
-	cMyPlugin(void);
-	virtual ~ cMyPlugin(void);
-	virtual const char *Version(void);
-	virtual const char *Description(void);
-	virtual bool Initialize(void);
-	virtual bool Start(void);
-	virtual void MainThreadHook(void);
-	virtual const char *MainMenuEntry(void);
-	virtual cOsdObject *MainMenuAction(void);
-	virtual cMenuSetupPage *SetupMenu(void);
-	virtual bool SetupParse(const char *, const char *);
-	
-	static plexclient::cVideo CurrentVideo;
-	static bool PlayingFile;
-	static void PlayFile(plexclient::cVideo Vid);
 
 public:
-	static volatile bool CalledFromCode;
+    cMyPlugin(void);
+
+    virtual ~ cMyPlugin(void);
+
+    virtual const char *Version(void);
+
+    virtual const char *Description(void);
+
+    virtual bool Initialize(void);
+
+    virtual bool Start(void);
+
+    virtual void MainThreadHook(void);
+
+    virtual const char *MainMenuEntry(void);
+
+    virtual cOsdObject *MainMenuAction(void);
+
+    virtual cMenuSetupPage *SetupMenu(void);
+
+    virtual bool SetupParse(const char *, const char *);
+
+    static plexclient::cVideo CurrentVideo;
+    static bool PlayingFile;
+
+    static void PlayFile(plexclient::cVideo Vid);
+
+public:
+    static volatile bool CalledFromCode;
 
 };
+
 #endif

@@ -4,15 +4,13 @@
 #include "XmlObject.h" // Base class: plexclient::XmlObject
 #include "MediaContainer.h"
 
-namespace plexclient
-{
+namespace plexclient {
 
-class Playlist : private plexclient::XmlObject
-{
-public:
-	Playlist(Poco::XML::Node* pNode, MediaContainer* parent);
+    class Playlist : private plexclient::XmlObject {
+    public:
+        Playlist(Poco::XML::Node *pNode, MediaContainer *parent);
 
-};
+    };
 
 }
 

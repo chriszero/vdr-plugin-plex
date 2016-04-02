@@ -33,37 +33,45 @@
 #include "user.h"
 #include "MediaContainer.h"
 
-namespace plexclient
-{
+namespace plexclient {
 
-class Plexservice
-{
-public:
-	Plexservice(PlexServer *server);
-	Plexservice(PlexServer *server, std::string startUri);
+    class Plexservice {
+    public:
+        Plexservice(PlexServer *server);
 
-	std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);
-	std::shared_ptr<MediaContainer> GetLastSection(bool current = false);
-	bool IsRoot();
-	PlexServer* GetServer();
-	void Authenticate();
-	
-	static std::string GetUniversalTranscodeUrl(cVideo* video, int offset = 0, PlexServer* server = 0, bool http = false);
-	static std::string GetMyPlexToken();
-	static std::shared_ptr<MediaContainer> GetMediaContainer(std::string fullUrl);
-	//static std::string encode(std::string message);
-	static void UpdateResources();
+        Plexservice(PlexServer *server, std::string startUri);
 
-	std::string StartUri;
+        std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);
 
-private:
-	Poco::Mutex m_mutex;
-	PlexServer *pServer;
+        std::shared_ptr<MediaContainer> GetLastSection(bool current = false);
 
-	std::stack<std::string> m_vUriStack;
-	std::unique_ptr<Poco::Net::HTTPRequest> CreateRequest(std::string path);
-	
-};
+        bool IsRoot();
+
+        PlexServer *GetServer();
+
+        void Authenticate();
+
+        static std::string GetUniversalTranscodeUrl(cVideo *video, int offset = 0, PlexServer *server = 0,
+                                                    bool http = false);
+
+        static std::string GetMyPlexToken();
+
+        static std::shared_ptr<MediaContainer> GetMediaContainer(std::string fullUrl);
+
+        //static std::string encode(std::string message);
+        static void UpdateResources();
+
+        std::string StartUri;
+
+    private:
+        Poco::Mutex m_mutex;
+        PlexServer *pServer;
+
+        std::stack<std::string> m_vUriStack;
+
+        std::unique_ptr<Poco::Net::HTTPRequest> CreateRequest(std::string path);
+
+    };
 
 }
 

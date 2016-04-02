@@ -14,45 +14,42 @@
 #include "XmlObject.h"
 #include "MediaContainer.h"
 
-namespace plexclient
-{
-class Device;
+namespace plexclient {
+    class Device;
 
-class Connection: private XmlObject
-{
-public:
-	Connection(Poco::XML::Node* pNode,  Device* parent);	
-	
-	std::string m_sProtocol;
-	std::string m_sAddress;
-	int m_iPort;
-	std::string m_sUri;
-	bool m_bLocal;
-	
-	Device* m_pParent;
+    class Connection : private XmlObject {
+    public:
+        Connection(Poco::XML::Node *pNode, Device *parent);
 
-};
-	
-class Device: private XmlObject
-{
-public:
-	Device(Poco::XML::Node* pNode, MediaContainer* parent);
-	
-	std::string m_sName;
-	std::string m_sProduct;
-	std::string m_sProvides;
-	std::string m_sClientIdentifier;
-	bool m_bOwned;
-	std::string m_sAccessToken;
-	bool m_bHttpsRequired;
-	bool m_bPublicAddressMatches;
-	bool m_bPresence;
-	std::string m_sSourceTitle;
-	
-	std::vector<Connection> m_vConnections;
-	
-	MediaContainer* m_pParent;
-};
+        std::string m_sProtocol;
+        std::string m_sAddress;
+        int m_iPort;
+        std::string m_sUri;
+        bool m_bLocal;
+
+        Device *m_pParent;
+
+    };
+
+    class Device : private XmlObject {
+    public:
+        Device(Poco::XML::Node *pNode, MediaContainer *parent);
+
+        std::string m_sName;
+        std::string m_sProduct;
+        std::string m_sProvides;
+        std::string m_sClientIdentifier;
+        bool m_bOwned;
+        std::string m_sAccessToken;
+        bool m_bHttpsRequired;
+        bool m_bPublicAddressMatches;
+        bool m_bPresence;
+        std::string m_sSourceTitle;
+
+        std::vector<Connection> m_vConnections;
+
+        MediaContainer *m_pParent;
+    };
 
 }
 

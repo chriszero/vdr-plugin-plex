@@ -12,10 +12,13 @@
 #include <Poco/String.h>
 
 #include <memory>
+
 #ifdef SKINDESIGNER
-	#include <libskindesignerapi/osdelements.h>
-	#include "pictureCache.h"
-	#include "viewGridNavigator.h"
+
+#include <libskindesignerapi/osdelements.h>
+#include "pictureCache.h"
+#include "viewGridNavigator.h"
+
 #endif
 
 #include "XmlObject.h"
@@ -30,58 +33,62 @@ using Poco::XML::Node;
 using Poco::XML::AutoPtr;
 using Poco::Exception;
 
-namespace plexclient
-{
-class MediaContainer;
+namespace plexclient {
+    class MediaContainer;
 
-class Directory: private XmlObject
+    class Directory : private XmlObject
 #ifdef SKINDESIGNER
-, public cGridElement
+            , public cGridElement
 #endif
-{
-public:
-	Directory(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
+    {
+    public:
+        Directory(Poco::XML::Node *pNode, PlexServer *Server, MediaContainer *parent);
 
-public:
-	bool m_bAllowSync;
-	int m_iIndex; // Season, Episode number
-	int m_iYear;
-	int m_iLeafCount; // Total number of Episodes
-	int m_iViewedLeafCount; // Watched Episodes
-	int m_iChildCount; // Number of Seasons
-	double m_fRating;
-	std::string m_sSummary;
-	std::string m_sParentSummary;
-	std::string m_sTitle;
-	std::string m_sTitle1;
-	std::string m_sTitle2;
-	std::string m_sParentTitle; 
-	std::string m_sComposite;
-	std::string m_sLanguage;
-	std::string m_sUuid;
-	std::string m_sArt;
-	std::string m_sThumb;
-	std::string m_sStudio;
-	Poco::Timestamp m_tUpdatedAt;
-	Poco::Timestamp m_tCreatedAt;
-	std::string m_sKey;
+    public:
+        bool m_bAllowSync;
+        int m_iIndex; // Season, Episode number
+        int m_iYear;
+        int m_iLeafCount; // Total number of Episodes
+        int m_iViewedLeafCount; // Watched Episodes
+        int m_iChildCount; // Number of Seasons
+        double m_fRating;
+        std::string m_sSummary;
+        std::string m_sParentSummary;
+        std::string m_sTitle;
+        std::string m_sTitle1;
+        std::string m_sTitle2;
+        std::string m_sParentTitle;
+        std::string m_sComposite;
+        std::string m_sLanguage;
+        std::string m_sUuid;
+        std::string m_sArt;
+        std::string m_sThumb;
+        std::string m_sStudio;
+        Poco::Timestamp m_tUpdatedAt;
+        Poco::Timestamp m_tCreatedAt;
+        std::string m_sKey;
 
-	std::vector<std::string> m_vGenre;
-	std::vector<std::string> m_vRole;
+        std::vector<std::string> m_vGenre;
+        std::vector<std::string> m_vRole;
 
-	MediaType m_eType;
-	PlexServer* m_pServer;
-	MediaContainer* m_pParent;
+        MediaType m_eType;
+        PlexServer *m_pServer;
+        MediaContainer *m_pParent;
 
-	virtual std::string GetTitle();
-	std::string ArtUri();
-	std::string ThumbUri();
-	
+        virtual std::string GetTitle();
+
+        std::string ArtUri();
+
+        std::string ThumbUri();
+
 #ifdef SKINDESIGNER
-	// gridElement
-	virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true, std::function<void(cGridElement*)> OnCached = NULL);
+
+        // gridElement
+        virtual void AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear = true,
+                               std::function<void(cGridElement *)> OnCached = NULL);
+
 #endif
-};
+    };
 
 }
 

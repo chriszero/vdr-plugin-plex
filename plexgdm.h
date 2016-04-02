@@ -19,62 +19,70 @@
 
 #include "PlexServer.h"
 
-namespace plexclient
-{
+namespace plexclient {
 
-class plexgdm : public cThread
-{
-public:
-	static plexgdm& GetInstance() {
-		static plexgdm instance;
-		return instance;
-	}
-	~plexgdm();
-	void clientDetails(std::string c_id, std::string c_name, std::string c_port, std::string c_product, std::string c_version);
-	std::string getClientDetails();
-	PlexServer* GetServer(std::string ip, int port);
-	PlexServer* GetServer(std::string uuid);
-	bool AddServer(PlexServer server);
-	PlexServer* GetFirstServer();
-	void discover();
+    class plexgdm : public cThread {
+    public:
+        static plexgdm &GetInstance() {
+            static plexgdm instance;
+            return instance;
+        }
 
-	void Action(void);
+        ~plexgdm();
 
-	void stopRegistration();
+        void clientDetails(std::string c_id, std::string c_name, std::string c_port, std::string c_product,
+                           std::string c_version);
 
-	std::vector<PlexServer> &GetPlexservers() {
-		return m_vServers;
-	}
+        std::string getClientDetails();
 
-protected:
+        PlexServer *GetServer(std::string ip, int port);
+
+        PlexServer *GetServer(std::string uuid);
+
+        bool AddServer(PlexServer server);
+
+        PlexServer *GetFirstServer();
+
+        void discover();
+
+        void Action(void);
+
+        void stopRegistration();
+
+        std::vector<PlexServer> &GetPlexservers() {
+            return m_vServers;
+        }
+
+    protected:
 
 
-private:
-	plexgdm();
-	cMutex m_mutex;
-	cCondVar m_waitCondition;
-	int _discoverInterval;
-	cTimeMs _discoverTimer;
-	bool _helloSent;
+    private:
+        plexgdm();
 
-	Poco::Net::SocketAddress m_discoverAdress;
-	Poco::Net::SocketAddress m_clientRegisterGroup;
+        cMutex m_mutex;
+        cCondVar m_waitCondition;
+        int _discoverInterval;
+        cTimeMs _discoverTimer;
+        bool _helloSent;
 
-	volatile int m_discoveryInterval;
+        Poco::Net::SocketAddress m_discoverAdress;
+        Poco::Net::SocketAddress m_clientRegisterGroup;
 
-	volatile bool m_discoveryComplete;
-	volatile bool m_clientRegistered;
-	volatile bool m_discoveryIsRunning;
-	volatile bool m_registrationIsRunning;
+        volatile int m_discoveryInterval;
 
-	std::string _discoverMessage;
-	std::string _clientHeader;
-	std::string _clientData;
-	std::string _clientId;
-	std::string _multicastAddress;
-	int _clientUpdatePort;
-	std::vector<PlexServer> m_vServers;
-};
+        volatile bool m_discoveryComplete;
+        volatile bool m_clientRegistered;
+        volatile bool m_discoveryIsRunning;
+        volatile bool m_registrationIsRunning;
+
+        std::string _discoverMessage;
+        std::string _clientHeader;
+        std::string _clientData;
+        std::string _clientId;
+        std::string _multicastAddress;
+        int _clientUpdatePort;
+        std::vector<PlexServer> m_vServers;
+    };
 
 }
 #endif // PLEXGDM_H

@@ -31,56 +31,61 @@ using Poco::XML::Node;
 using Poco::XML::AutoPtr;
 using Poco::Exception;
 
-namespace plexclient
-{
-class cVideo;
-class Directory;
-class Device;
-class Playlist;
+namespace plexclient {
+    class cVideo;
 
-class MediaContainer: XmlObject
-{
-public:
-	MediaContainer(std::istream *response, PlexServer* Server);
-	MediaContainer(std::istream *response);
+    class Directory;
 
-protected:
+    class Device;
+
+    class Playlist;
+
+    class MediaContainer : XmlObject {
+    public:
+        MediaContainer(std::istream *response, PlexServer *Server);
+
+        MediaContainer(std::istream *response);
+
+    protected:
 
 
-public:
-	std::vector<Directory> m_vDirectories;
-	std::vector<cVideo> m_vVideos;
-	std::vector<Device> m_vDevices;
-	std::vector<Playlist> m_vPlaylists;
+    public:
+        std::vector<Directory> m_vDirectories;
+        std::vector<cVideo> m_vVideos;
+        std::vector<Device> m_vDevices;
+        std::vector<Playlist> m_vPlaylists;
 
-	bool m_bAllowSync;
-	std::string m_sArt;
-	std::string m_sThumb;
-	std::string m_sBanner;
-	std::string m_sTitle;
-	std::string m_sTitle1;
-	std::string m_sTitle2;
-	std::string m_sGrandparentTitle;
-	MediaType m_eViewGroup;
-	int m_iLibrarySectionID;
-	std::string m_sLibrarySectionTitle;
-	std::string m_sLibrarySectionUUID;
-	std::string m_sMediaTagPrefix;
-	int m_iSize;
-	std::string m_sSummary;
-	int m_iParentIndex;
-	std::string m_sParentTitle;
-	int m_iParentYear;
-	
-	PlexServer* m_pServer;
-	
-	std::string ThumbUri();
-	std::string ArtUri();
+        bool m_bAllowSync;
+        std::string m_sArt;
+        std::string m_sThumb;
+        std::string m_sBanner;
+        std::string m_sTitle;
+        std::string m_sTitle1;
+        std::string m_sTitle2;
+        std::string m_sGrandparentTitle;
+        MediaType m_eViewGroup;
+        int m_iLibrarySectionID;
+        std::string m_sLibrarySectionTitle;
+        std::string m_sLibrarySectionUUID;
+        std::string m_sMediaTagPrefix;
+        int m_iSize;
+        std::string m_sSummary;
+        int m_iParentIndex;
+        std::string m_sParentTitle;
+        int m_iParentYear;
+
+        PlexServer *m_pServer;
+
+        std::string ThumbUri();
+
+        std::string ArtUri();
 
 #ifdef SKINDESIGNER
-	void PreCache();
+
+        void PreCache();
+
 #endif
-};
+    };
 
 }
 

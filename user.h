@@ -20,20 +20,18 @@ using Poco::XML::Node;
 using Poco::XML::AutoPtr;
 using Poco::Exception;
 
-namespace plexclient
-{
+namespace plexclient {
 
-class user
-{
-public:
-	user(std::istream *response);
+    class user {
+    public:
+        user(std::istream *response);
 
-	std::string authenticationToken;
+        std::string authenticationToken;
 
-protected:
+    protected:
 
-private:
-};
+    private:
+    };
 
 }
 
