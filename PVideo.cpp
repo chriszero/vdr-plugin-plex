@@ -11,7 +11,7 @@
 namespace plexclient
 {
 
-Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
+cVideo::cVideo(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 {
 	m_iMyPlayOffset = 0;
 	m_lViewoffset = 0;
@@ -25,7 +25,7 @@ Video::Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent)
 	}
 }
 
-bool Video::UpdateFromServer()
+bool cVideo::UpdateFromServer()
 {
 	try {
 		Poco::URI fileuri(Poco::format("%s/library/metadata/%d?includeExtras=1", m_pServer->GetUri(), m_iRatingKey));
@@ -69,7 +69,7 @@ bool Video::UpdateFromServer()
 	return false;
 }
 
-void Video::Parse(Poco::XML::Node* pNode)
+void cVideo::Parse(Poco::XML::Node* pNode)
 {
 	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
 	Poco::XML::Node* pChildNode = it.nextNode();
@@ -146,20 +146,20 @@ void Video::Parse(Poco::XML::Node* pNode)
 	}
 }
 
-void Video::ParseExtras(Poco::XML::Node* pNode)
+void cVideo::ParseExtras(Poco::XML::Node* pNode)
 {
 	NodeIterator it(pNode, Poco::XML::NodeFilter::SHOW_ALL);
 	Poco::XML::Node* pChildNode = it.nextNode();
 
 	while(pChildNode) {
 		if(Poco::icompare(pChildNode->nodeName(), "Video") == 0) {
-				m_vExtras.push_back(Video(pChildNode, m_pServer, NULL));
+				m_vExtras.push_back(cVideo(pChildNode, m_pServer, NULL));
 			}
 		pChildNode = it.nextNode();
 	}
 }
 
-std::string Video::GetTitle()
+std::string cVideo::GetTitle()
 {
 	std::string res = m_sTitle;
 	
@@ -184,7 +184,7 @@ std::string Video::GetTitle()
 	return res;
 }
 
-bool Video::SetStream(Stream* stream)
+bool cVideo::SetStream(Stream* stream)
 {
 	try {
 		Poco::Net::HTTPClientSession session(m_pServer->GetHost(), m_pServer->GetPort());
@@ -207,7 +207,7 @@ bool Video::SetStream(Stream* stream)
 	}
 }
 
-bool Video::SetUnwatched()
+bool cVideo::SetUnwatched()
 {
 	try {
 		std::string uri = Poco::format("/:/unscrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
@@ -228,7 +228,7 @@ bool Video::SetUnwatched()
 	}
 }
 
-bool Video::SetWatched()
+bool cVideo::SetWatched()
 {
 	try {
 		std::string uri = Poco::format("/:/scrobble?key=%d&identifier=com.plexapp.plugins.library", m_iRatingKey);
@@ -248,7 +248,7 @@ bool Video::SetWatched()
 }
 
 #ifdef SKINDESIGNER
-void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
+void cVideo::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool clear, std::function<void(cGridElement*)> OnCached)
 {
 	if(clear) grid->ClearTokens();
 	grid->AddIntToken((int)(eTokenGridInt::viewmode), Config::GetInstance().DefaultViewMode);
@@ -347,21 +347,21 @@ void Video::AddTokens(std::shared_ptr<skindesignerapi::cOsdElement> grid, bool c
 }
 #endif
 
-std::string Video::ArtUri()
+std::string cVideo::ArtUri()
 {
 	if(m_sArt.find("http://") != std::string::npos) return m_sArt;
 	if(m_sArt[0] == '/') return m_pServer->GetUri() + m_sArt;
 	return m_pServer->GetUri() + '/' + m_sArt;
 }
 
-std::string Video::ThumbUri()
+std::string cVideo::ThumbUri()
 {
 	if(m_sThumb.find("http://") != std::string::npos) return m_sThumb;
 	if(m_sThumb[0] == '/') return m_pServer->GetUri() + m_sThumb;
 	return m_pServer->GetUri() + '/' + m_sThumb;
 }
 
-std::string Video::GetSubtitleUrl() 
+std::string cVideo::GetSubtitleUrl()
 {
 	// /video/:/transcode/universal/subtitles
 	// Argument? m_sKey?

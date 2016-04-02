@@ -78,7 +78,7 @@ void SubscriptionManager::NotifyServer()
 	try {
 		int current, total, speed;
 		bool play, forward;
-		Video *pVid = NULL;
+		cVideo *pVid = NULL;
 		if(!m_pStatus->PlayerStopped && m_pStatus->pControl) {
 			m_pStatus->pControl->GetIndex(current, total);
 			current = current / m_pStatus->pControl->FramesPerSecond() * 1000;
@@ -116,13 +116,9 @@ void SubscriptionManager::NotifyServer()
 		Poco::Net::HTTPResponse response;
 		bool ok;
 		auto cSession = pServer->MakeRequest(ok, "/:/timeline", queryMap);
-		
 
-		if(m_pStatus->PlayerStopped) {
-			m_bStoppedSent = true;
-		} else {
-			m_bStoppedSent = false;
-		}
+
+		m_bStoppedSent = m_pStatus->PlayerStopped ? true : false;
 	} catch (Poco::Exception& e) {}
 
 }
@@ -168,9 +164,9 @@ std::string SubscriptionManager::GetMsg(std::string commandId)
 
 std::string SubscriptionManager::GetTimelineXml()
 {
-	int current, total, speed;
-	bool play, forward;
-	Video *pVid = NULL;
+	int current = 0, total = 0, speed;
+	bool play = false, forward;
+	cVideo *pVid = NULL;
 	if(!m_pStatus->PlayerStopped && m_pStatus->pControl) {
 		m_pStatus->pControl->GetIndex(current, total);
 		current = current / m_pStatus->pControl->FramesPerSecond() * 1000;
@@ -251,14 +247,14 @@ void Subscriber::SendUpdate(std::string msg, bool isNav)
 
 ActionManager::ActionManager() {}
 
-void ActionManager::AddAction(Video video)
+void ActionManager::AddAction(cVideo video)
 {
 	m_myLock.Lock(&m_myMutex);
 	m_Action = video;
 	m_isAction = true;
 }
 
-Video ActionManager::GetAction()
+cVideo ActionManager::GetAction()
 {
 	m_myLock.Lock(&m_myMutex);
 	m_isAction = false;

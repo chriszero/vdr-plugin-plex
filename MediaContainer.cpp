@@ -47,7 +47,7 @@ MediaContainer::MediaContainer(std::istream* response, PlexServer* Server)
 			} else if(Poco::icompare(pNode->nodeName(), "Directory") == 0) {
 				m_vDirectories.push_back(Directory(pNode, m_pServer, this));
 			} else if(Poco::icompare(pNode->nodeName(), "Video") == 0) {
-				m_vVideos.push_back(Video(pNode, m_pServer, this));
+				m_vVideos.push_back(cVideo(pNode, m_pServer, this));
 			} else if(Poco::icompare(pNode->nodeName(), "Device") == 0) {
 				m_vDevices.push_back(Device(pNode, this));
 			} else if(Poco::icompare(pNode->nodeName(), "Playlist") == 0) {
@@ -75,10 +75,10 @@ std::string MediaContainer::ThumbUri()
 }
 
 #ifdef SKINDESIGNER
-void MediaContainer::PreCache() 
+void MediaContainer::PreCache()
 {
 	bool foo;
-	for(std::vector<plexclient::Video>::iterator it = m_vVideos.begin(); it != m_vVideos.end(); ++it) {
+	for(std::vector<plexclient::cVideo>::iterator it = m_vVideos.begin(); it != m_vVideos.end(); ++it) {
 		if(!it->m_sThumb.empty()) cPictureCache::GetInstance().GetPath(it->ThumbUri(), 1280, 720, foo);
 		if(!it->m_sArt.empty()) cPictureCache::GetInstance().GetPath(it->ArtUri(), 1920, 1080, foo);
 	}

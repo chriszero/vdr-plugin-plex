@@ -81,7 +81,6 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 					case kOk:
 					case kBack:
 						return eOSState::osEnd;
-						break;
 					default:
 						return eOSState::osContinue;
 			}
@@ -96,7 +95,7 @@ eOSState cPlexSdOsd::ProcessKey(eKeys Key)
 eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
-	plexclient::Video* vid = NULL;
+	plexclient::cVideo* vid = NULL;
 	
 	switch (Key & ~k_Repeat) {
 		case kUp:
@@ -113,7 +112,7 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 			break;
 		case kOk:
 			state = m_pDetailGrid->NavigateSelect();
-			vid = dynamic_cast<plexclient::Video*>(m_pDetailGrid->SelectedObject());
+			vid = dynamic_cast<plexclient::cVideo*>(m_pDetailGrid->SelectedObject());
 			Flush();
 			break;
 		case kBack:
@@ -153,7 +152,7 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 			state = eOSState::osEnd;
 	}
 	
-	if (state != osEnd && m_pDetailsView && m_pDetailGrid->DrawTime()) m_pDetailGrid->Flush();
+	if (state != osEnd && m_pDetailGrid && m_pDetailGrid->DrawTime()) m_pDetailGrid->Flush();
 	
 	return state;
 }
@@ -161,7 +160,7 @@ eOSState cPlexSdOsd::ProcessKeyDetailView(eKeys Key)
 eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
 {
 	eOSState state = eOSState::osContinue;
-	plexclient::Video* vid = NULL;
+	plexclient::cVideo* vid = NULL;
 	
 	switch (Key & ~k_Repeat) {
 		case kUp:
@@ -180,7 +179,7 @@ eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
 			// Play movie or change dir
 			state = m_pBrowserGrid->NavigateSelect();
 			if(state == eOSState::osUser1) {
-				vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+				vid = dynamic_cast<plexclient::cVideo*>(m_pBrowserGrid->SelectedObject());
 				vid->m_iMyPlayOffset = vid->m_lViewoffset/1000;
 			}
 			Flush();
@@ -194,7 +193,7 @@ eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
 			Flush();
 			break;
 		case kRed:
-			vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+			vid = dynamic_cast<plexclient::cVideo*>(m_pBrowserGrid->SelectedObject());
 			if(vid) {
 				if(vid->m_iViewCount > 0) vid->SetUnwatched();
 				else vid->SetWatched();
@@ -203,7 +202,7 @@ eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
 			}
 			break;
 		case kGreen: // Show Details OSD
-			vid = dynamic_cast<plexclient::Video*>(m_pBrowserGrid->SelectedObject());
+			vid = dynamic_cast<plexclient::cVideo*>(m_pBrowserGrid->SelectedObject());
 			if(vid) {
 				vid->UpdateFromServer();
 				ShowDetails(vid);
@@ -227,7 +226,7 @@ eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key)
 	return state;
 }
 
-void cPlexSdOsd::ShowDetails(plexclient::Video *vid)
+void cPlexSdOsd::ShowDetails(plexclient::cVideo *vid)
 {
 	if(m_detailsActive) return;
 	
@@ -278,7 +277,6 @@ void cPlexSdOsd::DefineTokens(eViewElementsRoot ve, skindesignerapi::cTokenConta
 			tk->DefineIntToken("{height}", (int)eTokenScrollbarInt::height);
 			tk->DefineIntToken("{offset}", (int)eTokenScrollbarInt::offset);
 			tk->DefineIntToken("{hasscrollbar}", (int)eTokenScrollbarInt::hasscrollbar);
-		default:
 			break;
 	}
 }

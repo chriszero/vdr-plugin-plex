@@ -35,12 +35,9 @@ private:
 	std::shared_ptr<skindesignerapi::cOsdView> m_pDetailsView;
 	
 	void Flush();
-	//void SwitchGrid(ePlexMenuTab currentTab);
-	void DrawBackground();
-	void DrawFooter();
 	void DrawMessage(std::string message);
 	
-	void ShowDetails(plexclient::Video *vid);
+	void ShowDetails(plexclient::cVideo *vid);
 	
 public:
 	cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct);

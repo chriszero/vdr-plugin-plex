@@ -20,7 +20,7 @@ private:
 		std::shared_ptr<skindesignerapi::cViewElement> m_pTranscodeinfo;
 		
 public:
-	cDisplayReplaySD(plexclient::Video* video);
+	cDisplayReplaySD(plexclient::cVideo* video);
 	~cDisplayReplaySD();
 	
 	virtual void Show(void);

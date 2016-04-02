@@ -31,7 +31,7 @@ class cPlexBrowser :public cOsdMenu
 private:
 	std::shared_ptr<plexclient::Plexservice> pService;
 	std::shared_ptr<plexclient::MediaContainer> pCont;
-	std::vector<plexclient::Video> *v_Vid;
+	std::vector<plexclient::cVideo> *v_Vid;
 	std::vector<plexclient::Directory> *v_Dir;
 	std::vector<std::string> m_vStack;
 	std::string m_sSection;
@@ -60,9 +60,6 @@ public:
 */
 class cPlexMenu:public cOsdMenu
 {
-
-private:
-	void SetRootMenu();
 public:
 	cPlexMenu(const char *, int = 0, int = 0, int = 0, int = 0, int = 0);
 	virtual eOSState ProcessKey(eKeys);

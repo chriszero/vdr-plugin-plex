@@ -11,13 +11,13 @@
 class cDetailView : public cViewGridNavigator
 {
 public:
-	cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, plexclient::Video *video);
+	cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, plexclient::cVideo *video);
 	
 	void Draw();
 	virtual void Flush();
 	virtual eOSState NavigateSelect();
 	virtual eOSState NavigateBack();
-	plexclient::Video* GetVideo() { return m_pVideo; };
+	plexclient::cVideo* GetVideo() { return m_pVideo; };
 	virtual void Clear();
 	bool DrawTime();
 	
@@ -28,7 +28,7 @@ private:
 	std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar;
 	std::shared_ptr<skindesignerapi::cViewElement> m_pWatch;
 	
-	plexclient::Video *m_pVideo;
+	plexclient::cVideo *m_pVideo;
 	bool m_drawall;
 	int m_lastsecond;
 

@@ -24,7 +24,7 @@ public:
 	bool PlayerPaused;
 	bool PlayerStopped;
 	cControl* pControl;
-	Video* pVideo;
+	cVideo* pVideo;
 	int Volume;
 
 };
@@ -91,15 +91,15 @@ public:
 		static ActionManager instance;
 		return instance;
 	}
-	void AddAction(Video video);
-	Video GetAction();
+	void AddAction(cVideo video);
+	cVideo GetAction();
 	bool IsAction();
 
 private:
 	cMutexLock m_myLock;
 	cMutex m_myMutex;
 	ActionManager();
-	Video m_Action;
+	cVideo m_Action;
 	bool m_isAction;
 };
 

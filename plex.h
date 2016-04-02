@@ -64,9 +64,9 @@ public:
 	virtual cMenuSetupPage *SetupMenu(void);
 	virtual bool SetupParse(const char *, const char *);
 	
-	static plexclient::Video CurrentVideo;
+	static plexclient::cVideo CurrentVideo;
 	static bool PlayingFile;
-	static void PlayFile(plexclient::Video Vid);
+	static void PlayFile(plexclient::cVideo Vid);
 
 public:
 	static volatile bool CalledFromCode;

@@ -11,7 +11,7 @@ cPlexOsdItem::cPlexOsdItem(const char* title, std::shared_ptr<plexclient::Plexse
 	m_bDir = false;
 }
 
-cPlexOsdItem::cPlexOsdItem(const char* title, plexclient::Video* obj) :cOsdItem(title) {
+cPlexOsdItem::cPlexOsdItem(const char* title, plexclient::cVideo* obj) :cOsdItem(title) {
 	item = obj;
 	m_bVideo = true;
 	m_bDir = false;
@@ -32,7 +32,7 @@ cPlexOsdItem::cPlexOsdItem(const char* title, plexclient::Stream* obj) :cOsdItem
 	m_bDir = false;
 }
 
-plexclient::Video* cPlexOsdItem::GetAttachedVideo() {
+plexclient::cVideo* cPlexOsdItem::GetAttachedVideo() {
 	return item;
 }
 

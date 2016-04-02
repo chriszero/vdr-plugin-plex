@@ -46,8 +46,8 @@ void cPlexBrowser::CreateMenu()
 	}
 
 	if(pCont && pCont->m_vVideos.size() > 0) {
-		for(std::vector<plexclient::Video>::iterator it = pCont->m_vVideos.begin(); it != pCont->m_vVideos.end(); ++it) {
-			plexclient::Video *vid = &(*it); // cast raw pointer
+		for(std::vector<plexclient::cVideo>::iterator it = pCont->m_vVideos.begin(); it != pCont->m_vVideos.end(); ++it) {
+			plexclient::cVideo *vid = &(*it); // cast raw pointer
 			Add(new cPlexOsdItem( vid->GetTitle().c_str(), vid) );
 		}
 	}

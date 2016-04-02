@@ -33,7 +33,7 @@ using Poco::Exception;
 
 namespace plexclient
 {
-class Video;
+class cVideo;
 class Directory;
 class Device;
 class Playlist;
@@ -49,7 +49,7 @@ protected:
 
 public:
 	std::vector<Directory> m_vDirectories;
-	std::vector<Video> m_vVideos;
+	std::vector<cVideo> m_vVideos;
 	std::vector<Device> m_vDevices;
 	std::vector<Playlist> m_vPlaylists;
 

@@ -21,7 +21,7 @@ const int BUFFERSIZE = 8192;
 
 //--- cHlsSegmentLoader
 
-cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8, plexclient::Video* pVideo)
+cHlsSegmentLoader::cHlsSegmentLoader(std::string startm3u8, plexclient::cVideo* pVideo)
 {
 	m_pVideo = pVideo;
 	m_newList = false;
@@ -67,7 +67,7 @@ bool cHlsSegmentLoader::LoadM3u8(std::string uri)
 {
 	//LOCK_THREAD;
 	m_startUri = Poco::URI(uri);
-	return m_newList = true;
+	return (m_newList = true);
 }
 
 void cHlsSegmentLoader::Action(void)
@@ -329,7 +329,7 @@ bool cHlsSegmentLoader::DoLoad(void)
 	if(m_lastLoadedSegment <  m_indexParser.vPlaylistItems.size()) {
 
 		std::string segmentUri = GetSegmentUri(m_lastLoadedSegment);
-		if(result = LoadSegment(segmentUri)) {
+		if((result = LoadSegment(segmentUri))) {
 			m_lastLoadedSegment++;
 		} else {
 			// transcoder may be died, plex bug, restart transcode session
@@ -355,7 +355,7 @@ bool cHlsSegmentLoader::DoLoad(void)
 	} else {
 		result = false;
 	}
-	return recover ? true : result;
+	return recover || result;
 }
 
 bool cHlsSegmentLoader::BufferFilled(void)
@@ -443,7 +443,7 @@ int cHlsSegmentLoader::GetStreamLenght()
 
 //--- cHlsPlayer
 
-cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offset)
+cHlsPlayer::cHlsPlayer(std::string startm3u8, plexclient::cVideo Video, int offset)
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
 	m_Video = Video;

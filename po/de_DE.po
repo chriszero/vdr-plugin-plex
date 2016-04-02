@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-plex 0.1.0\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2016-03-28 18:32+0200\n"
+"POT-Creation-Date: 2016-04-02 23:09+0200\n"
 "PO-Revision-Date: 2016-03-09 21:24+0200\n"
 "Last-Translator: Chris <zerov83@gmail.com>\n"
 "Language-Team: chriszero\n"
@@ -17,6 +17,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Virtaal 0.7.1\n"
+
+msgid "Library"
+msgstr "Bibliothek"
+
+msgid "No Plex Media Server found."
+msgstr "Kein Plexmediaserver gefunden."
+
+msgid "Switch View"
+msgstr "Ansicht wechseln"
+
+msgid "Unscrobble"
+msgstr "Ungesehen"
+
+msgid "Scrobble"
+msgstr "Gesehen"
 
 msgid "Hide main menu entry"
 msgstr "Verstecke Hauptmenüeintrag"
@@ -87,30 +102,15 @@ msgstr ""
 msgid "Current UUID"
 msgstr "Aktuelle UUID"
 
-#, c-format
-msgid "%s - Season %d"
-msgstr "%s - Staffel %d"
-
-msgid "Library"
-msgstr "Bibliothek"
-
-msgid "No Plex Media Server found."
-msgstr "Kein Plexmediaserver gefunden."
-
-msgid "Switch View"
-msgstr "Ansicht wechseln"
-
-msgid "Unscrobble"
-msgstr "Ungesehen"
-
-msgid "Scrobble"
-msgstr "Gesehen"
-
 msgid "Play"
 msgstr "Wiedergeben"
 
 msgid "Rewind"
 msgstr "Anfang"
+
+#, c-format
+msgid "%s - Season %d"
+msgstr "%s - Staffel %d"
 
 msgid "Skip Back"
 msgstr "Vorspringen"

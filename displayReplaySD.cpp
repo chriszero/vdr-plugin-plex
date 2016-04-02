@@ -1,6 +1,6 @@
 #include "displayReplaySD.h"
 
-cDisplayReplaySD::cDisplayReplaySD(plexclient::Video* video) : cSkindesignerOsdObject(GetPluginStruct())
+cDisplayReplaySD::cDisplayReplaySD(plexclient::cVideo* video) : cSkindesignerOsdObject(GetPluginStruct())
 {
 
 }

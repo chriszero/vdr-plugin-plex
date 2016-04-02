@@ -13,7 +13,7 @@
 #include "cPlexOsdItem.h"
 
 // static
-cControl* cHlsPlayerControl::Create(plexclient::Video Video)
+cControl* cHlsPlayerControl::Create(plexclient::cVideo Video)
 {
 	// Stop already playing stream
 	cHlsPlayerControl* c = dynamic_cast<cHlsPlayerControl*>(cControl::Control(true));
@@ -32,7 +32,7 @@ cControl* cHlsPlayerControl::Create(plexclient::Video Video)
 	return playerControl;
 }
 
-cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video Video) :cControl(Player)
+cHlsPlayerControl::cHlsPlayerControl(cHlsPlayer* Player, plexclient::cVideo Video) :cControl(Player)
 {
 	dsyslog("[plex]: '%s'", __FUNCTION__);
 	player = Player;
@@ -243,7 +243,7 @@ void cHlsPlayerControl::JumpRelative(int offset)
 void cHlsPlayerControl::ShowMode(void)
 {
 	//dsyslog("[plex]: '%s'\n", __FUNCTION__);
-	if (visible || Setup.ShowReplayMode && !cOsd::IsOpen()) {
+	if (visible || (Setup.ShowReplayMode && !cOsd::IsOpen())) {
 		bool Play, Forward;
 		int Speed;
 		if (GetReplayMode(Play, Forward, Speed) && (!visible || Play != lastPlay || Forward != lastForward || Speed != lastSpeed)) {
@@ -315,7 +315,7 @@ void cHlsPlayerControl::ShowTimed(int Seconds)
 		timeoutShow = time(NULL) + Seconds;
 }
 
-cStreamSelectMenu::cStreamSelectMenu(plexclient::Video* Video) : cOsdMenu("StreamSelect")
+cStreamSelectMenu::cStreamSelectMenu(plexclient::cVideo* Video) : cOsdMenu("StreamSelect")
 {
 	pVideo = Video;
 	CreateMenu();

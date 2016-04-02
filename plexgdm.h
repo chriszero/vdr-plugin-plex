@@ -32,20 +32,14 @@ public:
 	~plexgdm();
 	void clientDetails(std::string c_id, std::string c_name, std::string c_port, std::string c_product, std::string c_version);
 	std::string getClientDetails();
-	PlexServer* getServerList();
 	PlexServer* GetServer(std::string ip, int port);
 	PlexServer* GetServer(std::string uuid);
 	bool AddServer(PlexServer server);
 	PlexServer* GetFirstServer();
 	void discover();
-	void checkClientRegistration();
 
 	void Action(void);
 
-	//void startAll();
-	void startRegistration();
-
-	//void stopAll();
 	void stopRegistration();
 
 	std::vector<PlexServer> &GetPlexservers() {

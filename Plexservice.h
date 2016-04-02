@@ -42,14 +42,13 @@ public:
 	Plexservice(PlexServer *server);
 	Plexservice(PlexServer *server, std::string startUri);
 
-	void DisplaySections();
 	std::shared_ptr<MediaContainer> GetSection(std::string section, bool putOnStack = true);
 	std::shared_ptr<MediaContainer> GetLastSection(bool current = false);
 	bool IsRoot();
 	PlexServer* GetServer();
 	void Authenticate();
 	
-	static std::string GetUniversalTranscodeUrl(Video* video, int offset = 0, PlexServer* server = 0, bool http = false);
+	static std::string GetUniversalTranscodeUrl(cVideo* video, int offset = 0, PlexServer* server = 0, bool http = false);
 	static std::string GetMyPlexToken();
 	static std::shared_ptr<MediaContainer> GetMediaContainer(std::string fullUrl);
 	//static std::string encode(std::string message);

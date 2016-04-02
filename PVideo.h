@@ -39,7 +39,7 @@ namespace plexclient
 {
 class MediaContainer;
 
-class Video: private XmlObject
+class cVideo: private XmlObject
 #ifdef SKINDESIGNER
 ,public cGridElement
 #endif
@@ -50,8 +50,8 @@ private:
 	void ParseExtras(Poco::XML::Node* pNode);
 
 public:
-	Video(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
-	Video() {};
+	cVideo(Poco::XML::Node* pNode, PlexServer* Server, MediaContainer* parent);
+	cVideo() {};
 
 public:
 	int m_iRatingKey;
@@ -89,7 +89,7 @@ public:
 	int m_iMyPlayOffset;
 	int m_iIndex;
 	int m_iParentIndex;
-	std::vector<Video> m_vExtras;
+	std::vector<cVideo> m_vExtras;
 	ExtraType m_eExtraType;
 
 	virtual std::string GetTitle();

@@ -247,7 +247,7 @@ std::shared_ptr<MediaContainer> Plexservice::GetMediaContainer(std::string fullU
 	}
 }
 
-std::string Plexservice::GetUniversalTranscodeUrl(Video* video, int offset, PlexServer* server, bool http)
+std::string Plexservice::GetUniversalTranscodeUrl(cVideo* video, int offset, PlexServer* server, bool http)
 {
 	PlexServer* pSrv = server ? server : video->m_pServer;
 	Poco::URI transcodeUri(pSrv->GetUri());

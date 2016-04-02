@@ -11,12 +11,12 @@
 class cStreamSelectMenu : public cOsdMenu
 {
 private:
-	plexclient::Video* pVideo;
+	plexclient::cVideo* pVideo;
 	void CreateMenu();
 	bool SelectStream();
 	
 public:
-	cStreamSelectMenu(plexclient::Video* Video);
+	cStreamSelectMenu(plexclient::cVideo* Video);
 	virtual eOSState ProcessKey(eKeys Keys);
 };
 
@@ -43,10 +43,10 @@ protected:
 	//void ShowMode();
 
 public:
-	plexclient::Video m_Video;
+	plexclient::cVideo m_Video;
 
-	static cControl* Create(plexclient::Video Video);
-	cHlsPlayerControl(cHlsPlayer* Player, plexclient::Video Video);
+	static cControl* Create(plexclient::cVideo Video);
+	cHlsPlayerControl(cHlsPlayer* Player, plexclient::cVideo Video);
 	virtual ~cHlsPlayerControl();
 
 	virtual void Show(void);

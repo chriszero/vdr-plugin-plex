@@ -1,7 +1,7 @@
 #include "detailView.h"
 #include "Config.h"
 
-cDetailView::cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, plexclient::Video *video) 
+cDetailView::cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, plexclient::cVideo *video)
 	: cViewGridNavigator(detailView)
 {
 	m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(detailView->GetViewElement((int)eViewElementsDetail::background));
@@ -21,7 +21,7 @@ cDetailView::cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, 
 	
 	int pos = 0;
 	for(auto it = m_pVideo->m_vExtras.begin(); it != m_pVideo->m_vExtras.end(); ++it) {
-		plexclient::Video *elem = &(*it);
+		plexclient::cVideo *elem = &(*it);
 		elem->AbsolutePosition = pos++;;
 		m_vElements.push_back(elem);
 	}
@@ -76,7 +76,7 @@ void cDetailView::DrawBackground()
 	
 	bool cover = m_pVideo->m_sThumb.empty() == false;
 	m_pBackground->AddIntToken((int)eTokenDetailBackgroundInt::hascover, cover);
-	if(Cover) m_pBackground->AddStringToken((int)eTokenDetailBackgroundStr::coverpath, m_pVideo->m_sThumb.c_str());
+	if(cover) m_pBackground->AddStringToken((int)eTokenDetailBackgroundStr::coverpath, m_pVideo->m_sThumb.c_str());
 }
 
 void cDetailView::DrawFooter()
@@ -203,7 +203,7 @@ eOSState cDetailView::NavigateSelect()
 {
 	if(m_setIterator) return eOSState::osContinue;
 	
-	if(dynamic_cast<plexclient::Video*>(SelectedObject())) {
+	if(dynamic_cast<plexclient::cVideo*>(SelectedObject())) {
 		return eOSState::osUser1;
 	} else return eOSState::osBack;
 }

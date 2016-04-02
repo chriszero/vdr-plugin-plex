@@ -21,7 +21,7 @@ volatile bool cMyPlugin::CalledFromCode = false;
 bool cMyPlugin::bSkindesigner = false;
 #endif
 
-plexclient::Video cMyPlugin::CurrentVideo;
+plexclient::cVideo cMyPlugin::CurrentVideo;
 bool cMyPlugin::PlayingFile = false;
 
 /**
@@ -251,7 +251,7 @@ bool cMyPlugin::SetupParse(const char *name, const char *value)
 **
 **	@param filename	path and file name
 */
-void cMyPlugin::PlayFile(plexclient::Video Vid)
+void cMyPlugin::PlayFile(plexclient::cVideo Vid)
 {
 	if(Vid.m_iMyPlayOffset == 0 && Vid.m_lViewoffset > 0 ) {
 		cString message = cString::sprintf(tr("To start from %ld minutes, press Ok."), Vid.m_lViewoffset / 60000);

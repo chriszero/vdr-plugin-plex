@@ -33,7 +33,7 @@ private:
 	uchar* m_pBuffer;
 
 	Poco::Net::HTTPClientSession* m_pClientSession;
-	plexclient::Video* m_pVideo;
+	plexclient::cVideo* m_pVideo;
 	Poco::URI m_startUri;
 	std::string m_sessionUriPart;
 	std::string m_segmentUriPart;
@@ -60,7 +60,7 @@ protected:
 	bool DoLoad(void);
 
 public:
-	cHlsSegmentLoader(std::string startm3u8, plexclient::Video* pVideo);
+	cHlsSegmentLoader(std::string startm3u8, plexclient::cVideo* pVideo);
 	~cHlsSegmentLoader();
 
 	cRingBufferLinear*  m_pRingbuffer;
@@ -79,7 +79,7 @@ private:
 	std::ofstream* m_pDebugFile;
 	int AudioIndexOffset;
 	cHlsSegmentLoader* m_pSegmentLoader;
-	plexclient::Video m_Video;
+	plexclient::cVideo m_Video;
 
 	int m_jumpOffset;
 	int m_timeOffset;
@@ -113,7 +113,7 @@ protected:
 
 public:
 	//static cMutex s_mutex;
-	cHlsPlayer(std::string startm3u8, plexclient::Video Video, int offset = 0);
+	cHlsPlayer(std::string startm3u8, plexclient::cVideo Video, int offset = 0);
 	~cHlsPlayer();
 
 	virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);

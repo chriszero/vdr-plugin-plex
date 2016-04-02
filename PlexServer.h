@@ -75,7 +75,6 @@ class PlexServer
 	
 	std::shared_ptr<Poco::Net::HTTPClientSession> GetClientSession();
 
-	void DiscoverSettings();
 	bool Offline;
 
 protected:

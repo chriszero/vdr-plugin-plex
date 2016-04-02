@@ -143,7 +143,6 @@ std::string cPictureCache::GetPath(std::string uri, int width, int height, bool&
 		} catch (std::out_of_range) { } 
 		
 			std::string transcodeUri = TranscodeUri(uri, width, height);
-			std::string file = FileName(uri, width);
 			
 			m_mCached[file] = false;
 			

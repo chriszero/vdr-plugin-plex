@@ -181,8 +181,8 @@ void cBrowserGrid::ProcessData()
 		}
 
 		if(m_pContainer->m_vVideos.size() > 0) {
-			for(std::vector<plexclient::Video>::iterator it = m_pContainer->m_vVideos.begin(); it != m_pContainer->m_vVideos.end(); ++it) {
-				plexclient::Video *elem = &(*it);
+			for(std::vector<plexclient::cVideo>::iterator it = m_pContainer->m_vVideos.begin(); it != m_pContainer->m_vVideos.end(); ++it) {
+				plexclient::cVideo *elem = &(*it);
 				m_vElements.push_back(elem);
 			}
 		}
@@ -223,7 +223,7 @@ eOSState cBrowserGrid::NavigateSelect()
 		m_vServerElements.clear();
 		ProcessData();
 		return eOSState::osContinue;
-	} else if(dynamic_cast<plexclient::Video*>(SelectedObject())) {
+	} else if(dynamic_cast<plexclient::cVideo*>(SelectedObject())) {
 		return eOSState::osUser1;
 	} else return eOSState::osEnd;
 }
@@ -306,7 +306,7 @@ void cBrowserGrid::DrawFooter()
 	string textRed = "";
 	string textBlue = tr("Switch View");
 
-	if(auto vid = dynamic_cast<plexclient::Video*>(SelectedObject()) ) {
+	if(auto vid = dynamic_cast<plexclient::cVideo*>(SelectedObject()) ) {
 		if(vid->m_iViewCount > 0) textRed = tr("Unscrobble");
 		else textRed = tr("Scrobble");
 	}
