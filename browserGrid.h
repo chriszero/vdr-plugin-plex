@@ -8,6 +8,7 @@
 #include "plexgdm.h"
 #include "PlexServer.h"
 #include "viewGridNavigator.h"
+#include "sdGenericViewElements.h"
 //#include "viewHeader.h"
 #include <libskindesignerapi/osdelements.h>
 
@@ -44,16 +45,14 @@ public:
     plexclient::PlexServer *Server() { return m_pServer; }
 };
 
-class cBrowserGrid : public cViewGridNavigator {
+class cBrowserGrid : public cViewGridNavigator, public cSdClock {
 private:
     //std::shared_ptr<cViewHeader> m_pViewHeader;
     std::shared_ptr<skindesignerapi::cViewElement> m_pHeader;
     std::shared_ptr<skindesignerapi::cViewElement> m_pBackground;
     std::shared_ptr<skindesignerapi::cViewElement> m_pfooter;
     std::shared_ptr<skindesignerapi::cViewElement> m_pInfopane;
-    std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar;
-    std::shared_ptr<skindesignerapi::cViewElement> m_pWatch;
-    int m_lastsecond;
+
     int m_viewEntryIndex;
     bool m_redrawBackground;
 
@@ -72,8 +71,6 @@ private:
     void DrawBackground();
 
     void DrawInfopane();
-
-    void DrawScrollbar();
 
 public:
     cBrowserGrid(std::shared_ptr<skindesignerapi::cOsdView> rootView);
@@ -98,8 +95,6 @@ public:
     void NextTab();
 
     void PrevTab();
-
-    bool DrawTime();
 
     virtual void Flush();
 

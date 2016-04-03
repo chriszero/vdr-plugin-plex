@@ -2,17 +2,17 @@
 #include "Config.h"
 
 cDetailView::cDetailView(std::shared_ptr<skindesignerapi::cOsdView> detailView, plexclient::cVideo *video)
-        : cViewGridNavigator(detailView) {
+        : cViewGridNavigator(detailView, std::shared_ptr<skindesignerapi::cViewElement>(
+        detailView->GetViewElement((int) eViewElementsDetail::scrollbar))),
+          cSdClock(std::shared_ptr<skindesignerapi::cViewElement>(
+                  detailView->GetViewElement((int) eViewElementsDetail::watch))) {
+
     m_pBackground = std::shared_ptr<skindesignerapi::cViewElement>(
             detailView->GetViewElement((int) eViewElementsDetail::background));
     m_pfooter = std::shared_ptr<skindesignerapi::cViewElement>(
             detailView->GetViewElement((int) eViewElementsDetail::footer));
     m_pInfo = std::shared_ptr<skindesignerapi::cViewElement>(
             detailView->GetViewElement((int) eViewElementsDetail::info));
-    m_pScrollbar = std::shared_ptr<skindesignerapi::cViewElement>(
-            detailView->GetViewElement((int) eViewElementsDetail::scrollbar));
-    m_pWatch = std::shared_ptr<skindesignerapi::cViewElement>(
-            detailView->GetViewElement((int) eViewElementsDetail::watch));
 
     m_pVideo = video;
     m_drawall = true;
@@ -133,67 +133,6 @@ void cDetailView::DrawInfo() {
     m_pInfo->Clear();
     m_pVideo->AddTokens(m_pInfo, true);
     m_pInfo->Display();
-}
-
-void cDetailView::DrawScrollbar() {
-    m_pScrollbar->Clear();
-    m_pScrollbar->ClearTokens();
-
-    if ((int) m_vElements.size() > (m_columns * m_rows)) {
-        int currentRow = SelectedObject()->AbsolutePosition / m_columns;
-        int totalRows = ceil((double) m_vElements.size() / m_columns);
-
-        int scrollBarHeight = 100.0 / totalRows * m_rows;
-
-        int offset = 100.0 / totalRows * currentRow;
-        if (offset >= 100 - scrollBarHeight) {
-            offset = 100.0 - scrollBarHeight;
-        }
-        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::height, scrollBarHeight);
-        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::offset, offset);
-        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::hasscrollbar, true);
-    } else {
-        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::hasscrollbar, false);
-    }
-
-    m_pScrollbar->Display();
-}
-
-bool cDetailView::DrawTime() {
-    time_t t = time(0);   // get time now
-    struct tm *now = localtime(&t);
-    int sec = now->tm_sec;
-    if (sec == m_lastsecond)
-        return false;
-
-    int min = now->tm_min;
-    int hour = now->tm_hour;
-    int hourMinutes = hour % 12 * 5 + min / 12;
-
-    char monthname[20];
-    char monthshort[10];
-    strftime(monthshort, sizeof(monthshort), "%b", now);
-    strftime(monthname, sizeof(monthname), "%B", now);
-
-    m_pWatch->Clear();
-    m_pWatch->ClearTokens();
-    m_pWatch->AddIntToken((int) eTokenTimeInt::sec, sec);
-    m_pWatch->AddIntToken((int) eTokenTimeInt::min, min);
-    m_pWatch->AddIntToken((int) eTokenTimeInt::hour, hour);
-    m_pWatch->AddIntToken((int) eTokenTimeInt::hmins, hourMinutes);
-    m_pWatch->AddIntToken((int) eTokenTimeInt::year, now->tm_year + 1900);
-    m_pWatch->AddIntToken((int) eTokenTimeInt::day, now->tm_mday);
-    m_pWatch->AddStringToken((int) eTokenTimeStr::time, *TimeString(t));
-    m_pWatch->AddStringToken((int) eTokenTimeStr::monthname, monthname);
-    m_pWatch->AddStringToken((int) eTokenTimeStr::monthnameshort, monthshort);
-    m_pWatch->AddStringToken((int) eTokenTimeStr::month, *cString::sprintf("%02d", now->tm_mon + 1));
-    m_pWatch->AddStringToken((int) eTokenTimeStr::dayleadingzero, *cString::sprintf("%02d", now->tm_mday));
-    m_pWatch->AddStringToken((int) eTokenTimeStr::dayname, *WeekDayNameFull(now->tm_wday));
-    m_pWatch->AddStringToken((int) eTokenTimeStr::daynameshort, *WeekDayName(now->tm_wday));
-    m_pWatch->Display();
-
-    m_lastsecond = sec;
-    return true;
 }
 
 eOSState cDetailView::NavigateSelect() {

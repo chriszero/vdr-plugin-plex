@@ -104,7 +104,8 @@ OBJS += plexSdOsd.o \
 	viewHeader.o \
 	detailView.o \
 	pictureCache.o \
-	displayReplaySD.o
+	displayReplaySD.o \
+	sdGenericViewElements.o
 endif
 
 SRCS = $(wildcard $(OBJS:.o=.c)) $(PLUGIN).cpp

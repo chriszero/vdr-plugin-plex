@@ -55,6 +55,7 @@ protected:
 
     std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
     std::shared_ptr<skindesignerapi::cViewGrid> m_pGrid;
+    std::shared_ptr<skindesignerapi::cViewElement> m_pScrollbar = nullptr;
 
     bool m_newDimensions;
     bool m_setIterator;
@@ -70,7 +71,8 @@ protected:
     void SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid> grid);
 
 public:
-    cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView);
+    cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView,
+                       std::shared_ptr<skindesignerapi::cViewElement> pScrollbar);
 
     void SetGridDimensions(int rows, int columns);
 
@@ -100,6 +102,8 @@ public:
     virtual void Deactivate(bool hide);
 
     virtual void Activate();
+
+    void DrawScrollbar();
 };
 
 #endif // cViewGridNAVIGATOR_H

@@ -225,7 +225,7 @@ void cPlexSdOsd::ShowDetails(plexclient::cVideo *vid) {
 
     m_pBrowserGrid->Deactivate(true);
     m_pDetailsView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView((int) eViews::detailView));
-    m_pDetailGrid = std::shared_ptr<cDetailView>(new cDetailView(m_pDetailsView, vid));
+    m_pDetailGrid = std::make_shared<cDetailView>(m_pDetailsView, vid);
 
     m_pDetailGrid->Activate();
     m_pDetailGrid->Draw();

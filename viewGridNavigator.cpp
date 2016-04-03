@@ -12,7 +12,8 @@ cGridElement::cGridElement() {
     m_bInit = true;
 }
 
-cViewGridNavigator::cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView) {
+cViewGridNavigator::cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView> rootView,
+                                       std::shared_ptr<skindesignerapi::cViewElement> pScrollbar) {
     m_columns = 2;
     m_rows = 2;
     m_startIndex = 0;
@@ -23,6 +24,7 @@ cViewGridNavigator::cViewGridNavigator(std::shared_ptr<skindesignerapi::cOsdView
 
     m_pGrid = NULL;
     m_pRootView = rootView;
+    m_pScrollbar = pScrollbar;
 }
 
 void cViewGridNavigator::SetViewGrid(std::shared_ptr<skindesignerapi::cViewGrid> grid) {
@@ -260,4 +262,28 @@ void cViewGridNavigator::Activate() {
         m_pRootView->Activate();
         m_bHidden = false;
     }
+}
+
+void cViewGridNavigator::DrawScrollbar() {
+    m_pScrollbar->Clear();
+    m_pScrollbar->ClearTokens();
+
+    if ((int) m_vElements.size() > (m_columns * m_rows)) {
+        int currentRow = SelectedObject()->AbsolutePosition / m_columns;
+        int totalRows = ceil((double) m_vElements.size() / m_columns);
+
+        int scrollBarHeight = 100.0 / totalRows * m_rows;
+
+        int offset = 100.0 / totalRows * currentRow;
+        if (offset >= 100 - scrollBarHeight) {
+            offset = 100.0 - scrollBarHeight;
+        }
+        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::height, scrollBarHeight);
+        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::offset, offset);
+        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::hasscrollbar, true);
+    } else {
+        m_pScrollbar->AddIntToken((int) eTokenScrollbarInt::hasscrollbar, false);
+    }
+
+    m_pScrollbar->Display();
 }
