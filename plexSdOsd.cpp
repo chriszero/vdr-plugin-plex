@@ -7,8 +7,12 @@
 
 cMutex cPlexSdOsd::RedrawMutex;
 
+cPlexSdOsd::cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct, plexclient::cVideo* detailVideo) : cPlexSdOsd(plugStruct) {
+    m_pDetailVideo = detailVideo;
+}
+
 cPlexSdOsd::cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct) : cSkindesignerOsdObject(plugStruct) {
-    m_pRootView = NULL;
+
 }
 
 cPlexSdOsd::~cPlexSdOsd() {
@@ -20,15 +24,18 @@ cPlexSdOsd::~cPlexSdOsd() {
         m_pMessage->Clear();
 }
 
+bool cPlexSdOsd::m_bSdSupport = false;
+
 bool cPlexSdOsd::SdSupport() {
-    if (SkindesignerAvailable()) {
+    if (m_bSdSupport || SkindesignerAvailable()) {
         skindesignerapi::cOsdView *rootView = GetOsdView();
         if (!rootView) {
             esyslog("[plex]: used skindesigner skin does not support plex");
             return false;
         }
+        delete rootView;
     }
-    return true;
+    return (m_bSdSupport = true);
 }
 
 void cPlexSdOsd::Show(void) {
@@ -45,8 +52,9 @@ void cPlexSdOsd::Show(void) {
     m_pBrowserGrid = std::shared_ptr<cBrowserGrid>(new cBrowserGrid(m_pRootView));
     m_pMessage = std::shared_ptr<skindesignerapi::cViewElement>(
             m_pRootView->GetViewElement((int) eViewElementsRoot::message));
-    m_messageDisplayed = false;
-    m_detailsActive = false;
+    if(m_pDetailVideo) {
+        ShowDetails(m_pDetailVideo);
+    }
     Flush();
 }
 

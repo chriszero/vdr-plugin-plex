@@ -142,7 +142,7 @@ namespace plexclient {
                 "<Player title=\"" << Config::GetInstance().GetHostname() << "\""
                 " protocol=\"plex\""
                 " protocolVersion=\"1\""
-                " protocolCapabilities=\"navigation,playback,timeline\""
+                " protocolCapabilities=\"navigation,playback,timeline,mirror\""
                 " machineIdentifier=\"" << Config::GetInstance().GetUUID() << "\""
                 " product=\"" << DESCRIPTION << "\""
                 " platform=\"Linux\""
@@ -238,7 +238,7 @@ namespace plexclient {
 
                         }
 
-                        ActionManager::GetInstance().AddAction(Cont->m_vVideos[0]);
+                        ActionManager::GetInstance().AddAction(Action{Cont->m_vVideos[0], ActionType::Play});
                     }
                 } else if (request.getURI().find("/playback/play") != std::string::npos) {
                     cRemote::Put(kPlay);
@@ -290,3 +290,33 @@ namespace plexclient {
     }
 
 } // namespace
+
+void plexclient::MirrorRequestHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
+                                                     Poco::Net::HTTPServerResponse &response) {
+    ///player/mirror/details?type=video&key=%2Flibrary%2Fmetadata%2F113855&machineIdentifier=fbad3115c2c2d82c53b0205e5aa3c4e639ebaa94&protocol=http&address=192.168.1.175&port=32400&token=transient-5557be74-dcad-4c28-badd-aa01b6224862&commandID=2
+    UpdateCommandId(request);
+
+    Poco::URI uri(request.getURI());
+    std::map<std::string, std::string> query = ParseQuery(uri.getQuery());
+
+    if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
+        AddHeaders(response, request);
+        response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK);
+        response.send() << " ";
+        return;
+    }
+
+    if (request.getURI().find("/details") != std::string::npos) {
+        std::string protocol = query["protocol"];
+        std::string address = query["address"];
+        std::string port = query["port"];
+        std::string key = query["key"];
+
+        std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
+        auto Cont = Plexservice::GetMediaContainer(fullUrl);
+        ActionManager::GetInstance().AddAction(Action {Cont->m_vVideos[0], ActionType::Display});
+        AddHeaders(response, request);
+        response.send() << GetOKMsg();
+    }
+}
+

@@ -22,6 +22,7 @@
 #include <libskindesignerapi/skindesignerapi.h>
 #include "plexSdOsd.h"
 #include "pictureCache.h"
+#include "SubscriptionManager.h"
 
 #endif
 
@@ -47,9 +48,11 @@ static const char *const MAINMENUENTRY = "Plex for VDR";
 class cMyPlugin : public cPlugin {
 private:
 #ifdef SKINDESIGNER
-    skindesignerapi::cPluginStructure *m_pPlugStruct;
-    cPlexSdOsd *m_pTestOsd;
+    skindesignerapi::cPluginStructure *m_pPlugStruct = nullptr;
+    cPlexSdOsd *m_pTestOsd = nullptr;
     static bool bSkindesigner;
+    plexclient::Action action;
+    bool m_bShowInfo = false;
 #endif
 
 public:

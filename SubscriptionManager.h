@@ -94,6 +94,12 @@ namespace plexclient {
         std::string GetTimelineXml();
     };
 
+    enum class ActionType { Play, Display };
+    struct Action {
+        cVideo video;
+        ActionType type;
+    };
+
     class ActionManager {
     public:
         static ActionManager &GetInstance() {
@@ -101,9 +107,9 @@ namespace plexclient {
             return instance;
         }
 
-        void AddAction(cVideo video);
+        void AddAction(Action action);
 
-        cVideo GetAction();
+        Action GetAction();
 
         bool IsAction();
 
@@ -113,7 +119,7 @@ namespace plexclient {
 
         ActionManager();
 
-        cVideo m_Action;
+        Action m_Action;
         bool m_isAction;
     };
 

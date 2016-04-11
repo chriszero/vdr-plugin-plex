@@ -58,7 +58,10 @@ namespace plexclient {
         virtual void handleRequest(Poco::Net::HTTPServerRequest &request, Poco::Net::HTTPServerResponse &response);
     };
 
-
+    class MirrorRequestHandler : public PlexHTTPRequestHandler {
+    public:
+        virtual void handleRequest(Poco::Net::HTTPServerRequest &request, Poco::Net::HTTPServerResponse &response);
+    };
 }
 
 

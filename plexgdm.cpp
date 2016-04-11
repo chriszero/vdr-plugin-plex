@@ -40,7 +40,7 @@ namespace plexclient {
                               "Port: " + c_port + "\r\n"
                               "Product: " + c_product + "\r\n"
                               "Protocol: plex\r\n"
-                              "Protocol-Capabilities: navigation,playback,timeline\r\n"
+                              "Protocol-Capabilities: navigation,playback,timeline,mirror\r\n"
                               "Protocol-Version: 1\r\n"
                               "Version: " + c_version + "\r\n";
         _clientId = c_id;

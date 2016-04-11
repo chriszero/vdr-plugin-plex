@@ -24,27 +24,31 @@
 
 class cPlexSdOsd : public skindesignerapi::cSkindesignerOsdObject {
 private:
-    std::shared_ptr<cBrowserGrid> m_pBrowserGrid;
-    std::shared_ptr<cDetailView> m_pDetailGrid;
-    std::shared_ptr<skindesignerapi::cViewElement> m_pMessage;
-    bool m_messageDisplayed;
-    bool m_detailsActive;
+    static bool m_bSdSupport;
+    std::shared_ptr<cBrowserGrid> m_pBrowserGrid = nullptr;
+    std::shared_ptr<cDetailView> m_pDetailGrid = nullptr;
+    std::shared_ptr<skindesignerapi::cViewElement> m_pMessage = nullptr;
+    bool m_messageDisplayed = false;
+    bool m_detailsActive = false;
+    plexclient::cVideo* m_pDetailVideo = nullptr;
 
-    std::shared_ptr<skindesignerapi::cOsdView> m_pRootView;
-    std::shared_ptr<skindesignerapi::cOsdView> m_pDetailsView;
+    std::shared_ptr<skindesignerapi::cOsdView> m_pRootView = nullptr;
+    std::shared_ptr<skindesignerapi::cOsdView> m_pDetailsView = nullptr;
 
     void Flush();
 
     void DrawMessage(std::string message);
 
-    void ShowDetails(plexclient::cVideo *vid);
-
 public:
     cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct);
+
+    cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct, plexclient::cVideo* detailVideo);
 
     ~cPlexSdOsd();
 
     virtual void Show(void);
+
+    void ShowDetails(plexclient::cVideo *vid);
 
     virtual eOSState ProcessKey(eKeys Key);
 

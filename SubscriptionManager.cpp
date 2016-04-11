@@ -234,13 +234,13 @@ namespace plexclient {
 
     ActionManager::ActionManager() { }
 
-    void ActionManager::AddAction(cVideo video) {
+    void ActionManager::AddAction(Action action) {
         m_myLock.Lock(&m_myMutex);
-        m_Action = video;
+        m_Action = action;
         m_isAction = true;
     }
 
-    cVideo ActionManager::GetAction() {
+    Action ActionManager::GetAction() {
         m_myLock.Lock(&m_myMutex);
         m_isAction = false;
         return m_Action;

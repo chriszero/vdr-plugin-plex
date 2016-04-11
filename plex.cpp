@@ -203,7 +203,13 @@ const char *cMyPlugin::MainMenuEntry(void) {
 cOsdObject *cMyPlugin::MainMenuAction(void) {
     //dsyslog("[plex]%s:\n", __FUNCTION__);
 #ifdef SKINDESIGNER
-    if (bSkindesigner && m_pTestOsd->SdSupport()) return new cPlexSdOsd(m_pPlugStruct);
+    if (bSkindesigner && m_pTestOsd->SdSupport()) {
+        if (m_bShowInfo) {
+            m_bShowInfo = false;
+            return new cPlexSdOsd(m_pPlugStruct, &action.video);
+        }
+        return new cPlexSdOsd(m_pPlugStruct);
+    }
     else return cPlexMenu::ProcessMenu();
 #else
     return cPlexMenu::ProcessMenu();
@@ -217,9 +223,18 @@ cOsdObject *cMyPlugin::MainMenuAction(void) {
 void cMyPlugin::MainThreadHook(void) {
     // dsyslog("[plex]%s:\n", __FUNCTION__);
     // Start Tasks, e.g. Play Video
-    if (plexclient::ActionManager::GetInstance().IsAction()) {
-        PlayFile(plexclient::ActionManager::GetInstance().GetAction());
+    using namespace plexclient;
+    if (ActionManager::GetInstance().IsAction()) {
+        action = ActionManager::GetInstance().GetAction();
+        if(action.type == ActionType::Play) {
+            PlayFile(action.video);
+        }
+        else if (action.type == ActionType::Display) {
+            m_bShowInfo = true;
+            cRemote::CallPlugin("plex");
+        }
     }
+
 }
 
 /**
