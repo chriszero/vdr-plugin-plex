@@ -160,8 +160,6 @@ namespace plexclient {
         std::string res = m_sTitle;
 
         std::string seriesTitle = m_sGrandparentTitle;
-        if (seriesTitle.empty() && m_pParent)
-            seriesTitle = m_pParent->m_sGrandparentTitle;
 
         switch (m_tType) {
             case MediaType::MOVIE:
@@ -172,6 +170,7 @@ namespace plexclient {
                 }
                 break;
             case MediaType::EPISODE:
+                if (seriesTitle.empty() && m_pParent) seriesTitle = m_pParent->m_sGrandparentTitle;
                 res = Poco::format("%s - %02dx%02d - %s", seriesTitle, m_iParentIndex, m_iIndex, m_sTitle);
                 break;
             default:
