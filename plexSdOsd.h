@@ -30,7 +30,7 @@ private:
     std::shared_ptr<skindesignerapi::cViewElement> m_pMessage = nullptr;
     bool m_messageDisplayed = false;
     bool m_detailsActive = false;
-    plexclient::cVideo* m_pDetailVideo = nullptr;
+    std::shared_ptr<plexclient::MediaContainer> m_pDetailContainer = nullptr;
 
     std::shared_ptr<skindesignerapi::cOsdView> m_pRootView = nullptr;
     std::shared_ptr<skindesignerapi::cOsdView> m_pDetailsView = nullptr;
@@ -42,13 +42,14 @@ private:
 public:
     cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct);
 
-    cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct, plexclient::cVideo* detailVideo);
+    cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct, std::shared_ptr<plexclient::MediaContainer> detailContainer);
 
     ~cPlexSdOsd();
 
     virtual void Show(void);
 
-    void ShowDetails(plexclient::cVideo *vid);
+    void ShowDetails(std::shared_ptr<plexclient::MediaContainer> container);
+    void ShowDetails(plexclient::cVideo* vid);
 
     virtual eOSState ProcessKey(eKeys Key);
 

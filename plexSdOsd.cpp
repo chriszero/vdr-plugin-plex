@@ -7,8 +7,8 @@
 
 cMutex cPlexSdOsd::RedrawMutex;
 
-cPlexSdOsd::cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct, plexclient::cVideo* detailVideo) : cPlexSdOsd(plugStruct) {
-    m_pDetailVideo = detailVideo;
+cPlexSdOsd::cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct, std::shared_ptr<plexclient::MediaContainer> detailContainer) : cPlexSdOsd(plugStruct) {
+    m_pDetailContainer = detailContainer;
 }
 
 cPlexSdOsd::cPlexSdOsd(skindesignerapi::cPluginStructure *plugStruct) : cSkindesignerOsdObject(plugStruct) {
@@ -52,8 +52,8 @@ void cPlexSdOsd::Show(void) {
     m_pBrowserGrid = std::shared_ptr<cBrowserGrid>(new cBrowserGrid(m_pRootView));
     m_pMessage = std::shared_ptr<skindesignerapi::cViewElement>(
             m_pRootView->GetViewElement((int) eViewElementsRoot::message));
-    if(m_pDetailVideo) {
-        ShowDetails(m_pDetailVideo);
+    if(m_pDetailContainer) {
+        ShowDetails(m_pDetailContainer);
     }
     Flush();
 }
@@ -228,9 +228,7 @@ eOSState cPlexSdOsd::ProcessKeyBrowserView(eKeys Key) {
     return state;
 }
 
-void cPlexSdOsd::ShowDetails(plexclient::cVideo *vid) {
-    if (m_detailsActive) return;
-
+void cPlexSdOsd::ShowDetails(plexclient::cVideo* vid) {
     m_pBrowserGrid->Deactivate(true);
     m_pDetailsView = std::shared_ptr<skindesignerapi::cOsdView>(GetOsdView((int) eViews::detailView));
     m_pDetailGrid = std::make_shared<cDetailView>(m_pDetailsView, vid);
@@ -239,6 +237,20 @@ void cPlexSdOsd::ShowDetails(plexclient::cVideo *vid) {
     m_pDetailGrid->Draw();
     m_pDetailGrid->Flush();
     m_detailsActive = true;
+}
+
+void cPlexSdOsd::ShowDetails(std::shared_ptr<plexclient::MediaContainer> container) {
+    if (m_detailsActive) return;
+
+    if (container->m_vDirectories.size() > 0 || container->m_vVideos.size() > 1) {
+        // show browser
+        m_pBrowserGrid->ShowDirectory(container);
+        m_pBrowserGrid->Activate();
+        m_pBrowserGrid->Flush();
+    }
+    else if (container->m_vVideos.size() > 0) {
+        ShowDetails(&container->m_vVideos[0]);
+    }
 }
 
 void cPlexSdOsd::DrawMessage(std::string message) {
@@ -413,3 +425,4 @@ void cPlexSdOsd::DefineDetailsTokens(eViewElementsDetail ve, skindesignerapi::cT
             break;
     }
 }
+

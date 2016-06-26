@@ -238,7 +238,7 @@ namespace plexclient {
 
                         }
 
-                        ActionManager::GetInstance().AddAction(Action{Cont->m_vVideos[0], ActionType::Play});
+                        ActionManager::GetInstance().AddAction(Action{Cont, ActionType::Play});
                     }
                 } else if (request.getURI().find("/playback/play") != std::string::npos) {
                     cRemote::Put(kPlay);
@@ -314,8 +314,10 @@ void plexclient::MirrorRequestHandler::handleRequest(Poco::Net::HTTPServerReques
 
         std::string fullUrl = protocol + "://" + address + ":" + port + key; // Metainfo
         auto Cont = Plexservice::GetMediaContainer(fullUrl);
-        ActionManager::GetInstance().AddAction(Action {Cont->m_vVideos[0], ActionType::Display});
-        AddHeaders(response, request);
+        if(Cont) {
+            ActionManager::GetInstance().AddAction(Action {Cont, ActionType::Display});
+            AddHeaders(response, request);
+        }
         response.send() << GetOKMsg();
     }
 }

@@ -96,7 +96,8 @@ namespace plexclient {
 
     enum class ActionType { Play, Display };
     struct Action {
-        cVideo video;
+        //cVideo video;
+        std::shared_ptr<MediaContainer> container;
         ActionType type;
     };
 

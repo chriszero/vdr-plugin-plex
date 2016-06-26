@@ -206,7 +206,7 @@ cOsdObject *cMyPlugin::MainMenuAction(void) {
     if (bSkindesigner && m_pTestOsd->SdSupport()) {
         if (m_bShowInfo) {
             m_bShowInfo = false;
-            return new cPlexSdOsd(m_pPlugStruct, &action.video);
+            return new cPlexSdOsd(m_pPlugStruct, action.container);
         }
         return new cPlexSdOsd(m_pPlugStruct);
     }
@@ -227,9 +227,10 @@ void cMyPlugin::MainThreadHook(void) {
     if (ActionManager::GetInstance().IsAction()) {
         action = ActionManager::GetInstance().GetAction();
         if(action.type == ActionType::Play) {
-            PlayFile(action.video);
+            if(action.container->m_vVideos.size() > 0)
+                PlayFile(action.container->m_vVideos[0]);
         }
-        else if (action.type == ActionType::Display) {
+        else if (bSkindesigner && action.type == ActionType::Display) {
             m_bShowInfo = true;
             cRemote::CallPlugin("plex");
         }

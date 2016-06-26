@@ -101,6 +101,13 @@ void cBrowserGrid::SwitchView(ViewMode mode) {
     FilterElements(0);
 }
 
+void cBrowserGrid::ShowDirectory(std::shared_ptr<plexclient::MediaContainer> container){
+    m_pContainer = container;
+    m_bServersAreRoot = false;
+    m_vServerElements.clear();
+    ProcessData();
+}
+
 void cBrowserGrid::NextViewMode() {
     ViewMode mode = Config::GetInstance().DefaultViewMode;
     if (mode == ViewMode::Cover) {

@@ -88,6 +88,8 @@ public:
 
     void NextViewMode();
 
+    void ShowDirectory(std::shared_ptr<plexclient::MediaContainer> container);
+
     virtual eOSState NavigateSelect();
 
     virtual eOSState NavigateBack();
