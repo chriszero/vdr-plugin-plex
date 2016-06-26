@@ -52,7 +52,7 @@ cHlsSegmentLoader::~cHlsSegmentLoader() {
 }
 
 void cHlsSegmentLoader::SkipEmptySegments(int segmentDuration) {
-    pcrecpp::RE re("&offset=(\\d+)", pcrecpp::RE_Options(PCRE_CASELESS));
+    pcrecpp::RE re("&offset=(-?\\d+)", pcrecpp::RE_Options(PCRE_CASELESS));
     int value;
     re.PartialMatch(m_startUri.getQuery(), &value);
     if (value > segmentDuration) {
