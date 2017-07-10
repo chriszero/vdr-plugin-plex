@@ -49,7 +49,7 @@ bool cM3u8Parser::Parse(std::istream &m3u8) {
         }
 
         if (re.FullMatch(line)) {
-            string var;
+            std::string var;
             //string value;
             re.PartialMatch(line, &var);
             if ("EXT-X-TARGETDURATION" == var) {
@@ -57,7 +57,7 @@ bool cM3u8Parser::Parse(std::istream &m3u8) {
                 reVal.PartialMatch(line, &value);
                 TargetDuration = value;
             } else if ("EXT-X-ALLOW-CACHE" == var) {
-                string value;
+                std::string value;
                 reVal.PartialMatch(line, &value);
                 AllowCache = "YES" == value;
             } else if ("EXT-X-MEDIA-SEQUENCE" == var) {
