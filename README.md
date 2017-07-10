@@ -6,7 +6,7 @@ Plays files via the Plexmediaserver transcoder directly in VDR
 At the moment ONLY video files are played.
 
 deps:
-libpoco >= 1.6
+libpoco >= 1.6 (tested and developed with 1.7.2)
 libpcrepp
 libskindesignerapi
 C++11 Compiler
@@ -17,4 +17,4 @@ vdr-plugin-mpv
 
 There are no commandline parameters.
 
-To use remote servers you have to  use a plex.tv account
+To use remote servers you have to use a plex.tv account

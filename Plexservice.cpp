@@ -169,8 +169,8 @@ namespace plexclient {
                 return pAllsections;
             }
             else {
-                dsyslog("[plex] URI: %s%s Response bad: s%", pServer->GetUri().c_str(), uri.c_str(),
-                        response.getReasonForStatus(response.getStatus()).c_str());
+                dsyslog("[plex] URI: %s%s Response bad: d%", pServer->GetUri().c_str(), uri.c_str(),
+                        response.getStatus());
                 return 0;
             }
 
